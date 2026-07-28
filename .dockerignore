@@ -1,0 +1,23 @@
+# Keeps the devcontainer build context small — the Dockerfile only needs
+# system-level setup; the actual source is bind-mounted at runtime.
+.git
+.devcontainer
+.local/
+
+api/vendor/bundle
+api/.bundle
+api/log
+api/tmp
+api/storage
+
+app/build
+app/.dart_tool
+app/android/.gradle
+app/android/app/build
+app/ios/Pods
+app/ios/.symlinks
+app/macos/Pods
+app/linux/flutter/ephemeral
+app/windows/flutter/ephemeral
+
+app/legacy
