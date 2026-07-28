@@ -1,6 +1,14 @@
 import 'package:acalapp/core/layout/app_shell.dart';
 import 'package:acalapp/features/addresses/presentation/addresses_page.dart';
+import 'package:acalapp/features/cashbox/presentation/cashbox_page.dart';
+import 'package:acalapp/features/categories/presentation/categories_page.dart';
+import 'package:acalapp/features/connections/presentation/connections_page.dart';
 import 'package:acalapp/features/dashboard/presentation/dashboard_page.dart';
+import 'package:acalapp/features/documentation/presentation/documentation_page.dart';
+import 'package:acalapp/features/elections/presentation/elections_page.dart';
+import 'package:acalapp/features/invoices/presentation/generate_invoices_page.dart';
+import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
+import 'package:acalapp/features/quality/presentation/quality_page.dart';
 import 'package:acalapp/features/users/presentation/users_page.dart';
 import 'package:go_router/go_router.dart';
 
@@ -12,15 +20,47 @@ final appRouter = GoRouter(
       routes: [
         GoRoute(
           path: '/dashboard',
-          builder: (context, state) => const DashboardPage(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: DashboardPage()),
         ),
         GoRoute(
           path: '/users',
-          builder: (context, state) => const UsersPage(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: UsersPage()),
         ),
         GoRoute(
           path: '/addresses',
-          builder: (context, state) => const AddressesPage(),
+          pageBuilder: (context, state) => const NoTransitionPage(child: AddressesPage()),
+        ),
+        GoRoute(
+          path: '/categories',
+          pageBuilder: (context, state) => const NoTransitionPage(child: CategoriesPage()),
+        ),
+        GoRoute(
+          path: '/connections',
+          pageBuilder: (context, state) => const NoTransitionPage(child: ConnectionsPage()),
+        ),
+        GoRoute(
+          path: '/quality',
+          pageBuilder: (context, state) => const NoTransitionPage(child: QualityPage()),
+        ),
+        GoRoute(
+          path: '/invoices/generate',
+          pageBuilder: (context, state) => const NoTransitionPage(child: GenerateInvoicesPage()),
+        ),
+        GoRoute(
+          path: '/invoices',
+          pageBuilder: (context, state) => const NoTransitionPage(child: InvoicesPage()),
+        ),
+        GoRoute(
+          path: '/cashbox',
+          pageBuilder: (context, state) => const NoTransitionPage(child: CashboxPage()),
+        ),
+        GoRoute(
+          path: '/elections',
+          pageBuilder: (context, state) => const NoTransitionPage(child: ElectionsPage()),
+        ),
+        GoRoute(
+          path: '/documentation',
+          pageBuilder: (context, state) => const NoTransitionPage(child: DocumentationPage()),
         ),
       ],
     ),

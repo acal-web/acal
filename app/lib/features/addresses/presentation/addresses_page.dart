@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
@@ -31,8 +33,20 @@ class _AddressesPageState extends State<AddressesPage> {
       });
 
   Future<void> _openForm({Address? address}) async {
-    final saved = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => AddressFormPage(address: address)),
+    final saved = await showDialog<bool>(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.4),
+      builder: (context) => Stack(
+        children: [
+          Positioned.fill(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+              child: const SizedBox.expand(),
+            ),
+          ),
+          Center(child: AddressFormPage(address: address)),
+        ],
+      ),
     );
     if (saved == true) _load();
   }
@@ -58,7 +72,7 @@ class _AddressesPageState extends State<AddressesPage> {
                       Text('Logradouros', style: theme.textTheme.displayMedium),
                       const SizedBox(height: 4),
                       Text(
-                        'Gerencie ruas, avenidas e espaços públicos cadastrados no sistema.',
+                        'Gerencie os pontos de distribuição de água',
                         style: theme.textTheme.bodyMedium
                             ?.copyWith(color: cs.onSurfaceVariant),
                       ),

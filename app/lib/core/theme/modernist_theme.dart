@@ -190,6 +190,26 @@ final ThemeData modernistTheme = ThemeData(
     ),
   ),
 
+  // Buttons — Filled: same as Primary/Elevated, for FilledButton call sites.
+  filledButtonTheme: FilledButtonThemeData(
+    style: ButtonStyle(
+      backgroundColor: WidgetStateProperty.resolveWith((states) {
+        if (states.contains(WidgetState.pressed)) return _accent700;
+        if (states.contains(WidgetState.hovered)) return _accent600;
+        return _accent;
+      }),
+      foregroundColor: const WidgetStatePropertyAll(_bg),
+      elevation: const WidgetStatePropertyAll(0),
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(ModernistRadius.md)),
+      ),
+      padding: const WidgetStatePropertyAll(
+        EdgeInsets.symmetric(horizontal: ModernistSpacing.s3 * 1.2, vertical: ModernistSpacing.s2),
+      ),
+      textStyle: WidgetStatePropertyAll(_heading(14, height: 1.2)),
+    ),
+  ),
+
   // Buttons — Secondary: strong divider-bordered outline, ink-tinted hover/pressed.
   outlinedButtonTheme: OutlinedButtonThemeData(
     style: ButtonStyle(
@@ -223,6 +243,15 @@ final ThemeData modernistTheme = ThemeData(
         RoundedRectangleBorder(borderRadius: BorderRadius.circular(ModernistRadius.md)),
       ),
       textStyle: WidgetStatePropertyAll(_heading(14, height: 1.2)),
+    ),
+  ),
+
+  // Dialogs/modals — filled surface, square corners, no default shadow.
+  dialogTheme: DialogThemeData(
+    backgroundColor: _bg,
+    elevation: 0,
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(ModernistRadius.lg)),
     ),
   ),
 

@@ -6,8 +6,6 @@ import 'package:flutter/rendering.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
-  // Flutter Web renders to <canvas> and only builds the semantics tree lazily;
-  // Maestro (and other web a11y tooling) needs it built up front to find elements.
   if (kIsWeb) {
     SemanticsBinding.instance.ensureSemantics();
   }
@@ -22,6 +20,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp.router(
       theme: modernistTheme,
       routerConfig: appRouter,
+      builder: (context, child) => SelectionArea(child: child!),
     );
   }
 }
