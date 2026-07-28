@@ -1,0 +1,10 @@
+url: http://localhost:8080
+---
+- launchApp
+- assertVisible: "Dashboard"
+- tapOn: "Users"
+- assertVisible: "Users"
+- tapOn: "Logradouros"
+- assertVisible: "Logradouros"
+- tapOn: "Dashboard"
+- assertVisible: "Dashboard"

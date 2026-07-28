@@ -7,7 +7,7 @@ services:
         USER_UID: ${USER_UID:-1000}
         USER_GID: ${USER_GID:-1000}
     volumes:
-      - ..:/workspaces/acal2:cached
+      - ..:/workspace:cached
     command: sleep infinity
     environment:
       DB_HOST: db

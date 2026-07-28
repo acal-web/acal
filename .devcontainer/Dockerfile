@@ -33,4 +33,4 @@ USER ${USERNAME}
 RUN flutter config --no-analytics --enable-web \
     && flutter precache --web
 
-WORKDIR /workspaces/acal2
+WORKDIR /workspace

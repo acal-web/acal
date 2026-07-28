@@ -53,28 +53,38 @@ class _MenuItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final color = isActive ? cs.onPrimary : cs.onSurfaceVariant;
+    final color = isActive ? cs.primary : cs.onSurfaceVariant;
     final fontWeight = isActive ? FontWeight.w600 : FontWeight.w400;
-    final backgroundColor = isActive ? cs.primary : Colors.transparent;
 
-    return Material(
-      color: backgroundColor,
-      child: InkWell(
-        onTap: () => context.go(route),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-          child: Row(
-            children: [
-              Icon(icon, color: color, size: 20),
-              const SizedBox(width: 12),
-              Text(
-                label,
-                style: TextStyle(
-                  color: color,
-                  fontWeight: fontWeight,
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: isActive ? cs.primary.withValues(alpha: 0.12) : null,
+        border: Border(
+          left: BorderSide(
+            color: isActive ? cs.primary : Colors.transparent,
+            width: 3,
+          ),
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.go(route),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            child: Row(
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 12),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: fontWeight,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

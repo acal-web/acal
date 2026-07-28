@@ -18,7 +18,7 @@ class TopBarLogo extends StatelessWidget {
       child: Row(
         children: [
           IconButton(
-            icon: Icon(Icons.menu, color: cs.onPrimary),
+            icon: Icon(Icons.menu, color: cs.onSurface),
             onPressed: onMenuTap,
           ),
           Expanded(
@@ -26,7 +26,7 @@ class TopBarLogo extends StatelessWidget {
               AppConfig.appName,
               style: theme.textTheme.displaySmall?.copyWith(
                 fontWeight: FontWeight.bold,
-                color: cs.onPrimary,
+                color: cs.onSurface,
               ),
             ),
           ),

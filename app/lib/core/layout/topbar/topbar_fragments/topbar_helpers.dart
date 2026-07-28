@@ -10,7 +10,7 @@ class TopBarHelpers extends StatelessWidget {
     return Row(
       children: [
         IconButton(
-          icon: Icon(Icons.notifications_outlined, color: cs.onPrimary),
+          icon: Icon(Icons.notifications_outlined, color: cs.onSurfaceVariant),
           onPressed: null,
         ),
       ],
