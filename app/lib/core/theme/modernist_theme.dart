@@ -6,10 +6,11 @@ import 'package:google_fonts/google_fonts.dart';
 const _bg      = Color(0xFFF3F2F2);
 const _surface = Color(0xFFEAE9E9);
 const _text    = Color(0xFF201E1D);
-const _accent  = Color(0xFF3F7D32);
-// Mono scheme: accent-2 is a machine-derived stand-in kept only so both
-// token sets resolve — treat it as the same role as accent, just muted.
-const _accent2 = Color(0xFF7A9D4A);
+// Mono scheme (hue 0, sat 0): accent is literally the text color, and its
+// ramp is identical to the neutral ramp — there is no separate hue here.
+const _accent  = Color(0xFF201E1D);
+// accent-2 keeps its own warm-gray ramp, distinct from neutral/accent.
+const _accent2 = Color(0xFF524D4A);
 
 // Neutral ramp (100-900), generated in OKLCH on a shared lightness scale.
 const _neutral100 = Color(0xFFF8F4F4);
@@ -20,15 +21,15 @@ const _neutral700 = Color(0xFF605D5D);
 const _neutral800 = Color(0xFF444141);
 const _neutral900 = Color(0xFF2D2B2B);
 
-// Accent ramp.
-const _accent100 = Color(0xFFEEF7EC);
-const _accent600 = Color(0xFF337A2A);
-const _accent700 = Color(0xFF235C1D);
-const _accent800 = Color(0xFF1A4416);
+// Accent ramp — equal to the neutral ramp (mono scheme, hue 0/sat 0).
+const _accent100 = Color(0xFFF8F4F4);
+const _accent600 = Color(0xFF7D7979);
+const _accent700 = Color(0xFF605D5D);
+const _accent800 = Color(0xFF444141);
 
-// Accent-2 ramp — same hue family as accent (mono palette), lighter olive step.
-const _accent2_100 = Color(0xFFF1F5EA);
-const _accent2_800 = Color(0xFF33461C);
+// Accent-2 ramp — its own warm-gray steps, distinct from neutral/accent.
+const _accent2_100 = Color(0xFFF5F4F3);
+const _accent2_800 = Color(0xFF3A3634);
 
 // Divider — strong ink at 40% over the ground, per `--color-divider`.
 final _divider = _text.withValues(alpha: 0.40);
@@ -154,7 +155,12 @@ final ThemeData modernistTheme = ThemeData(
   inputDecorationTheme: InputDecorationTheme(
     filled: true,
     fillColor: _surface,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+    contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 14),
+    // Icons default to a 48px min-tap-target, which makes any field with a
+    // prefixIcon taller than a plain field (e.g. a dropdown) — pin it down
+    // so every input/combobox in the app lines up at the same height.
+    prefixIconConstraints: const BoxConstraints(minWidth: 36),
+    suffixIconConstraints: const BoxConstraints(minWidth: 36),
     border: OutlineInputBorder(
       borderRadius: BorderRadius.circular(ModernistRadius.md),
       borderSide: BorderSide(color: _divider),

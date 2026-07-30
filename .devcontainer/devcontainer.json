@@ -8,15 +8,17 @@
 
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1": {},
-    // Java is required by the Maestro CLI (JVM-based), used to test Flutter web (see app/maestro/).
     "ghcr.io/devcontainers/features/java:1": { "version": "17" }
   },
 
   // Maestro installs itself to ~/.maestro/bin, which isn't on PATH by default.
   // remoteEnv (not containerEnv) so this only affects VS Code's exec sessions,
   // not the container's own startup command (docker-compose's `sleep infinity`).
+  // CHROME_EXECUTABLE: also set in the Dockerfile, repeated here so it applies on
+  // "Reload Window" without needing a full container rebuild.
   "remoteEnv": {
-    "PATH": "${containerEnv:PATH}:/home/vscode/.maestro/bin"
+    "PATH": "${containerEnv:PATH}:/home/vscode/.maestro/bin",
+    "CHROME_EXECUTABLE": "/usr/bin/chromium"
   },
 
   // 3000: Rails server (bin/dev). 5432: Postgres, exposed for GUI clients on the host.
@@ -30,8 +32,6 @@
     "vscode": {
       "settings": {
         "workbench.colorTheme": "Monokai Dimmed",
-        // Overrides any host-side dart.flutterSdkPath synced via user settings,
-        // which would otherwise point at a path that doesn't exist in the container.
         "dart.flutterSdkPath": "/opt/flutter"
       },
       "extensions": [

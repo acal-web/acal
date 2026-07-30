@@ -13,13 +13,8 @@ class AddressesController < ApplicationController
 
   # POST /addresses
   def create
-    @address = Address.new(address_params)
-
-    if @address.save
-      render json: @address, status: :created, location: @address
-    else
-      render json: @address.errors, status: :unprocessable_content
-    end
+    @address = Address.create!(kind:, name:)
+    render json: @address, status: :created, location: @address
   end
 
   # PATCH/PUT /addresses/1
@@ -37,13 +32,19 @@ class AddressesController < ApplicationController
   end
 
   private
-    # Use callbacks to share common setup or constraints between actions.
     def set_address
       @address = Address.find(params.expect(:id))
     end
 
-    # Only allow a list of trusted parameters through.
     def address_params
-      params.expect(address: [ :name, :address_type ])
+      params.expect(address: [ :name, :kind ])
+    end
+
+    def kind
+      address_params[:kind]
+    end
+
+    def name
+      address_params[:name]
     end
 end

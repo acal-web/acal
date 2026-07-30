@@ -31,13 +31,15 @@ class _AppShellState extends State<AppShell> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: TopBar(onMenuTap: _toggleMenu),
-      body: Row(
-        children: [
-          if (_menuVisible) const SideMenu(),
-          Expanded(child: widget.body),
-        ],
+    return SelectionArea(
+      child: Scaffold(
+        appBar: TopBar(onMenuTap: _toggleMenu),
+        body: Row(
+          children: [
+            if (_menuVisible) const SideMenu(),
+            Expanded(child: widget.body),
+          ],
+        ),
       ),
     );
   }

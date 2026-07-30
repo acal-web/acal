@@ -8,7 +8,12 @@
       "cwd": "app",
       "program": "lib/main.dart",
       "deviceId": "web-server",
-      "args": ["--web-port", "8080"]
+      "args": [
+        "--web-port", "8080"
+      ]
     }
   ]
 }
+
+//flutter run -d web-server --web-port 8080
+

@@ -1,29 +1,29 @@
-const addressTypes = ['Avenida', 'Fazenda', 'Praça', 'Rua', 'Travessa'];
+const kinds = ['Avenida', 'Fazenda', 'Praça', 'Rua', 'Travessa'];
 
 class Address {
   final String? id;
-  final String type;
+  final String kind;
   final String name;
 
-  const Address({this.id, required this.type, required this.name});
+  const Address({this.id, required this.kind, required this.name});
 
-  String get fullAddress => '$type $name';
+  String get fullAddress => '$kind $name';
 
   factory Address.fromJson(Map<String, dynamic> json) => Address(
         id: json['id']?.toString(),
-        type: json['address_type'] as String,
+        kind: json['kind'] as String,
         name: json['name'] as String,
       );
 
   Map<String, dynamic> toJson() => {
         if (id != null) 'id': id,
-        'address_type': type,
+        'kind': kind,
         'name': name,
       };
 
-  Address copyWith({String? id, String? type, String? name}) => Address(
+  Address copyWith({String? id, String? kind, String? name}) => Address(
         id: id ?? this.id,
-        type: type ?? this.type,
+        kind: kind ?? this.kind,
         name: name ?? this.name,
       );
 }

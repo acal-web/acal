@@ -7,8 +7,9 @@ class AddressService {
 
   final HttpService _http;
 
-  Future<PagedResult<Address>> findAll({int page = 0}) async {
-    final data = await _http.get('/addresses', query: {'page': '$page'}) as Map<String, dynamic>;
+  Future<PagedResult<Address>> findAll({int page = 0, int size = 10}) async {
+    final data = await _http.get('/addresses', query: {'page': '$page', 'size': '$size'})
+        as Map<String, dynamic>;
     return PagedResult.fromJson(data, Address.fromJson);
   }
 
@@ -22,5 +23,5 @@ class AddressService {
     return Address.fromJson(data as Map<String, dynamic>);
   }
 
-  Future<void> delete(int id) => _http.delete('/addresses/$id');
+  Future<void> delete(String id) => _http.delete('/addresses/$id');
 }

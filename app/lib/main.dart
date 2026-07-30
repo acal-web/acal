@@ -20,7 +20,6 @@ class MainApp extends StatelessWidget {
     return MaterialApp.router(
       theme: modernistTheme,
       routerConfig: appRouter,
-      builder: (context, child) => SelectionArea(child: child!),
     );
   }
 }

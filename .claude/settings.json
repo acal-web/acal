@@ -6,9 +6,15 @@
         "hooks": [
           {
             "type": "command",
-            "command": "f=$(jq -r '.tool_input.file_path // empty'); if [[ \"$f\" == /workspace/app/*.dart ]]; then out=$(flutter analyze \"$f\" 2>&1); if ! echo \"$out\" | grep -q \"No issues found\"; then echo \"$out\" >&2; exit 2; fi; fi",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/flutter/analyze.sh\"",
             "timeout": 60,
             "statusMessage": "Running flutter analyze..."
+          },
+          {
+            "type": "command",
+            "command": "\"$CLAUDE_PROJECT_DIR/.claude/hooks/rails/rubocop.sh\"",
+            "timeout": 60,
+            "statusMessage": "Running rubocop..."
           }
         ]
       }

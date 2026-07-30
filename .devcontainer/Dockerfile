@@ -13,11 +13,19 @@ ARG USER_GID=1000
 
 # build-essential: native gem extensions (pg, etc)
 # libpq-dev/libyaml-dev/libvips/postgresql-client: Rails (pg, psych, image_processing)
-RUN apt-get update -qq && apt-get install --no-install-recommends -y \
-      build-essential \
-      libpq-dev libyaml-dev libvips postgresql-client \
-      git curl unzip xz-utils zip ca-certificates sudo \
+# chromium: headless browser for `flutter run -d chrome` / web debugging — no X server in the
+# container, so it's always driven with --headless=new (see .vscode/launch.json).
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+    build-essential \
+    libpq-dev libyaml-dev libvips postgresql-client \
+    git curl unzip xz-utils zip ca-certificates sudo \
+    chromium \
+    chromium-driver \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
+
+# Flutter looks for `google-chrome` by default; point it at the Debian chromium package instead.
+ENV CHROME_EXECUTABLE=/usr/bin/chromium
 
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} --create-home --shell /bin/bash ${USERNAME} \

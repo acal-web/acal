@@ -1,0 +1,16 @@
+url: http://localhost:8080/#/addresses
+---
+- launchApp
+# Generous timeout: first navigation after a (re)start triggers a cold
+# dartdevc module compile that can take 30-60s depending on machine load.
+- extendedWaitUntil:
+    visible: "Logradouros"
+    timeout: 90000
+- assertVisible: "Novo Endereço"
+- tapOn: "Novo Endereço"
+- assertVisible: "Avenida"
+- tapOn: "Digite o logradouro"
+- inputText: "Fernando Daltro"
+- tapOn: "Salvar"
+- assertNotVisible: "Digite o logradouro"
+- assertNotVisible: "Salvar"
