@@ -15,7 +15,7 @@ Future<T?> showBlurredDialog<T>({
       children: [
         Positioned.fill(
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 4, sigmaY: 4),
+            filter: ImageFilter.blur(sigmaX: 1, sigmaY: 1),
             child: const SizedBox.expand(),
           ),
         ),

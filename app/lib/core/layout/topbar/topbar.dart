@@ -13,7 +13,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Material(
-      color: cs.surface,
+      color: Colors.white,
       elevation: 0,
       child: DecoratedBox(
         decoration: BoxDecoration(

@@ -13,6 +13,6 @@ class Address < ApplicationRecord
     duplicates = self.class.where("lower(kind) = ? AND lower(name) = ?", kind.downcase, name.downcase)
     duplicates = duplicates.where.not(id: id) if persisted?
 
-    errors.add(:name, :taken) if duplicates.exists?
+    raise DuplicateResourceError, "Address already exists" if duplicates.exists?
   end
 end

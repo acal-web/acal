@@ -11,9 +11,8 @@ class DataTableColumn {
 }
 
 /// The standard listing shell used across "Cadastros" pages: an entries-per-page
-/// control, a sortable column header, a paginated list of rows, a footer that
-/// mirrors the header, and a numbered pagination bar — e.g. Logradouros,
-/// Sócios, Categorias.
+/// control, a sortable column header, a paginated list of rows, and a numbered
+/// pagination bar — e.g. Logradouros, Sócios, Categorias.
 class DataTableCard<T> extends StatelessWidget {
   const DataTableCard({
     super.key,
@@ -41,17 +40,19 @@ class DataTableCard<T> extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final cardShape = Theme.of(context).cardTheme.shape;
+    final borderRadius = cardShape is RoundedRectangleBorder ? cardShape.borderRadius : BorderRadius.zero;
+
     return Card(
       // Table rows zebra-stripe against the page ground, not the card fill —
       // override the card's default surface color to make that visible.
       color: Theme.of(context).scaffoldBackgroundColor,
+      shape: RoundedRectangleBorder(
+        borderRadius: borderRadius,
+        side: BorderSide(color: cs.outlineVariant),
+      ),
       child: Column(
         children: [
-          _EntriesPerPage(
-            value: pageSize,
-            options: pageSizeOptions,
-            onChanged: onPageSizeChanged,
-          ),
           const Divider(height: 1),
           _Header(columns: columns),
           const Divider(height: 1),
@@ -69,51 +70,11 @@ class DataTableCard<T> extends StatelessWidget {
               ),
             ),
           const Divider(height: 1),
-          _Footer(columns: columns),
-          const Divider(height: 1),
           _PaginationBar(
             pagination: pagination,
             itemCount: items.length,
             onPageChanged: onPageChanged,
           ),
-        ],
-      ),
-    );
-  }
-}
-
-class _EntriesPerPage extends StatelessWidget {
-  const _EntriesPerPage({required this.value, required this.options, required this.onChanged});
-
-  final int value;
-  final List<int> options;
-  final void Function(int size) onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final cs = theme.colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-      child: Row(
-        children: [
-          DropdownButtonHideUnderline(
-            child: DropdownButton<int>(
-              value: value,
-              items: [
-                for (final size in options)
-                  DropdownMenuItem(value: size, child: Text('$size')),
-              ],
-              onChanged: (size) {
-                if (size != null) onChanged(size);
-              },
-              borderRadius: BorderRadius.zero,
-              style: theme.textTheme.bodyMedium,
-              icon: Icon(Icons.arrow_drop_down, color: cs.onSurfaceVariant),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text('registros por página', style: theme.textTheme.bodySmall),
         ],
       ),
     );
@@ -128,18 +89,13 @@ class _Header extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    // Small caps of the body face, per the design system's .table th rule.
-    final style = Theme.of(context).textTheme.labelSmall?.copyWith(
-          color: cs.onSecondary,
-          letterSpacing: 0.88,
-        );
-    return Container(
-      color: cs.secondary,
+    final style = Theme.of(context).textTheme.labelLarge;
+    return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
         children: [
           for (final column in columns)
-            _HeaderCell(column: column, style: style, iconColor: cs.onSecondary),
+            _HeaderCell(column: column, style: style, iconColor: cs.onSurfaceVariant),
         ],
       ),
     );
@@ -155,10 +111,9 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = column.label.toUpperCase();
     final label = column.sortable
-        ? _SortableLabel(text, style: style, iconColor: iconColor)
-        : Text(text, style: style);
+        ? _SortableLabel(column.label, style: style, iconColor: iconColor)
+        : Text(column.label, style: style);
 
     return column.width != null
         ? SizedBox(width: column.width, child: label)
@@ -207,29 +162,6 @@ class _SortArrows extends StatelessWidget {
   }
 }
 
-/// Repeats the column labels below the rows, per the reference table's footer.
-class _Footer extends StatelessWidget {
-  const _Footer({required this.columns});
-
-  final List<DataTableColumn> columns;
-
-  @override
-  Widget build(BuildContext context) {
-    final style = Theme.of(context).textTheme.labelLarge;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Row(
-        children: [
-          for (final column in columns)
-            column.width != null
-                ? SizedBox(width: column.width, child: Text(column.label, style: style))
-                : Expanded(flex: column.flex, child: Text(column.label, style: style)),
-        ],
-      ),
-    );
-  }
-}
-
 class _PaginationBar extends StatelessWidget {
   const _PaginationBar({
     required this.pagination,
@@ -260,6 +192,10 @@ class _PaginationBar extends StatelessWidget {
     return result;
   }
 
+  // Below this width "Mostrando X a Y de Z registros" plus the page
+  // controls no longer fit on one line without risking overflow.
+  static const _narrowBreakpoint = 640.0;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -269,43 +205,66 @@ class _PaginationBar extends StatelessWidget {
     final start = itemCount == 0 ? 0 : p.number * p.size + 1;
     final end = p.number * p.size + itemCount;
 
+    final summary = Text(
+      'Mostrando $start a $end de ${p.totalElements} registros',
+      style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+    );
+
+    final controls = Wrap(
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        _PageArrow(
+          icon: Icons.keyboard_double_arrow_left,
+          onPressed: p.first ? null : () => onPageChanged(0),
+        ),
+        _PageArrow(
+          icon: Icons.chevron_left,
+          onPressed: p.prevPage != null ? () => onPageChanged(p.prevPage!) : null,
+        ),
+        for (final page in _window(p.totalPages, p.number))
+          page == null
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: Text('…', style: theme.textTheme.bodySmall),
+                )
+              : _PageNumber(
+                  number: page + 1,
+                  selected: page == p.number,
+                  onTap: () => onPageChanged(page),
+                ),
+        _PageArrow(
+          icon: Icons.chevron_right,
+          onPressed: p.nextPage != null ? () => onPageChanged(p.nextPage!) : null,
+        ),
+        _PageArrow(
+          icon: Icons.keyboard_double_arrow_right,
+          onPressed: p.last ? null : () => onPageChanged(p.totalPages - 1),
+        ),
+      ],
+    );
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      child: Row(
-        children: [
-          Text(
-            'Mostrando $start a $end de ${p.totalElements} registros',
-            style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
-          ),
-          const Spacer(),
-          _PageArrow(
-            icon: Icons.keyboard_double_arrow_left,
-            onPressed: p.first ? null : () => onPageChanged(0),
-          ),
-          _PageArrow(
-            icon: Icons.chevron_left,
-            onPressed: p.prevPage != null ? () => onPageChanged(p.prevPage!) : null,
-          ),
-          for (final page in _window(p.totalPages, p.number))
-            page == null
-                ? Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    child: Text('…', style: theme.textTheme.bodySmall),
-                  )
-                : _PageNumber(
-                    number: page + 1,
-                    selected: page == p.number,
-                    onTap: () => onPageChanged(page),
-                  ),
-          _PageArrow(
-            icon: Icons.chevron_right,
-            onPressed: p.nextPage != null ? () => onPageChanged(p.nextPage!) : null,
-          ),
-          _PageArrow(
-            icon: Icons.keyboard_double_arrow_right,
-            onPressed: p.last ? null : () => onPageChanged(p.totalPages - 1),
-          ),
-        ],
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth < _narrowBreakpoint) {
+            return Column(
+              children: [
+                summary,
+                const SizedBox(height: 8),
+                controls,
+              ],
+            );
+          }
+
+          return Row(
+            children: [
+              summary,
+              const Spacer(),
+              controls,
+            ],
+          );
+        },
       ),
     );
   }

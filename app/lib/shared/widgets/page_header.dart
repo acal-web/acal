@@ -7,31 +7,52 @@ class PageHeader extends StatelessWidget {
   final String? subtitle;
   final Widget? action;
 
+  // Below this width the title and action no longer fit comfortably on one
+  // line, so they stack instead.
+  static const _narrowBreakpoint = 480.0;
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
 
-    return Row(
+    final titleBlock = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Expanded(
-          child: Column(
+        Text(title, style: theme.textTheme.displayMedium),
+        if (subtitle != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            subtitle!,
+            style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
+          ),
+        ],
+      ],
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < _narrowBreakpoint) {
+          return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title, style: theme.textTheme.displayMedium),
-              if (subtitle != null) ...[
-                const SizedBox(height: 4),
-                Text(
-                  subtitle!,
-                  style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
-                ),
+              titleBlock,
+              if (action != null) ...[
+                const SizedBox(height: 16),
+                action!,
               ],
             ],
-          ),
-        ),
-        ?action,
-      ],
+          );
+        }
+
+        return Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: titleBlock),
+            ?action,
+          ],
+        );
+      },
     );
   }
 }

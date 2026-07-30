@@ -1,6 +1,6 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/shared/widgets/async_error_view.dart';
-import 'package:acalapp/shared/widgets/data_table_card.dart';
+import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:flutter/material.dart';
 
 /// Loads a [PagedResult] from [future] and renders the standard

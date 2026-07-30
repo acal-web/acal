@@ -1,7 +1,10 @@
+import 'package:acalapp/core/services/api_error_code.dart';
+import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/labeled_field.dart';
+import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 
 class AddressFormPage extends StatefulWidget {
@@ -58,12 +61,17 @@ class _AddressFormPageState extends State<AddressFormPage> {
       } else {
         await _service.create(address);
       }
-      if (mounted) Navigator.of(context).pop(true);
+      if (mounted) {
+        AppToast.success(
+          context,
+          _isEditing ? 'Endereço atualizado com sucesso.' : 'Endereço criado com sucesso.',
+        );
+        Navigator.of(context).pop(true);
+      }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Erro ao salvar: $e')),
-        );
+        final errorCode = e is ApiException ? ApiErrorCode.fromCode(e.code) : null;
+        AppToast.error(context, errorCode?.description ?? 'Erro ao salvar endereço.');
       }
     } finally {
       if (mounted) setState(() => _saving = false);

@@ -2,6 +2,30 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:acalapp/core/config/app_config.dart';
 
+/// Thrown for non-2xx responses. [body] is the decoded JSON error payload
+/// (e.g. Rails' `{"name": ["has already been taken"]}"`) when the response
+/// is JSON, or the raw response body otherwise.
+class ApiException implements Exception {
+  ApiException(this.statusCode, this.body);
+
+  final int statusCode;
+  final dynamic body;
+
+  /// Standardized error code, if [body] is an `{"code": ..., "message": ...}`
+  /// payload (see `ApiError` on the Rails side / `ApiErrorCode` on Flutter).
+  int? get code => body is Map ? body['code'] as int? : null;
+
+  /// First error message for [field], if [body] is a Rails-style
+  /// `{"field": ["message", ...]}` errors map.
+  String? fieldError(String field) {
+    final errors = body is Map ? body[field] : null;
+    return errors is List && errors.isNotEmpty ? errors.first.toString() : null;
+  }
+
+  @override
+  String toString() => 'ApiException($statusCode): $body';
+}
+
 class HttpService {
   HttpService({http.Client? client}) : _client = client ?? http.Client();
 
@@ -51,7 +75,13 @@ class HttpService {
 
   void _checkStatus(http.Response response) {
     if (response.statusCode < 200 || response.statusCode >= 300) {
-      throw Exception('Erro ${response.statusCode}: ${response.body}');
+      dynamic body;
+      try {
+        body = jsonDecode(response.body);
+      } catch (_) {
+        body = response.body;
+      }
+      throw ApiException(response.statusCode, body);
     }
   }
 }

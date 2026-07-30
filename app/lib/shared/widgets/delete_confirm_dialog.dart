@@ -1,3 +1,4 @@
+import 'package:acalapp/shared/widgets/blurred_dialog.dart';
 import 'package:flutter/material.dart';
 
 /// Standard "Excluir X?" confirmation dialog used across "Cadastros" pages
@@ -7,7 +8,7 @@ Future<bool> showDeleteConfirmDialog({
   required String title,
   required String message,
 }) async {
-  final confirmed = await showDialog<bool>(
+  final confirmed = await showBlurredDialog<bool>(
     context: context,
     builder: (context) => AlertDialog(
       title: Text(title),

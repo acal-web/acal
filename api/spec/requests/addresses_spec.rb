@@ -155,7 +155,7 @@ RSpec.describe "Addresses", type: :request do
         }.not_to change(Address, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("name" => [ "has already been taken" ])
+        expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
       end
 
       it "rejects a duplicate address with a different case" do
@@ -166,7 +166,7 @@ RSpec.describe "Addresses", type: :request do
         }.not_to change(Address, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("name" => [ "has already been taken" ])
+        expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
       end
     end
   end
@@ -222,7 +222,7 @@ RSpec.describe "Addresses", type: :request do
         patch "/addresses/#{id}", params: { address: { kind: "home", name: "Main Street" } }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("name" => [ "has already been taken" ])
+        expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
       end
     end
   end

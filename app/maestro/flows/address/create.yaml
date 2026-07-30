@@ -6,6 +6,7 @@ url: http://localhost:8080/#/addresses
 - extendedWaitUntil:
     visible: "Logradouros"
     timeout: 90000
+
 - assertVisible: "Novo Endereço"
 - tapOn: "Novo Endereço"
 - assertVisible: "Avenida"

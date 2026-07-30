@@ -278,5 +278,5 @@ final ThemeData modernistTheme = ThemeData(
     space: ModernistSpacing.s4 * 2,
   ),
 
-  scaffoldBackgroundColor: _bg,
+  scaffoldBackgroundColor: Colors.white,
 );

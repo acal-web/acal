@@ -1,13 +1,12 @@
 import 'package:acalapp/core/models/paged_result.dart';
-import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
-import 'package:acalapp/features/addresses/widget/address_kind_select.dart';
+import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/addresses/widget/delete_address.dart';
 import 'package:acalapp/features/addresses/widget/open_address.dart';
-import 'package:acalapp/shared/widgets/data_table_card.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
-import 'package:acalapp/shared/widgets/paged_list_view.dart';
-import 'package:acalapp/shared/widgets/row_actions.dart';
+import 'package:acalapp/shared/widgets/table/data_table_card.dart';
+import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
+import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
 
 class AddressesPage extends StatefulWidget {
@@ -16,6 +15,12 @@ class AddressesPage extends StatefulWidget {
   @override
   State<AddressesPage> createState() => _AddressesPageState();
 }
+
+const _actionButtonWidth = 180.0;
+
+// Below this width the filter row (search + status) no longer fits
+// comfortably side by side, so it stacks instead.
+const _filterBarNarrowBreakpoint = 640.0;
 
 class _AddressesPageState extends State<AddressesPage> {
   final _service = AddressService();
@@ -29,7 +34,9 @@ class _AddressesPageState extends State<AddressesPage> {
     _future = _service.findAll(page: _page, size: _pageSize);
   }
 
-  void _load() => setState(() => _future = _service.findAll(page: _page, size: _pageSize));
+  void _load() => setState(() {
+        _future = _service.findAll(page: _page, size: _pageSize);
+      });
 
   void _goToPage(int page) => setState(() {
         _page = page;
@@ -52,19 +59,24 @@ class _AddressesPageState extends State<AddressesPage> {
 
   @override
   Widget build(BuildContext context) {
+    final narrow = MediaQuery.sizeOf(context).width < _filterBarNarrowBreakpoint;
+
     return Scaffold(
       body: Padding(
-        padding: const EdgeInsets.all(24),
+        padding: EdgeInsets.all(narrow ? 16 : 24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PageHeader(
               title: 'Logradouros',
               subtitle: 'Gerencie os endereços cadastrados.',
-              action: FilledButton.icon(
-                onPressed: _openForm,
-                icon: const Icon(Icons.add, size: 18),
-                label: const Text('Novo Endereço'),
+              action: SizedBox(
+                width: _actionButtonWidth,
+                child: FilledButton.icon(
+                  onPressed: _openForm,
+                  icon: const Icon(Icons.add, size: 18),
+                  label: const Text('Novo Endereço'),
+                ),
               ),
             ),
             const SizedBox(height: 20),
@@ -105,50 +117,27 @@ class _AddressFilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final narrow = constraints.maxWidth < _filterBarNarrowBreakpoint;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(
-              width: 160,
-              child: AddressKindSelect(),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: TextField(
-                decoration: const InputDecoration(
-                  prefixIcon: Icon(Icons.search, size: 20),
-                  hintText: 'Buscar por nome...',
-                  isDense: true,
+            Align(
+              alignment: Alignment.centerRight,
+              child: SizedBox(
+                width: narrow ? double.infinity : _actionButtonWidth,
+                child: FilledButton.icon(
+                  onPressed: onSearch,
+                  icon: const Icon(Icons.search, size: 18),
+                  label: const Text('Consultar'),
                 ),
               ),
             ),
-            const SizedBox(width: 8),
-            SizedBox(
-              width: 160,
-              child: DropdownButtonFormField<String>(
-                initialValue: 'Ativos',
-                isExpanded: true,
-                items: const ['Ativos', 'Inativos', 'Todos']
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                    .toList(),
-                onChanged: (_) {},
-                decoration: const InputDecoration(isDense: true),
-              ),
-            ),
           ],
-        ),
-        const SizedBox(height: 12),
-        Align(
-          alignment: Alignment.centerRight,
-          child: FilledButton.icon(
-            onPressed: onSearch,
-            icon: const Icon(Icons.search, size: 18),
-            label: const Text('Consultar'),
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -174,12 +163,9 @@ class _AddressRow extends StatelessWidget {
         children: [
           Expanded(
             flex: 2,
-            child: Text(address.kind, style: theme.textTheme.bodyMedium),
+            child: Text(address.fullAddress, style: theme.textTheme.bodyMedium),
           ),
-          Expanded(
-            flex: 5,
-            child: Text(address.name, style: theme.textTheme.bodyMedium),
-          ),
+         
           SizedBox(
             width: 88,
             child: RowActions(onEdit: onEdit, onDelete: onDelete),

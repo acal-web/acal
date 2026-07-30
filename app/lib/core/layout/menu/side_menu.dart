@@ -47,7 +47,7 @@ class SideMenu extends StatelessWidget {
       width: LayoutConfig.sideMenuWidth,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: cs.surface,
+        color: Colors.white,
         border: Border(right: BorderSide(color: cs.outlineVariant)),
       ),
       child: SingleChildScrollView(
