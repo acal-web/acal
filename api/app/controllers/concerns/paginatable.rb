@@ -3,7 +3,7 @@ module Paginatable
 
   def paginate(collection)
     page = params.fetch(:page, 0).to_i
-    size = params.fetch(:size, 50).to_i
+    size = params.fetch(:size, 10).to_i
 
     pagy    = Pagy::Offset.new(page: page + 1, limit: size, count: collection.count)
     records = pagy.records(collection)

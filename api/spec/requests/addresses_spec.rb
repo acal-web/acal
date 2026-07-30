@@ -6,22 +6,22 @@ RSpec.describe "Addresses", type: :request do
   describe "GET /addresses" do
     context "when successful" do
       it "returns a paginated page of addresses" do
-        53.times { |i| Address.create!(kind: "home", name: "Street #{i}") }
+        13.times { |i| Address.create!(kind: "home", name: "Street #{i}") }
 
         get "/addresses"
 
         expect(response).to have_http_status(:ok)
         body = response.parsed_body
-        expect(body["content"].size).to eq(50)
+        expect(body["content"].size).to eq(10)
         expect(body.except("content")).to eq(
-          "pageable" => { "pageNumber" => 0, "pageSize" => 50, "offset" => 0 },
+          "pageable" => { "pageNumber" => 0, "pageSize" => 10, "offset" => 0 },
           "totalPages" => 2,
-          "totalElements" => 53,
+          "totalElements" => 13,
           "last" => false,
           "first" => true,
-          "size" => 50,
+          "size" => 10,
           "number" => 0,
-          "numberOfElements" => 50,
+          "numberOfElements" => 10,
           "empty" => false
         )
       end
@@ -75,7 +75,8 @@ RSpec.describe "Addresses", type: :request do
           "name" => "Main Street",
           "created_at" => address.created_at.as_json,
           "updated_at" => address.updated_at.as_json,
-          "deleted_at" => nil
+          "deleted_at" => nil,
+          "legacy_id" => nil
         )
       end
     end
@@ -115,8 +116,19 @@ RSpec.describe "Addresses", type: :request do
           "name" => "Main Street",
           "created_at" => address.created_at.as_json,
           "updated_at" => address.updated_at.as_json,
-          "deleted_at" => nil
+          "deleted_at" => nil,
+          "legacy_id" => nil
         )
+      end
+
+      it "accepts and returns a legacy_id" do
+        post "/addresses", params: { address: valid_params[:address].merge(legacy_id: 123) }
+
+        address = Address.last
+
+        expect(response).to have_http_status(:created)
+        expect(address.legacy_id).to eq(123)
+        expect(response.parsed_body["legacy_id"]).to eq(123)
       end
     end
 
@@ -175,7 +187,8 @@ RSpec.describe "Addresses", type: :request do
           "name" => "Second Street",
           "created_at" => address.created_at.as_json,
           "updated_at" => address.updated_at.as_json,
-          "deleted_at" => nil
+          "deleted_at" => nil,
+          "legacy_id" => nil
         )
       end
     end
