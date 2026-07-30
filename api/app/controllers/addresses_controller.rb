@@ -19,16 +19,13 @@ class AddressesController < ApplicationController
 
   # PATCH/PUT /addresses/1
   def update
-    if @address.update(address_params)
-      render json: @address
-    else
-      render json: @address.errors, status: :unprocessable_content
-    end
+    @address.update!(kind:, name:)
+    render json: @address
   end
 
   # DELETE /addresses/1
   def destroy
-    @address.destroy!
+    @address.soft_delete!
   end
 
   private
