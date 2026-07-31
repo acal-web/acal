@@ -130,6 +130,13 @@ RSpec.describe "Addresses", type: :request do
         expect(address.legacy_id).to eq(123)
         expect(response.parsed_body["legacy_id"]).to eq(123)
       end
+
+      it "strips leading and trailing whitespace from the name" do
+        post "/addresses", params: { address: valid_params[:address].merge(name: "  Main Street  ") }
+
+        expect(response).to have_http_status(:created)
+        expect(response.parsed_body["name"]).to eq("Main Street")
+      end
     end
 
     context "when it fails" do

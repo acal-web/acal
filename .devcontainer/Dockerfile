@@ -22,10 +22,20 @@ RUN apt-get update -qq && \
     git curl unzip xz-utils zip ca-certificates sudo \
     chromium \
     chromium-driver \
+    chromium-sandbox \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
 # Flutter looks for `google-chrome` by default; point it at the Debian chromium package instead.
 ENV CHROME_EXECUTABLE=/usr/bin/chromium
+
+# Chrome's namespace-based sandbox needs SYS_ADMIN, which we don't grant this
+# container. Rather than widen the container's capabilities, force
+# --no-sandbox for every chromium invocation via Debian's /etc/chromium.d/
+# mechanism (the /usr/bin/chromium wrapper sources every file here before
+# exec'ing the real binary) — this container never opens untrusted external
+# content, it only drives our own local web app for E2E tests, so the
+# tradeoff is acceptable here.
+RUN echo 'export CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox"' > /etc/chromium.d/no-sandbox
 
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} --create-home --shell /bin/bash ${USERNAME} \

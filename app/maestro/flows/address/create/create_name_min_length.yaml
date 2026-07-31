@@ -1,0 +1,23 @@
+url: http://localhost:8080/#/addresses
+---
+- launchApp
+# Generous timeout: first navigation after a (re)start triggers a cold
+# dartdevc module compile that can take 30-60s depending on machine load.
+- extendedWaitUntil:
+    visible: "Logradouros"
+    timeout: 240000
+
+# Boundary: 3 characters is the minimum allowed by Address#name validation
+# (validates :name, length: { minimum: 3 }) — anything shorter must be rejected.
+- assertVisible: "Novo Endereço"
+- tapOn: "Novo Endereço"
+- assertVisible: "Avenida"
+- tapOn: "Digite o logradouro"
+- inputText: "Fer"
+- tapOn: "Salvar"
+- assertNotVisible: "Digite o logradouro"
+- assertNotVisible: "Salvar"
+# The success toast is transient (auto-dismisses after a few seconds) and can
+# be missed under load, so the durable signal is the row landing in the
+# table, not the toast text itself.
+- assertVisible: "Avenida Fer"

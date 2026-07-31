@@ -1,0 +1,23 @@
+url: http://localhost:8080/#/addresses
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Logradouros"
+    timeout: 240000
+
+# Arrange.
+- runFlow:
+    file: ../../subflows/address/create_address.yaml
+    env:
+      NAME: "Fernando Daltro Delete"
+
+# Act
+- tapOn: "Excluir"
+- assertVisible: "Excluir logradouro"
+- assertVisible: "Deseja excluir \"Avenida Fernando Daltro Delete\"?"
+- tapOn:
+    id: "confirm-delete-button"
+
+# Assert
+- assertNotVisible: "Excluir logradouro"
+- assertNotVisible: "Avenida Fernando Daltro Delete"

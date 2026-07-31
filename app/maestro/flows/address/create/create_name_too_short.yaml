@@ -1,0 +1,24 @@
+url: http://localhost:8080/#/addresses
+---
+- launchApp
+# Generous timeout: first navigation after a (re)start triggers a cold
+# dartdevc module compile that can take 30-60s depending on machine load.
+- extendedWaitUntil:
+    visible: "Logradouros"
+    timeout: 240000
+
+# Boundary: 2 characters is one below the minimum allowed by Address#name
+# validation (validates :name, length: { minimum: 3 }). There is no
+# client-side length check in the form — only a presence check — so this
+# must be rejected by the API, surfaced as the generic save-error toast, with
+# the dialog staying open and no row created.
+- assertVisible: "Novo Endereço"
+- tapOn: "Novo Endereço"
+- assertVisible: "Avenida"
+- tapOn: "Digite o logradouro"
+- inputText: "Fe"
+- tapOn: "Salvar"
+- assertVisible: "Erro ao salvar endereço."
+- assertVisible: "Salvar"
+- assertVisible: "Digite o logradouro"
+- assertNotVisible: "Avenida Fe"

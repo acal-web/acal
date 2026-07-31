@@ -25,6 +25,9 @@ class _AddressFormPageState extends State<AddressFormPage> {
   bool _saving = false;
 
   bool get _isEditing => widget.address != null;
+  String get _toastMessage => _isEditing ? 'Endereço atualizado com sucesso.' : 'Endereço criado com sucesso.';
+  String get _title => _isEditing ? 'Editar Endereço' : 'Novo Endereço';
+
 
   @override
   void initState() {
@@ -62,10 +65,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
         await _service.create(address);
       }
       if (mounted) {
-        AppToast.success(
-          context,
-          _isEditing ? 'Endereço atualizado com sucesso.' : 'Endereço criado com sucesso.',
-        );
+        AppToast.success(context, _toastMessage);
         Navigator.of(context).pop(true);
       }
     } catch (e) {
@@ -82,45 +82,60 @@ class _AddressFormPageState extends State<AddressFormPage> {
   Widget build(BuildContext context) {
     return AppFormDialog(
       formKey: _formKey,
-      title: _isEditing ? 'Editar Endereço' : 'Novo Endereço',
+      title: _title,
       onSave: _save,
       saving: _saving,
-      fields: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Expanded(
-            child: LabeledField(
-              label: 'Tipo',
-              child: DropdownButtonFormField<String>(
-                initialValue: _kind,
-                items: kinds
-                    .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                    .toList(),
-                onChanged: (v) {},
-                onSaved: (v) => _kind = v!,
-                validator: (v) =>
-                    (v == null || v.isEmpty) ? 'Obrigatório' : null,
-                decoration: const InputDecoration(border: OutlineInputBorder()),
-              ),
+      fields: LayoutBuilder(
+        builder: (context, constraints) {
+          final kindField = LabeledField(
+            label: 'Tipo',
+            child: DropdownButtonFormField<String>(
+              initialValue: _kind,
+              items: kinds
+                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
+                  .toList(),
+              onChanged: (v) {},
+              onSaved: (v) => _kind = v!,
+              validator: (v) =>
+                  (v == null || v.isEmpty) ? 'Obrigatório' : null,
+              decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            flex: 2,
-            child: LabeledField(
-              label: 'Nome',
-              child: TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  border: OutlineInputBorder(),
-                  hintText: 'Digite o logradouro',
-                ),
-                validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+          );
+          final nameField = LabeledField(
+            label: 'Nome',
+            child: TextFormField(
+              controller: _nameController,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Digite o logradouro',
               ),
+              validator: (v) =>
+                  (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
             ),
-          ),
-        ],
+          );
+
+          // Below this width the two fields no longer fit comfortably side
+          // by side inside the dialog's padding, so they stack instead.
+          if (constraints.maxWidth < 360) {
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                kindField,
+                const SizedBox(height: 16),
+                nameField,
+              ],
+            );
+          }
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(child: kindField),
+              const SizedBox(width: 16),
+              Expanded(flex: 2, child: nameField),
+            ],
+          );
+        },
       ),
     );
   }

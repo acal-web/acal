@@ -1,8 +1,8 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
-import 'package:acalapp/features/addresses/widget/delete_address.dart';
-import 'package:acalapp/features/addresses/widget/open_address.dart';
+import 'package:acalapp/features/addresses/widget/modal%20/delete_address.dart';
+import 'package:acalapp/features/addresses/widget/modal%20/open_address.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';

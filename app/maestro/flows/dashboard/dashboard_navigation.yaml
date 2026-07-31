@@ -1,0 +1,8 @@
+url: http://localhost:8080
+---
+- launchApp
+- assertVisible: "Dashboard"
+- tapOn: "Logradouros"
+- assertVisible: "Logradouros"
+- assertVisible: "Gerencie os endereços cadastrados."
+

@@ -6,9 +6,11 @@ import 'package:google_fonts/google_fonts.dart';
 const _bg      = Color(0xFFF3F2F2);
 const _surface = Color(0xFFEAE9E9);
 const _text    = Color(0xFF201E1D);
-// Mono scheme (hue 0, sat 0): accent is literally the text color, and its
-// ramp is identical to the neutral ramp — there is no separate hue here.
-const _accent  = Color(0xFF201E1D);
+// Accent — brand green (oklch(38% 0.1 152) in the source design system),
+// used for primary actions, the active nav item, and status tags. Converted
+// from OKLCH to sRGB; the ramp below samples the same hue/chroma at other
+// lightness steps rather than reusing the neutral ramp.
+const _accent  = Color(0xFF005126);
 // accent-2 keeps its own warm-gray ramp, distinct from neutral/accent.
 const _accent2 = Color(0xFF524D4A);
 
@@ -21,11 +23,13 @@ const _neutral700 = Color(0xFF605D5D);
 const _neutral800 = Color(0xFF444141);
 const _neutral900 = Color(0xFF2D2B2B);
 
-// Accent ramp — equal to the neutral ramp (mono scheme, hue 0/sat 0).
-const _accent100 = Color(0xFFF8F4F4);
-const _accent600 = Color(0xFF7D7979);
-const _accent700 = Color(0xFF605D5D);
-const _accent800 = Color(0xFF444141);
+// Accent ramp — brand green at other lightness steps (100/600/700/800 given
+// or derived from the source design's oklch(94% 0.035 152) / oklch(32% 0.1 152)
+// hover / oklch(30% 0.09 152) on-container tokens).
+const _accent100 = Color(0xFFDBF2E0);
+const _accent600 = Color(0xFF004016);
+const _accent700 = Color(0xFF003006);
+const _accent800 = Color(0xFF003A15);
 
 // Accent-2 ramp — its own warm-gray steps, distinct from neutral/accent.
 const _accent2_100 = Color(0xFFF5F4F3);

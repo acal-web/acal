@@ -12,15 +12,23 @@ Future<bool> showDeleteConfirmDialog({
     context: context,
     builder: (context) => AlertDialog(
       title: Text(title),
-      content: Text(message),
+      content: ConstrainedBox(
+        // Caps the dialog's width so a long message (e.g. a long address
+        // name) wraps instead of stretching the dialog across the screen.
+        constraints: const BoxConstraints(maxWidth: 320),
+        child: Text(message),
+      ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(false),
           child: const Text('Cancelar'),
         ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop(true),
-          child: const Text('Excluir'),
+        Semantics(
+          identifier: 'confirm-delete-button',
+          child: FilledButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('Excluir'),
+          ),
         ),
       ],
     ),

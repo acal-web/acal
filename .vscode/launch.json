@@ -9,6 +9,19 @@
       "program": "lib/main.dart",
       "deviceId": "web-server",
       "args": [ "--web-port", "8080" ]
+    },
+    {
+      "name": "run rails",
+      "request": "launch",
+      "type": "ruby_lsp",
+      "program": "cd api && bin/rails server"
+    }
+  ],
+  "compounds": [
+    {
+      "name": "run rails + app",
+      "configurations": [ "run rails", "run app" ],
+      "stopAll": true
     }
   ]
 }

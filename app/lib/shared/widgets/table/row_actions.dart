@@ -14,11 +14,13 @@ class RowActions extends StatelessWidget {
       children: [
         IconButton(
           icon: const Icon(Icons.edit_outlined, size: 18),
+          tooltip: 'Editar',
           visualDensity: VisualDensity.compact,
           onPressed: onEdit,
         ),
         IconButton(
           icon: const Icon(Icons.delete_outline, size: 18),
+          tooltip: 'Excluir',
           visualDensity: VisualDensity.compact,
           onPressed: onDelete,
         ),

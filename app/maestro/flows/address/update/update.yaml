@@ -1,0 +1,28 @@
+url: http://localhost:8080/#/addresses
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Logradouros"
+    timeout: 240000
+
+# Arrange: create the fixture row via the UI.
+- runFlow:
+    file: ../../subflows/address/create_address.yaml
+    env:
+      NAME: "Fernando Daltro Update"
+
+# Act: edit it
+- tapOn: "Editar"
+- assertVisible: "Editar Endereço"
+- assertVisible: "Fernando Daltro Update"
+- tapOn: "Avenida"
+- tapOn: "Rua"
+- tapOn: "Fernando Daltro Update"
+- eraseText: 50
+- inputText: "Fernando Daltro Updated"
+- tapOn: "Salvar"
+
+# Assert
+- assertNotVisible: "Editar Endereço"
+- assertVisible: "Rua Fernando Daltro Updated"
+- assertNotVisible: "Avenida Fernando Daltro Update"

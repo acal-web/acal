@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bundle exec *)",
+      "Bash(RAILS_ENV=test bin/rails routes)",
+      "Bash(RAILS_ENV=development bin/rails routes)",
+      "Bash(flutter analyze *)",
+      "Bash(service --status-all)",
+      "Bash(RAILS_ENV=test bin/rails db:test:prepare)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(RAILS_ENV=test bin/rails server -p 3099 -d -P /tmp/claude-1001/-workspace/fe22610e-f5c2-41b1-b1b5-034e1e31b36f/scratchpad/rails-test.pid)",
+      "Bash(curl -sf http://localhost:3099/addresses -o /dev/null)",
+      "Bash(curl -s -X POST http://localhost:3099/test/reset -o /dev/null -w \"reset status: %{http_code}\\\\n\")",
+      "Bash(curl -s -X POST http://localhost:3099/addresses -H 'Content-Type: application/json' -d '{\"kind\":\"Rua\",\"name\":\"Teste Reset\"}' -o /dev/null -w \"create status: %{http_code}\\\\n\")",
+      "Bash(curl -s http://localhost:3099/addresses)",
+      "Bash(curl -s -X POST http://localhost:3099/test/reset -o /dev/null -w \"reset2 status: %{http_code}\\\\n\")"
+    ]
+  }
+}
