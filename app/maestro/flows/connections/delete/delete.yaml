@@ -1,0 +1,49 @@
+url: http://localhost:8080/#/customers
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Sócios"
+    timeout: 240000
+
+- runFlow:
+    file: ../../../subflows/customers/create_customer.yaml
+    env:
+      NAME: "Maestro Ligacao Delete Socio"
+      DOCUMENT: "11122233396"
+
+- tapOn: "Categorias"
+- assertVisible: "Categorias"
+- runFlow:
+    file: ../../../subflows/categories/create_category.yaml
+    env:
+      NAME: "Ligacao Delete Categoria"
+
+- tapOn: "Logradouros"
+- assertVisible: "Logradouros"
+- runFlow:
+    file: ../../../subflows/addresses/create_address.yaml
+    env:
+      NAME: "Ligacao Delete Endereco"
+
+- tapOn: "Ligações"
+- assertVisible: "Ligações"
+
+# Arrange: create the fixture connection via the UI.
+- runFlow:
+    file: ../../../subflows/connections/create_connection.yaml
+    env:
+      CUSTOMER_SEARCH: "Maestro Ligacao Delete"
+      CUSTOMER_NAME: "Maestro Ligacao Delete Socio"
+      ADDRESS_NAME: "Ligacao Delete Endereco"
+      CATEGORY_NAME: "Ligacao Delete Categoria"
+- assertNotVisible: "Salvar"
+
+# Act
+- tapOn: "Excluir"
+- assertVisible: "Excluir ligação"
+- tapOn:
+    id: "confirm-delete-button"
+
+# Assert
+- assertNotVisible: "Excluir ligação"
+- assertNotVisible: "Maestro Ligacao Delete Socio"

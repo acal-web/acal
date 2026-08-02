@@ -1,0 +1,20 @@
+# Subflow: creates a customer (sócio) fixture via the UI. Parameterized by
+# NAME and DOCUMENT (raw CPF digits — the field auto-masks as typed) so each
+# caller gets a distinct, assertable row.
+#
+# Lives outside flows/ on purpose: run.sh discovers tests via
+# `find app/maestro/flows -name '*.yaml'` and runs each as its own
+# `maestro test`, which would fail here since NAME/DOCUMENT are only bound
+# when this file is invoked via runFlow.
+url: http://localhost:8080/#/customers
+---
+- tapOn: "Novo Sócio"
+- tapOn: "Digite o nome do sócio"
+- inputText: "${NAME}"
+- tapOn: "000.000.000-00"
+- inputText: "${DOCUMENT}"
+- tapOn: "Salvar"
+# The success toast is transient (auto-dismisses after a few seconds) and can
+# be missed under load, so the durable signal is the row landing in the
+# table, not the toast text itself.
+- assertVisible: "${NAME}"

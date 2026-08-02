@@ -1,0 +1,55 @@
+url: http://localhost:8080/#/customers
+---
+- launchApp
+- extendedWaitUntil:
+    visible: "Sócios"
+    timeout: 240000
+
+- runFlow:
+    file: ../../../subflows/customers/create_customer.yaml
+    env:
+      NAME: "Maestro Ligacao Update Socio"
+      DOCUMENT: "44455566619"
+
+- tapOn: "Categorias"
+- assertVisible: "Categorias"
+- runFlow:
+    file: ../../../subflows/categories/create_category.yaml
+    env:
+      NAME: "Ligacao Update Categoria Original"
+- runFlow:
+    file: ../../../subflows/categories/create_category.yaml
+    env:
+      NAME: "Ligacao Update Categoria Nova"
+
+- tapOn: "Logradouros"
+- assertVisible: "Logradouros"
+- runFlow:
+    file: ../../../subflows/addresses/create_address.yaml
+    env:
+      NAME: "Ligacao Update Endereco"
+
+- tapOn: "Ligações"
+- assertVisible: "Ligações"
+
+# Arrange: create the fixture connection via the UI.
+- runFlow:
+    file: ../../../subflows/connections/create_connection.yaml
+    env:
+      CUSTOMER_SEARCH: "Maestro Ligacao Update"
+      CUSTOMER_NAME: "Maestro Ligacao Update Socio"
+      ADDRESS_NAME: "Ligacao Update Endereco"
+      CATEGORY_NAME: "Ligacao Update Categoria Original"
+- assertNotVisible: "Salvar"
+
+# Act: edit it, swapping to a different category.
+- tapOn: "Editar"
+- assertVisible: "Editar Ligação"
+- tapOn: "Ligacao Update Categoria Original"
+- tapOn: "Ligacao Update Categoria Nova"
+- tapOn: "Salvar"
+
+# Assert
+- assertNotVisible: "Editar Ligação"
+- assertVisible: "Ligacao Update Categoria Nova"
+- assertNotVisible: "Ligacao Update Categoria Original"

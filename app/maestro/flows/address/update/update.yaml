@@ -7,7 +7,7 @@ url: http://localhost:8080/#/addresses
 
 # Arrange: create the fixture row via the UI.
 - runFlow:
-    file: ../../subflows/address/create_address.yaml
+    file: ../../../subflows/address/create_address.yaml
     env:
       NAME: "Fernando Daltro Update"
 

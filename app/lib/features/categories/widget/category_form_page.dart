@@ -143,12 +143,15 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
               Expanded(
                 child: LabeledField(
                   label: 'Valor da Água',
-                  child: TextFormField(
-                    controller: _waterPriceController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [CurrencyInputFormatter()],
-                    decoration: const InputDecoration(border: OutlineInputBorder()),
-                    validator: _validatePrice,
+                  child: Semantics(
+                    identifier: 'water-price-field',
+                    child: TextFormField(
+                      controller: _waterPriceController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [CurrencyInputFormatter()],
+                      decoration: const InputDecoration(border: OutlineInputBorder()),
+                      validator: _validatePrice,
+                    ),
                   ),
                 ),
               ),
@@ -156,12 +159,15 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
               Expanded(
                 child: LabeledField(
                   label: 'Valor Societário',
-                  child: TextFormField(
-                    controller: _membershipPriceController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [CurrencyInputFormatter()],
-                    decoration: const InputDecoration(border: OutlineInputBorder()),
-                    validator: _validatePrice,
+                  child: Semantics(
+                    identifier: 'membership-price-field',
+                    child: TextFormField(
+                      controller: _membershipPriceController,
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [CurrencyInputFormatter()],
+                      decoration: const InputDecoration(border: OutlineInputBorder()),
+                      validator: _validatePrice,
+                    ),
                   ),
                 ),
               ),

@@ -1,0 +1,63 @@
+url: http://localhost:8080/#/customers
+---
+- launchApp
+# Generous timeout: first navigation after a (re)start triggers a cold
+# dartdevc module compile that can take 30-60s depending on machine load.
+- extendedWaitUntil:
+    visible: "Sócios"
+    timeout: 240000
+
+# Arrange: one sócio, one efetivo category, two addresses — the second
+# connection attempt below reuses the same sócio+category on a different
+# address, which is what should be rejected
+# (Connection#customer_not_already_efetivo).
+- runFlow:
+    file: ../../../subflows/customers/create_customer.yaml
+    env:
+      NAME: "Maestro Efetivo Duplo Socio"
+      DOCUMENT: "33344455508"
+
+- tapOn: "Categorias"
+- assertVisible: "Categorias"
+- runFlow:
+    file: ../../../subflows/categories/create_category.yaml
+    env:
+      NAME: "Efetivo Duplo Categoria"
+
+- tapOn: "Logradouros"
+- assertVisible: "Logradouros"
+- runFlow:
+    file: ../../../subflows/addresses/create_address.yaml
+    env:
+      NAME: "Efetivo Duplo Endereco Um"
+- runFlow:
+    file: ../../../subflows/addresses/create_address.yaml
+    env:
+      NAME: "Efetivo Duplo Endereco Dois"
+
+- tapOn: "Ligações"
+- assertVisible: "Ligações"
+
+# Arrange: the sócio's first efetivo connection succeeds and stays active.
+- runFlow:
+    file: ../../../subflows/connections/create_connection.yaml
+    env:
+      CUSTOMER_SEARCH: "Maestro Efetivo Duplo"
+      CUSTOMER_NAME: "Maestro Efetivo Duplo Socio"
+      ADDRESS_NAME: "Efetivo Duplo Endereco Um"
+      CATEGORY_NAME: "Efetivo Duplo Categoria"
+- assertNotVisible: "Salvar"
+
+# Act: the same sócio tries to become efetivo on a second, different address.
+- runFlow:
+    file: ../../../subflows/connections/create_connection.yaml
+    env:
+      CUSTOMER_SEARCH: "Maestro Efetivo Duplo"
+      CUSTOMER_NAME: "Maestro Efetivo Duplo Socio"
+      ADDRESS_NAME: "Efetivo Duplo Endereco Dois"
+      CATEGORY_NAME: "Efetivo Duplo Categoria"
+
+# Assert: rejected with a clear message, dialog stays open, no second row.
+- assertVisible: "Este sócio já está recebendo outra ligação como efetivo."
+- assertVisible: "Salvar"
+- assertNotVisible: "Avenida Efetivo Duplo Endereco Dois"

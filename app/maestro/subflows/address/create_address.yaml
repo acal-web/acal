@@ -7,6 +7,8 @@
 # `find app/maestro/flows -name '*.yaml'` and runs each as its own
 # `maestro test`, which would fail here since NAME is only bound when this
 # file is invoked via runFlow.
+url: http://localhost:8080/#/addresses
+---
 - tapOn: "Novo Endereço"
 - tapOn: "Digite o logradouro"
 - inputText: "${NAME}"
