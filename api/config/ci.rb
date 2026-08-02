@@ -6,7 +6,10 @@ CI.run do
   step "Style: Ruby", "bin/rubocop"
 
   step "Security: Gem audit", "bin/bundler-audit"
-  step "Security: Brakeman code analysis", "bin/brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
+  # Uses `bundle exec brakeman` instead of `bin/brakeman` because the binstub forces
+  # `--ensure-latest`, which fails CI whenever a newer Brakeman gem is published,
+  # regardless of whether the app code changed.
+  step "Security: Brakeman code analysis", "bundle exec brakeman --quiet --no-pager --exit-on-warn --exit-on-error"
 
   step "Tests: RSpec", "bin/rails db:test:prepare && bundle exec rspec"
 
