@@ -46,6 +46,15 @@ RSpec.describe "Categories", type: :request do
 
         expect(response.parsed_body["content"]).to eq([])
       end
+
+      it "filters by name" do
+        Category.create!(name: "Padrão", group: "efetivo", water_price: 0, membership_price: 0)
+        Category.create!(name: "Especial", group: "efetivo", water_price: 0, membership_price: 0)
+
+        get "/categories", params: { name: "padr" }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Padrão" ])
+      end
     end
   end
 

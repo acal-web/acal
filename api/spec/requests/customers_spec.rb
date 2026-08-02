@@ -66,22 +66,31 @@ RSpec.describe "Customers", type: :request do
         expect(response.parsed_body["content"]).to eq([])
       end
 
-      it "filters by name when a search query is given" do
+      it "filters by name" do
         Customer.create!(name: "Fulano de Tal", document: valid_cpf(111222333), membership_number: 1)
         Customer.create!(name: "Ciclano da Silva", document: valid_cpf(444555666), membership_number: 2)
 
-        get "/customers", params: { q: "fulano" }
+        get "/customers", params: { name: "fulano" }
 
         expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Fulano de Tal" ])
       end
 
-      it "filters by document when a search query is given" do
+      it "filters by document" do
         Customer.create!(name: "Fulano de Tal", document: valid_cpf(111222333), membership_number: 1)
         target = Customer.create!(name: "Ciclano da Silva", document: valid_cpf(444555666), membership_number: 2)
 
-        get "/customers", params: { q: target.document[0, 6] }
+        get "/customers", params: { document: target.document[0, 6] }
 
         expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Ciclano da Silva" ])
+      end
+
+      it "combines name and document filters" do
+        target = Customer.create!(name: "Fulano de Tal", document: valid_cpf(111222333), membership_number: 1)
+        Customer.create!(name: "Fulano Segundo", document: valid_cpf(444555666), membership_number: 2)
+
+        get "/customers", params: { name: "fulano", document: target.document[0, 6] }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Fulano de Tal" ])
       end
     end
   end
@@ -193,6 +202,13 @@ RSpec.describe "Customers", type: :request do
         expect(response).to have_http_status(:created)
         expect(response.parsed_body["voter"]).to eq(false)
       end
+
+      it "accepts a request without a membership number" do
+        post "/customers", params: { customer: valid_params[:customer].except(:membership_number) }
+
+        expect(response).to have_http_status(:created)
+        expect(response.parsed_body["membership_number"]).to be_nil
+      end
     end
 
     context "when it fails" do
@@ -253,11 +269,11 @@ RSpec.describe "Customers", type: :request do
         expect(response.parsed_body).to eq("document" => [ "has already been taken" ])
       end
 
-      it "rejects a request without a membership number" do
-        post "/customers", params: { customer: valid_params[:customer].except(:membership_number) }
+      it "rejects a membership number that isn't a positive integer" do
+        post "/customers", params: { customer: valid_params[:customer].merge(membership_number: 0) }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("membership_number" => [ "can't be blank", "is not a number" ])
+        expect(response.parsed_body).to eq("membership_number" => [ "must be greater than 0" ])
       end
     end
   end

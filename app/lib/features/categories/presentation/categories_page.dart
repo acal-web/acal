@@ -86,6 +86,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
             const SizedBox(height: 16),
             Expanded(
               child: Card(
+                elevation: 1,
                 child: Padding(
                   padding: EdgeInsets.all(narrow ? 16 : 24),
                   child: PagedListView<Category>(

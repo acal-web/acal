@@ -56,6 +56,15 @@ RSpec.describe "Addresses", type: :request do
 
         expect(response.parsed_body["content"]).to eq([])
       end
+
+      it "filters by name" do
+        Address.create!(kind: "home", name: "Main Street")
+        Address.create!(kind: "home", name: "Second Avenue")
+
+        get "/addresses", params: { name: "main" }
+
+        expect(response.parsed_body["content"].map { |a| a["name"] }).to eq([ "Main Street" ])
+      end
     end
   end
 

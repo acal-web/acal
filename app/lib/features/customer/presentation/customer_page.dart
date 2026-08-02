@@ -1,8 +1,10 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
+import 'package:acalapp/features/customer/widget/customer_filter_bar.dart';
 import 'package:acalapp/features/customer/widget/modal/delete_customer.dart';
 import 'package:acalapp/features/customer/widget/modal/open_customer.dart';
+import 'package:acalapp/shared/widgets/document_text.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
@@ -24,26 +26,42 @@ class _CustomersPageState extends State<CustomersPage> {
   late Future<PagedResult<Customer>> _future;
   int _page = 0;
   int _pageSize = 10;
+  String? _filterName;
+  String? _filterDocument;
 
   @override
   void initState() {
     super.initState();
-    _future = _service.findAll(page: _page, size: _pageSize);
+    _future = _fetch();
   }
 
+  Future<PagedResult<Customer>> _fetch() => _service.findAll(
+        page: _page,
+        size: _pageSize,
+        name: _filterName,
+        document: _filterDocument,
+      );
+
   void _load() => setState(() {
-        _future = _service.findAll(page: _page, size: _pageSize);
+        _future = _fetch();
       });
 
   void _goToPage(int page) => setState(() {
         _page = page;
-        _future = _service.findAll(page: _page, size: _pageSize);
+        _future = _fetch();
       });
 
   void _changePageSize(int size) => setState(() {
         _pageSize = size;
         _page = 0;
-        _future = _service.findAll(page: _page, size: _pageSize);
+        _future = _fetch();
+      });
+
+  void _search({String? name, String? document}) => setState(() {
+        _filterName = name;
+        _filterDocument = document;
+        _page = 0;
+        _future = _fetch();
       });
 
   Future<void> _openForm({Customer? customer}) async {
@@ -79,10 +97,11 @@ class _CustomersPageState extends State<CustomersPage> {
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            _CustomerFilterBar(onSearch: _load),
+            CustomerFilterBar(onSearch: _search),
             const SizedBox(height: 16),
             Expanded(
               child: Card(
+                elevation: 1,
                 child: Padding(
                   padding: EdgeInsets.all(narrow ? 16 : 24),
                   child: PagedListView<Customer>(
@@ -116,38 +135,6 @@ class _CustomersPageState extends State<CustomersPage> {
   }
 }
 
-class _CustomerFilterBar extends StatelessWidget {
-  const _CustomerFilterBar({required this.onSearch});
-
-  final VoidCallback onSearch;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < _filterBarNarrowBreakpoint;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: narrow ? double.infinity : _actionButtonWidth,
-                child: FilledButton.icon(
-                  onPressed: onSearch,
-                  icon: const Icon(Icons.search, size: 18),
-                  label: const Text('Consultar'),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
 class _CustomerRow extends StatelessWidget {
   const _CustomerRow({
     required this.customer,
@@ -173,11 +160,11 @@ class _CustomerRow extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: Text(customer.document, style: theme.textTheme.bodyMedium),
+            child: DocumentText(customer.document, style: theme.textTheme.bodyMedium),
           ),
           SizedBox(
             width: 90,
-            child: Text('${customer.membershipNumber}', style: theme.textTheme.bodyMedium),
+            child: Text(customer.membershipNumber?.toString() ?? '—', style: theme.textTheme.bodyMedium),
           ),
           SizedBox(
             width: 90,

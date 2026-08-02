@@ -2,14 +2,14 @@ class Customer {
   final String? id;
   final String name;
   final String document;
-  final int membershipNumber;
+  final int? membershipNumber;
   final bool voter;
 
   const Customer({
     this.id,
     required this.name,
     required this.document,
-    required this.membershipNumber,
+    this.membershipNumber,
     required this.voter,
   });
 
@@ -17,7 +17,7 @@ class Customer {
         id: json['id']?.toString(),
         name: json['name'] as String,
         document: json['document'] as String,
-        membershipNumber: json['membership_number'] as int,
+        membershipNumber: json['membership_number'] as int?,
         voter: json['voter'] as bool,
       );
 

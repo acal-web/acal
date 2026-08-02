@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_02_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_02_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -40,6 +40,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_130000) do
     t.index ["name"], name: "index_categories_on_name"
   end
 
+  create_table "connections", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.uuid "address_id", null: false
+    t.uuid "category_id", null: false
+    t.datetime "created_at", null: false
+    t.uuid "customer_id", null: false
+    t.datetime "deleted_at"
+    t.integer "legacy_id"
+    t.datetime "updated_at", null: false
+    t.index ["address_id"], name: "index_connections_on_address_id"
+    t.index ["address_id"], name: "index_connections_on_address_id_active_unique", unique: true, where: "((active = true) AND (deleted_at IS NULL))"
+    t.index ["category_id"], name: "index_connections_on_category_id"
+    t.index ["customer_id"], name: "index_connections_on_customer_id"
+  end
+
   create_table "customers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
@@ -52,4 +67,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_130000) do
     t.index ["document"], name: "index_customers_on_document", unique: true
     t.index ["name"], name: "index_customers_on_name"
   end
+
+  add_foreign_key "connections", "addresses"
+  add_foreign_key "connections", "categories"
+  add_foreign_key "connections", "customers"
 end

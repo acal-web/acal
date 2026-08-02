@@ -7,9 +7,14 @@ class CustomerService {
 
   final HttpService _http;
 
-  Future<PagedResult<Customer>> findAll({int page = 0, int size = 10}) async {
-    final data = await _http.get('/customers', query: {'page': '$page', 'size': '$size'})
-        as Map<String, dynamic>;
+  Future<PagedResult<Customer>> findAll({int page = 0, int size = 10, String? name, String? document}) async {
+    final query = {
+      'page': '$page',
+      'size': '$size',
+      if (name != null && name.isNotEmpty) 'name': name,
+      if (document != null && document.isNotEmpty) 'document': document,
+    };
+    final data = await _http.get('/customers', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Customer.fromJson);
   }
 

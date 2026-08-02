@@ -3,7 +3,7 @@ class CategoriesController < ApplicationController
 
   # GET /categories
   def index
-    render json: paginate(Category.all)
+    render json: paginate(Category.filter_by_name(params[:name]))
   end
 
   # GET /categories/1

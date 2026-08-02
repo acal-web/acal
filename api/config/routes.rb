@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   resources :addresses
   resources :categories
+  resources :connections
   resources :customers
 
   # Test-only reset endpoint for the Maestro E2E suite — the block below is

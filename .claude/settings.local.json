@@ -13,7 +13,26 @@
       "Bash(curl -s -X POST http://localhost:3099/test/reset -o /dev/null -w \"reset status: %{http_code}\\\\n\")",
       "Bash(curl -s -X POST http://localhost:3099/addresses -H 'Content-Type: application/json' -d '{\"kind\":\"Rua\",\"name\":\"Teste Reset\"}' -o /dev/null -w \"create status: %{http_code}\\\\n\")",
       "Bash(curl -s http://localhost:3099/addresses)",
-      "Bash(curl -s -X POST http://localhost:3099/test/reset -o /dev/null -w \"reset2 status: %{http_code}\\\\n\")"
+      "Bash(curl -s -X POST http://localhost:3099/test/reset -o /dev/null -w \"reset2 status: %{http_code}\\\\n\")",
+      "Bash(bin/rails db:migrate)",
+      "Bash(flutter test *)",
+      "Bash(node -e \"console.log\\(require.resolve\\('playwright'\\)\\)\")",
+      "Bash(npm ls *)",
+      "Bash(python3 -c \"import playwright; print\\('playwright ok'\\)\")",
+      "Bash(python3 -c \"import selenium; print\\('selenium ok'\\)\")",
+      "Bash(pip3 list *)",
+      "Bash(ruby -v)",
+      "Bash(gem list *)",
+      "Bash(RAILS_ENV=development bin/rails server -p 3000 -b 0.0.0.0)",
+      "Bash(echo \"rails pid: $!\")",
+      "Bash(timeout 30 bash -c 'until curl -sf http://localhost:3000/up >/dev/null; do sleep 1; done')",
+      "Bash(bundle show *)",
+      "Bash(xargs -I{} find {} -iname \"api.rb\" -path \"*action_controller*\")",
+      "Bash(pg_isready -h localhost -p 5432)",
+      "Read(//var/run/**)",
+      "Bash(env)",
+      "Bash(getent hosts *)",
+      "Bash(pg_isready -h db -p 5432 -U api)"
     ]
   }
 }

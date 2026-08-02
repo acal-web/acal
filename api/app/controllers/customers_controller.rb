@@ -3,7 +3,8 @@ class CustomersController < ApplicationController
 
   # GET /customers
   def index
-    render json: paginate(Customer.search(params[:q]))
+    customers = Customer.filter_by_name(params[:name]).filter_by_document(params[:document])
+    render json: paginate(customers)
   end
 
   # GET /customers/1

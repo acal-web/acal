@@ -6,7 +6,7 @@ module Paginatable
     size = params.fetch(:size, 10).to_i
 
     pagy    = Pagy::Offset.new(page: page + 1, limit: size, count: collection.count)
-    records = pagy.records(collection)
+    records = pagy.records(collection).to_a
 
     {
       content:          records,

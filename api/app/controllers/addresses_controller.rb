@@ -3,7 +3,7 @@ class AddressesController < ApplicationController
 
   # GET /addresses
   def index
-    render json: paginate(Address.all)
+    render json: paginate(Address.filter_by_name(params[:name]))
   end
 
   # GET /addresses/1
