@@ -28,16 +28,40 @@ class _AppShellState extends State<AppShell> {
   }
 
   void _toggleMenu() => setState(() => _menuVisible = !_menuVisible);
+  void _closeMenu() => setState(() => _menuVisible = false);
 
   @override
   Widget build(BuildContext context) {
+    final isNarrow = MediaQuery.sizeOf(context).width < LayoutConfig.menuBreakpoint;
+
     return SelectionArea(
       child: Scaffold(
         appBar: TopBar(onMenuTap: _toggleMenu),
-        body: Row(
+        // Desktop: the menu pushes the body over, sharing the row. Mobile:
+        // the body keeps full width and the menu floats above it instead,
+        // to avoid squeezing the content into an overflow.
+        body: Stack(
           children: [
-            if (_menuVisible) const SideMenu(),
-            Expanded(child: widget.body),
+            Row(
+              children: [
+                if (_menuVisible && !isNarrow) const SideMenu(),
+                Expanded(child: widget.body),
+              ],
+            ),
+            if (_menuVisible && isNarrow) ...[
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _closeMenu,
+                  child: Container(color: Colors.black.withValues(alpha: 0.4)),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                bottom: 0,
+                left: 0,
+                child: SideMenu(onNavigate: _closeMenu),
+              ),
+            ],
           ],
         ),
       ),

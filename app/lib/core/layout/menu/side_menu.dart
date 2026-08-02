@@ -16,7 +16,7 @@ const _menuSections = [
     (icon: Icons.home, label: 'Home', route: '/dashboard'),
   ]),
   _MenuSection(title: 'CADASTROS', items: [
-    (icon: Icons.people, label: 'Sócios', route: '/users'),
+    (icon: Icons.people, label: 'Sócios', route: '/customers'),
     (icon: Icons.location_on, label: 'Logradouros', route: '/addresses'),
     (icon: Icons.category, label: 'Categorias', route: '/categories'),
   ]),
@@ -36,7 +36,11 @@ const _menuSections = [
 ];
 
 class SideMenu extends StatelessWidget {
-  const SideMenu({super.key});
+  const SideMenu({super.key, this.onNavigate});
+
+  /// Called after a menu item navigates — used to dismiss the menu when it's
+  /// shown as a mobile overlay (unused on desktop, where it stays open).
+  final VoidCallback? onNavigate;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +65,7 @@ class SideMenu extends StatelessWidget {
                     label: item.label,
                     route: item.route,
                     isActive: location == item.route,
+                    onNavigate: onNavigate,
                   )),
             ],
           ],
@@ -100,17 +105,22 @@ class _MenuItem extends StatelessWidget {
     required this.label,
     required this.route,
     required this.isActive,
+    this.onNavigate,
   });
 
   final IconData icon;
   final String label;
   final String route;
   final bool isActive;
+  final VoidCallback? onNavigate;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final color = isActive ? cs.primary : cs.onSurfaceVariant;
+    // The icon reads too light against onSurfaceVariant alone — bump it to a
+    // darker neutral so it doesn't wash out next to the label text.
+    final iconColor = isActive ? cs.primary : cs.onTertiaryContainer;
     final fontWeight = isActive ? FontWeight.w600 : FontWeight.w400;
 
     return DecoratedBox(
@@ -126,12 +136,15 @@ class _MenuItem extends StatelessWidget {
       child: Material(
         color: Colors.transparent,
         child: InkWell(
-          onTap: () => context.go(route),
+          onTap: () {
+            context.go(route);
+            onNavigate?.call();
+          },
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             child: Row(
               children: [
-                Icon(icon, color: color, size: 20),
+                Icon(icon, color: iconColor, size: 20),
                 const SizedBox(width: 12),
                 Expanded(
                   child: Text(

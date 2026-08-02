@@ -9,7 +9,7 @@ import 'package:acalapp/features/elections/presentation/elections_page.dart';
 import 'package:acalapp/features/invoices/presentation/generate_invoices_page.dart';
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/features/quality/presentation/quality_page.dart';
-import 'package:acalapp/features/users/presentation/users_page.dart';
+import 'package:acalapp/features/customer/presentation/customer_page.dart';
 import 'package:go_router/go_router.dart';
 
 final appRouter = GoRouter(
@@ -23,8 +23,8 @@ final appRouter = GoRouter(
           pageBuilder: (context, state) => const NoTransitionPage(child: DashboardPage()),
         ),
         GoRoute(
-          path: '/users',
-          pageBuilder: (context, state) => const NoTransitionPage(child: UsersPage()),
+          path: '/customers',
+          pageBuilder: (context, state) => const NoTransitionPage(child: CustomersPage()),
         ),
         GoRoute(
           path: '/addresses',

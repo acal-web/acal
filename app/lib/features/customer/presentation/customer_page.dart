@@ -1,9 +1,8 @@
 import 'package:acalapp/core/models/paged_result.dart';
-import 'package:acalapp/features/categories/data/category_service.dart';
-import 'package:acalapp/features/categories/domain/category.dart';
-import 'package:acalapp/features/categories/widget/modal/delete_category.dart';
-import 'package:acalapp/features/categories/widget/modal/open_category.dart';
-import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
+import 'package:acalapp/features/customer/data/customer_service.dart';
+import 'package:acalapp/features/customer/domain/customer.dart';
+import 'package:acalapp/features/customer/widget/modal/delete_customer.dart';
+import 'package:acalapp/features/customer/widget/modal/open_customer.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
@@ -11,20 +10,18 @@ import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
 
 const _actionButtonWidth = 180.0;
-
-// Below this width the filter row no longer fits comfortably, so it stacks.
 const _filterBarNarrowBreakpoint = 640.0;
 
-class CategoriesPage extends StatefulWidget {
-  const CategoriesPage({super.key});
+class CustomersPage extends StatefulWidget {
+  const CustomersPage({super.key});
 
   @override
-  State<CategoriesPage> createState() => _CategoriesPageState();
+  State<CustomersPage> createState() => _CustomersPageState();
 }
 
-class _CategoriesPageState extends State<CategoriesPage> {
-  final _service = CategoryService();
-  late Future<PagedResult<Category>> _future;
+class _CustomersPageState extends State<CustomersPage> {
+  final _service = CustomerService();
+  late Future<PagedResult<Customer>> _future;
   int _page = 0;
   int _pageSize = 10;
 
@@ -49,12 +46,12 @@ class _CategoriesPageState extends State<CategoriesPage> {
         _future = _service.findAll(page: _page, size: _pageSize);
       });
 
-  Future<void> _openForm({Category? category}) async {
-    if (await openCategory(context, category: category)) _load();
+  Future<void> _openForm({Customer? customer}) async {
+    if (await openCustomer(context, customer: customer)) _load();
   }
 
-  Future<void> _delete(Category category) async {
-    if (await deleteCategory(context, _service, category)) _load();
+  Future<void> _delete(Customer customer) async {
+    if (await deleteCustomer(context, _service, customer)) _load();
   }
 
   @override
@@ -68,46 +65,45 @@ class _CategoriesPageState extends State<CategoriesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PageHeader(
-              title: 'Categorias',
-              subtitle: 'Gerencie as categorias de sócios cadastradas.',
+              title: 'Sócios',
+              subtitle: 'Gerencie os sócios cadastrados.',
               action: SizedBox(
                 width: _actionButtonWidth,
                 child: FilledButton.icon(
                   onPressed: _openForm,
                   icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Nova Categoria'),
+                  label: const Text('Novo Sócio'),
                 ),
               ),
             ),
             const SizedBox(height: 16),
             const Divider(),
             const SizedBox(height: 16),
-            _CategoryFilterBar(onSearch: _load),
+            _CustomerFilterBar(onSearch: _load),
             const SizedBox(height: 16),
             Expanded(
               child: Card(
                 child: Padding(
                   padding: EdgeInsets.all(narrow ? 16 : 24),
-                  child: PagedListView<Category>(
+                  child: PagedListView<Customer>(
                     future: _future,
                     columns: const [
                       DataTableColumn('Nome', flex: 3, sortable: true),
-                      DataTableColumn('Grupo', flex: 2),
-                      DataTableColumn('Hidrômetro', width: 100),
-                      DataTableColumn('Valor Água', flex: 2),
-                      DataTableColumn('Valor Societário', flex: 2),
+                      DataTableColumn('Documento', flex: 2),
+                      DataTableColumn('Nº Sócio', width: 90),
+                      DataTableColumn('Votante', width: 90),
                       DataTableColumn('Ações', width: 88),
                     ],
-                    emptyMessage: 'Nenhuma categoria cadastrada.',
-                    errorMessage: 'Erro ao carregar categorias',
+                    emptyMessage: 'Nenhum sócio cadastrado.',
+                    errorMessage: 'Erro ao carregar sócios',
                     onRetry: _load,
                     onPageChanged: _goToPage,
                     pageSize: _pageSize,
                     onPageSizeChanged: _changePageSize,
-                    rowBuilder: (context, category) => _CategoryRow(
-                      category: category,
-                      onEdit: () => _openForm(category: category),
-                      onDelete: () => _delete(category),
+                    rowBuilder: (context, customer) => _CustomerRow(
+                      customer: customer,
+                      onEdit: () => _openForm(customer: customer),
+                      onDelete: () => _delete(customer),
                     ),
                   ),
                 ),
@@ -120,8 +116,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 }
 
-class _CategoryFilterBar extends StatelessWidget {
-  const _CategoryFilterBar({required this.onSearch});
+class _CustomerFilterBar extends StatelessWidget {
+  const _CustomerFilterBar({required this.onSearch});
 
   final VoidCallback onSearch;
 
@@ -152,14 +148,14 @@ class _CategoryFilterBar extends StatelessWidget {
   }
 }
 
-class _CategoryRow extends StatelessWidget {
-  const _CategoryRow({
-    required this.category,
+class _CustomerRow extends StatelessWidget {
+  const _CustomerRow({
+    required this.customer,
     required this.onEdit,
     required this.onDelete,
   });
 
-  final Category category;
+  final Customer customer;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
@@ -173,27 +169,23 @@ class _CategoryRow extends StatelessWidget {
         children: [
           Expanded(
             flex: 3,
-            child: Text(category.name, style: theme.textTheme.bodyMedium),
+            child: Text(customer.name, style: theme.textTheme.bodyMedium),
           ),
           Expanded(
             flex: 2,
-            child: Text(groupLabel(category.group), style: theme.textTheme.bodyMedium),
+            child: Text(customer.document, style: theme.textTheme.bodyMedium),
           ),
           SizedBox(
-            width: 100,
+            width: 90,
+            child: Text('${customer.membershipNumber}', style: theme.textTheme.bodyMedium),
+          ),
+          SizedBox(
+            width: 90,
             child: Icon(
-              category.hasWaterMeter ? Icons.check : Icons.close,
+              customer.voter ? Icons.check : Icons.close,
               size: 18,
-              color: category.hasWaterMeter ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+              color: customer.voter ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(formatBRL(category.waterPrice), style: theme.textTheme.bodyMedium),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(formatBRL(category.membershipPrice), style: theme.textTheme.bodyMedium),
           ),
           SizedBox(
             width: 88,

@@ -17,9 +17,6 @@ class AddressesPage extends StatefulWidget {
 }
 
 const _actionButtonWidth = 180.0;
-
-// Below this width the filter row (search + status) no longer fits
-// comfortably side by side, so it stacks instead.
 const _filterBarNarrowBreakpoint = 640.0;
 
 class _AddressesPageState extends State<AddressesPage> {
@@ -79,27 +76,35 @@ class _AddressesPageState extends State<AddressesPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            const SizedBox(height: 16),
+            const Divider(),
+            const SizedBox(height: 16),
             _AddressFilterBar(onSearch: _load),
             const SizedBox(height: 16),
             Expanded(
-              child: PagedListView<Address>(
-                future: _future,
-                columns: const [
-                  DataTableColumn('Tipo', flex: 2, sortable: true),
-                  DataTableColumn('Nome', flex: 5, sortable: true),
-                  DataTableColumn('Ações', width: 88),
-                ],
-                emptyMessage: 'Nenhum endereço cadastrado.',
-                errorMessage: 'Erro ao carregar endereços',
-                onRetry: _load,
-                onPageChanged: _goToPage,
-                pageSize: _pageSize,
-                onPageSizeChanged: _changePageSize,
-                rowBuilder: (context, address) => _AddressRow(
-                  address: address,
-                  onEdit: () => _openForm(address: address),
-                  onDelete: () => _delete(address),
+              child: Card(
+                elevation: 1,
+                child: Padding(
+                  padding: EdgeInsets.all(narrow ? 16 : 24),
+                  child: PagedListView<Address>(
+                    future: _future,
+                    columns: const [
+                      DataTableColumn('Tipo', flex: 2, sortable: true),
+                      DataTableColumn('Nome', flex: 5, sortable: true),
+                      DataTableColumn('Ações', width: 88),
+                    ],
+                    emptyMessage: 'Nenhum endereço cadastrado.',
+                    errorMessage: 'Erro ao carregar endereços',
+                    onRetry: _load,
+                    onPageChanged: _goToPage,
+                    pageSize: _pageSize,
+                    onPageSizeChanged: _changePageSize,
+                    rowBuilder: (context, address) => _AddressRow(
+                      address: address,
+                      onEdit: () => _openForm(address: address),
+                      onDelete: () => _delete(address),
+                    ),
+                  ),
                 ),
               ),
             ),
