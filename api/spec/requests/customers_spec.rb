@@ -1,27 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Customers", type: :request do
-  def valid_cpf(base)
-    digits = base.to_s.rjust(9, "0")
-    d1 = document_check_digit(digits, (10).downto(2).to_a)
-    d2 = document_check_digit(digits + d1.to_s, (11).downto(2).to_a)
-    "#{digits}#{d1}#{d2}"
-  end
-
-  def valid_cnpj(base)
-    digits = base.to_s.rjust(12, "0")
-    d1 = document_check_digit(digits, [ 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 ])
-    d2 = document_check_digit(digits + d1.to_s, [ 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 ])
-    "#{digits}#{d1}#{d2}"
-  end
-
-  def document_check_digit(digits, weights)
-    sum = digits.chars.each_with_index.sum { |d, i| d.to_i * weights[i] }
-    remainder = sum % 11
-    remainder < 2 ? 0 : 11 - remainder
-  end
-
-  let(:valid_document) { valid_cpf(123456789) }
+  let(:valid_document) { DocumentGenerator.cpf(123_456_789) }
   let(:valid_params) do
     {
       customer: {
@@ -36,7 +16,7 @@ RSpec.describe "Customers", type: :request do
   describe "GET /customers" do
     context "when successful" do
       it "returns a paginated page of customers" do
-        13.times { |i| Customer.create!(name: "Cliente #{i}", document: valid_cpf(1000 + i), membership_number: i + 1) }
+        create_list(:customer, 13)
 
         get "/customers"
 
@@ -67,8 +47,8 @@ RSpec.describe "Customers", type: :request do
       end
 
       it "filters by name" do
-        Customer.create!(name: "Fulano de Tal", document: valid_cpf(111222333), membership_number: 1)
-        Customer.create!(name: "Ciclano da Silva", document: valid_cpf(444555666), membership_number: 2)
+        create(:customer, name: "Fulano de Tal")
+        create(:customer, name: "Ciclano da Silva")
 
         get "/customers", params: { name: "fulano" }
 
@@ -76,8 +56,8 @@ RSpec.describe "Customers", type: :request do
       end
 
       it "filters by document" do
-        Customer.create!(name: "Fulano de Tal", document: valid_cpf(111222333), membership_number: 1)
-        target = Customer.create!(name: "Ciclano da Silva", document: valid_cpf(444555666), membership_number: 2)
+        create(:customer, name: "Fulano de Tal", document: DocumentGenerator.cpf(111_222_333))
+        target = create(:customer, name: "Ciclano da Silva", document: DocumentGenerator.cpf(444_555_666))
 
         get "/customers", params: { document: target.document[0, 6] }
 
@@ -85,8 +65,8 @@ RSpec.describe "Customers", type: :request do
       end
 
       it "combines name and document filters" do
-        target = Customer.create!(name: "Fulano de Tal", document: valid_cpf(111222333), membership_number: 1)
-        Customer.create!(name: "Fulano Segundo", document: valid_cpf(444555666), membership_number: 2)
+        target = create(:customer, name: "Fulano de Tal", document: DocumentGenerator.cpf(111_222_333))
+        create(:customer, name: "Fulano Segundo", document: DocumentGenerator.cpf(444_555_666))
 
         get "/customers", params: { name: "fulano", document: target.document[0, 6] }
 
@@ -162,7 +142,7 @@ RSpec.describe "Customers", type: :request do
       end
 
       it "accepts a CNPJ (14 digits) as the document" do
-        cnpj = valid_cnpj(123456780001)
+        cnpj = DocumentGenerator.cnpj(123_456_780_001)
 
         post "/customers", params: { customer: valid_params[:customer].merge(document: cnpj) }
 

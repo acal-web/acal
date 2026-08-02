@@ -1,10 +1,13 @@
-import 'package:acalapp/core/models/pagination.dart';
 import 'package:acalapp/core/models/paged_result.dart';
+import 'package:acalapp/core/models/pagination.dart';
+import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/core/theme/light_theme.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
+import 'package:acalapp/features/connections/data/connection_service.dart';
+import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/connections/widget/connection_form_page.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
@@ -49,11 +52,19 @@ class _FakeCategoryService extends CategoryService {
   }
 }
 
+class _FakeConnectionService extends ConnectionService {
+  _FakeConnectionService(this.error);
+  final ApiException error;
+
+  @override
+  Future<Connection> create(Connection connection) async => throw error;
+}
+
 const _customer = Customer(id: 'cust1', name: 'Fulano de Tal', document: '12345678909', voter: true);
 const _address = Address(id: 'addr1', kind: 'Rua', name: 'Principal');
 const _category = Category(id: 'cat1', name: 'Padrão', group: 'efetivo', hasWaterMeter: true, waterPrice: 12.5, membershipPrice: 30);
 
-Future<void> _pump(WidgetTester tester) async {
+Future<void> _pump(WidgetTester tester, {ConnectionService? connectionService}) async {
   tester.view.physicalSize = const Size(1400, 1000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -64,6 +75,7 @@ Future<void> _pump(WidgetTester tester) async {
       theme: lightTheme,
       home: Scaffold(
         body: ConnectionFormPage(
+          connectionService: connectionService,
           customerService: _FakeCustomerService([_customer]),
           addressService: _FakeAddressService([_address]),
           categoryService: _FakeCategoryService([_category]),
@@ -83,6 +95,23 @@ Finder _customerField() => find.byType(TextField).at(0);
 Finder _addressField() => find.byType(TextField).at(1);
 Finder _categoryField() => find.byType(TextField).at(2);
 
+Future<void> _fillAllFields(WidgetTester tester) async {
+  await tester.enterText(_customerField(), 'fulano');
+  await _settleSearch(tester);
+  await tester.tap(find.text('Fulano de Tal'));
+  await tester.pump();
+
+  await tester.tap(_addressField());
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Principal').last);
+  await tester.pumpAndSettle();
+
+  await tester.tap(_categoryField());
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Padrão').last);
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('fails required validation when no picker has been filled', (tester) async {
     await _pump(tester);
@@ -97,20 +126,7 @@ void main() {
   testWidgets('selecting an option in each picker satisfies validation', (tester) async {
     await _pump(tester);
 
-    await tester.enterText(_customerField(), 'fulano');
-    await _settleSearch(tester);
-    await tester.tap(find.text('Fulano de Tal'));
-    await tester.pump();
-
-    await tester.enterText(_addressField(), 'principal');
-    await _settleSearch(tester);
-    await tester.tap(find.text('Rua Principal'));
-    await tester.pump();
-
-    await tester.tap(_categoryField());
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Padrão').last);
-    await tester.pumpAndSettle();
+    await _fillAllFields(tester);
 
     final formState = tester.state<FormState>(find.byType(Form));
     expect(formState.validate(), isTrue);
@@ -127,5 +143,44 @@ void main() {
 
     checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
     expect(checkbox.value, isFalse);
+  });
+
+  testWidgets('shows a clear message when the address already has an active connection', (tester) async {
+    await _pump(
+      tester,
+      connectionService: _FakeConnectionService(ApiException(422, {
+        'address_id': [ 'already has an active connection' ],
+      })),
+    );
+
+    await _fillAllFields(tester);
+    await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await tester.pump();
+
+    expect(find.text('Este logradouro já está com uma ligação ativa.'), findsOneWidget);
+
+    // Drain the toast's auto-dismiss timer and closing animation — AppToast
+    // is a process-wide singleton, so a pending timer here leaks into (and
+    // crashes) the next test that shows a toast.
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pump(const Duration(milliseconds: 200));
+  });
+
+  testWidgets('shows a clear message when the customer is already efetivo in another active connection', (tester) async {
+    await _pump(
+      tester,
+      connectionService: _FakeConnectionService(ApiException(422, {
+        'customer_id': [ 'already has an active connection as efetivo' ],
+      })),
+    );
+
+    await _fillAllFields(tester);
+    await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await tester.pump();
+
+    expect(find.text('Este sócio já está recebendo outra ligação como efetivo.'), findsOneWidget);
+
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pump(const Duration(milliseconds: 200));
   });
 }

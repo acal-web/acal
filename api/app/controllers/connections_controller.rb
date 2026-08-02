@@ -23,7 +23,7 @@ class ConnectionsController < ApplicationController
 
   # POST /connections
   def create
-    @connection = Connection.create!(customer_id:, address_id:, category_id:, active:, legacy_id:)
+    @connection = Connections::CreateService.call(customer_id:, address_id:, category_id:, active:, legacy_id:)
     render json: @connection, status: :created, location: @connection, include: CONNECTION_INCLUDES
   end
 

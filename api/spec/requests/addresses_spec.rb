@@ -6,7 +6,7 @@ RSpec.describe "Addresses", type: :request do
   describe "GET /addresses" do
     context "when successful" do
       it "returns a paginated page of addresses" do
-        13.times { |i| Address.create!(kind: "home", name: "Street #{i}") }
+        create_list(:address, 13)
 
         get "/addresses"
 
@@ -27,7 +27,7 @@ RSpec.describe "Addresses", type: :request do
       end
 
       it "respects the page and size params" do
-        25.times { |i| Address.create!(kind: "home", name: "Street #{i}") }
+        create_list(:address, 25)
 
         get "/addresses", params: { page: 1, size: 10 }
 
@@ -58,8 +58,8 @@ RSpec.describe "Addresses", type: :request do
       end
 
       it "filters by name" do
-        Address.create!(kind: "home", name: "Main Street")
-        Address.create!(kind: "home", name: "Second Avenue")
+        create(:address, name: "Main Street")
+        create(:address, name: "Second Avenue")
 
         get "/addresses", params: { name: "main" }
 

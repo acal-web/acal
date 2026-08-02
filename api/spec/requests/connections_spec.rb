@@ -1,31 +1,6 @@
 require "rails_helper"
 
 RSpec.describe "Connections", type: :request do
-  def valid_cpf(base)
-    digits = base.to_s.rjust(9, "0")
-    d1 = document_check_digit(digits, (10).downto(2).to_a)
-    d2 = document_check_digit(digits + d1.to_s, (11).downto(2).to_a)
-    "#{digits}#{d1}#{d2}"
-  end
-
-  def document_check_digit(digits, weights)
-    sum = digits.chars.each_with_index.sum { |d, i| d.to_i * weights[i] }
-    remainder = sum % 11
-    remainder < 2 ? 0 : 11 - remainder
-  end
-
-  def create_customer(name: "Fulano de Tal", document_base: 100000000)
-    Customer.create!(name: name, document: valid_cpf(document_base), membership_number: rand(1..100_000))
-  end
-
-  def create_address(name: "Main Street")
-    Address.create!(kind: "home", name: name)
-  end
-
-  def create_category(name: "Padrão")
-    Category.create!(name: name, group: "efetivo", water_price: 0, membership_price: 0)
-  end
-
   def customer_json(customer)
     {
       "id" => customer.id,
@@ -68,9 +43,9 @@ RSpec.describe "Connections", type: :request do
     }
   end
 
-  let(:customer) { create_customer }
-  let(:address) { create_address }
-  let(:category) { create_category }
+  let(:customer) { create(:customer) }
+  let(:address) { create(:address) }
+  let(:category) { create(:category) }
   let(:valid_params) do
     { connection: { customer_id: customer.id, address_id: address.id, category_id: category.id } }
   end
@@ -78,7 +53,7 @@ RSpec.describe "Connections", type: :request do
   describe "GET /connections" do
     context "when successful" do
       it "returns a paginated page of connections" do
-        13.times { |i| Connection.create!(customer: create_customer(document_base: 200000000 + i), address: create_address(name: "Street #{i}"), category: category) }
+        13.times { create(:connection, customer: create(:customer), address: create(:address), category: category) }
 
         get "/connections"
 
@@ -120,9 +95,9 @@ RSpec.describe "Connections", type: :request do
       end
 
       it "filters by customer name" do
-        other = create_customer(name: "Ciclano da Silva", document_base: 300000000)
-        Connection.create!(customer: customer, address: address, category: category)
-        Connection.create!(customer: other, address: create_address(name: "Other Street"), category: category)
+        other = create(:customer, name: "Ciclano da Silva")
+        create(:connection, customer: customer, address: address, category: category)
+        create(:connection, customer: other, address: create(:address), category: category)
 
         get "/connections", params: { customer_name: customer.name[0, 6] }
 
@@ -130,9 +105,9 @@ RSpec.describe "Connections", type: :request do
       end
 
       it "filters by customer document" do
-        Connection.create!(customer: customer, address: address, category: category)
-        other = create_customer(name: "Ciclano", document_base: 300000000)
-        Connection.create!(customer: other, address: create_address(name: "Other Street"), category: category)
+        create(:connection, customer: customer, address: address, category: category)
+        other = create(:customer, name: "Ciclano", document: DocumentGenerator.cpf(300_000_000))
+        create(:connection, customer: other, address: create(:address), category: category)
 
         get "/connections", params: { customer_document: customer.document[0, 6] }
 
@@ -140,8 +115,8 @@ RSpec.describe "Connections", type: :request do
       end
 
       it "filters by address name" do
-        Connection.create!(customer: customer, address: address, category: category)
-        Connection.create!(customer: create_customer(document_base: 300000000), address: create_address(name: "Second Avenue"), category: category)
+        create(:connection, customer: customer, address: address, category: category)
+        create(:connection, customer: create(:customer), address: create(:address, name: "Second Avenue"), category: category)
 
         get "/connections", params: { address_name: address.name[0, 4] }
 
@@ -149,9 +124,9 @@ RSpec.describe "Connections", type: :request do
       end
 
       it "filters by category_id" do
-        other_category = create_category(name: "Especial")
-        Connection.create!(customer: customer, address: address, category: category)
-        Connection.create!(customer: create_customer(document_base: 300000000), address: create_address(name: "Second Avenue"), category: other_category)
+        other_category = create(:category, name: "Especial")
+        create(:connection, customer: customer, address: address, category: category)
+        create(:connection, customer: create(:customer), address: create(:address), category: other_category)
 
         get "/connections", params: { category_id: category.id }
 
@@ -159,9 +134,9 @@ RSpec.describe "Connections", type: :request do
       end
 
       it "filters by active status" do
-        Connection.create!(customer: customer, address: address, category: category, active: true)
-        ended_address = create_address(name: "Ended Street")
-        Connection.create!(customer: create_customer(document_base: 300000000), address: ended_address, category: category, active: false)
+        create(:connection, customer: customer, address: address, category: category, active: true)
+        ended_address = create(:address, name: "Ended Street")
+        create(:connection, customer: create(:customer), address: ended_address, category: category, active: false)
 
         get "/connections", params: { active: "false" }
 
@@ -169,8 +144,8 @@ RSpec.describe "Connections", type: :request do
       end
 
       it "combines multiple filters" do
-        Connection.create!(customer: customer, address: address, category: category)
-        Connection.create!(customer: create_customer(document_base: 300000000), address: create_address(name: "Second Avenue"), category: category)
+        create(:connection, customer: customer, address: address, category: category)
+        create(:connection, customer: create(:customer), address: create(:address, name: "Second Avenue"), category: category)
 
         get "/connections", params: { customer_name: customer.name[0, 6], address_name: address.name[0, 4] }
 
@@ -257,7 +232,7 @@ RSpec.describe "Connections", type: :request do
         id = response.parsed_body["id"]
         patch "/connections/#{id}", params: { connection: valid_params[:connection].merge(active: false) }
 
-        new_customer = create_customer(name: "Ciclano", document_base: 300000000)
+        new_customer = create(:customer, name: "Ciclano")
 
         expect {
           post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
@@ -272,7 +247,7 @@ RSpec.describe "Connections", type: :request do
         id = response.parsed_body["id"]
         delete "/connections/#{id}"
 
-        new_customer = create_customer(name: "Ciclano", document_base: 300000000)
+        new_customer = create(:customer, name: "Ciclano")
 
         expect {
           post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
@@ -307,7 +282,7 @@ RSpec.describe "Connections", type: :request do
       it "rejects a new active connection when the address already has an active connection" do
         post "/connections", params: valid_params
 
-        new_customer = create_customer(name: "Ciclano", document_base: 300000000)
+        new_customer = create(:customer, name: "Ciclano")
 
         expect {
           post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
@@ -315,6 +290,32 @@ RSpec.describe "Connections", type: :request do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body).to eq("address_id" => [ "already has an active connection" ])
+      end
+
+      it "rejects a new active connection when the customer is already efetivo in another active connection" do
+        post "/connections", params: valid_params
+
+        new_address = create(:address, name: "Second Street")
+
+        expect {
+          post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: category.id } }
+        }.not_to change(Connection, :count)
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body).to eq("customer_id" => [ "already has an active connection as efetivo" ])
+      end
+
+      it "allows the customer to have another active connection outside the efetivo group" do
+        post "/connections", params: valid_params
+
+        new_address = create(:address, name: "Second Street")
+        temporario_category = create(:category, name: "Visitante", group: "temporario")
+
+        expect {
+          post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: temporario_category.id } }
+        }.to change(Connection, :count).by(1)
+
+        expect(response).to have_http_status(:created)
       end
     end
   end
@@ -324,7 +325,7 @@ RSpec.describe "Connections", type: :request do
       it "updates the connection" do
         post "/connections", params: valid_params
         id = response.parsed_body["id"]
-        new_category = create_category(name: "Especial")
+        new_category = create(:category, name: "Especial")
 
         patch "/connections/#{id}", params: { connection: valid_params[:connection].merge(category_id: new_category.id) }
 
@@ -359,13 +360,27 @@ RSpec.describe "Connections", type: :request do
         first_id = response.parsed_body["id"]
         patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: false) }
 
-        new_customer = create_customer(name: "Ciclano", document_base: 300000000)
+        new_customer = create(:customer, name: "Ciclano")
         post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
 
         patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: true) }
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body).to eq("address_id" => [ "already has an active connection" ])
+      end
+
+      it "rejects reactivating a connection when the customer is already efetivo in another active connection" do
+        post "/connections", params: valid_params
+        first_id = response.parsed_body["id"]
+        patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: false) }
+
+        new_address = create(:address, name: "Second Street")
+        post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: category.id } }
+
+        patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: true) }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body).to eq("customer_id" => [ "already has an active connection as efetivo" ])
       end
     end
   end

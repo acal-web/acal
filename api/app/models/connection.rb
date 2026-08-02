@@ -6,6 +6,7 @@ class Connection < ApplicationRecord
   belongs_to :category
 
   validate :address_not_already_active, if: :active?
+  validate :customer_not_already_efetivo, if: :active?
 
   scope :filter_by_customer_name, ->(name) {
     joins(:customer).where("customers.name ILIKE :q", q: "%#{sanitize_sql_like(name)}%") if name.present?
@@ -36,5 +37,14 @@ class Connection < ApplicationRecord
     conflicting = Connection.where(address_id: address_id, active: true)
     conflicting = conflicting.where.not(id: id) if persisted?
     errors.add(:address_id, "already has an active connection") if conflicting.exists?
+  end
+
+  def customer_not_already_efetivo
+    return unless customer_id
+    return unless category&.group == "efetivo"
+
+    conflicting = Connection.where(customer_id: customer_id, active: true).joins(:category).where(categories: { group: "efetivo" })
+    conflicting = conflicting.where.not(id: id) if persisted?
+    errors.add(:customer_id, "already has an active connection as efetivo") if conflicting.exists?
   end
 end

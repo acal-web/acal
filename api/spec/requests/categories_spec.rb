@@ -17,7 +17,7 @@ RSpec.describe "Categories", type: :request do
   describe "GET /categories" do
     context "when successful" do
       it "returns a paginated page of categories" do
-        13.times { |i| Category.create!(name: "Categoria #{i}", group: "efetivo", water_price: 0, membership_price: 0) }
+        create_list(:category, 13)
 
         get "/categories"
 
@@ -48,8 +48,8 @@ RSpec.describe "Categories", type: :request do
       end
 
       it "filters by name" do
-        Category.create!(name: "Padrão", group: "efetivo", water_price: 0, membership_price: 0)
-        Category.create!(name: "Especial", group: "efetivo", water_price: 0, membership_price: 0)
+        create(:category, name: "Padrão")
+        create(:category, name: "Especial")
 
         get "/categories", params: { name: "padr" }
 
