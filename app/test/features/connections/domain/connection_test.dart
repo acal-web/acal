@@ -10,6 +10,8 @@ void main() {
         'address_id': 'addr1',
         'category_id': 'cat1',
         'active': true,
+        'membership_date': '2024-03-15',
+        'exclusively_member': true,
         'customer': {
           'id': 'cust1',
           'name': 'Fulano de Tal',
@@ -43,6 +45,8 @@ void main() {
       expect(connection.customer?.name, 'Fulano de Tal');
       expect(connection.address?.fullAddress, 'Rua Principal');
       expect(connection.category?.name, 'Padrão');
+      expect(connection.membershipDate, DateTime(2024, 3, 15));
+      expect(connection.exclusivelyMember, isTrue);
     });
 
     test('leaves nested objects null when absent from the payload', () {
@@ -52,6 +56,8 @@ void main() {
         'address_id': 'addr1',
         'category_id': 'cat1',
         'active': false,
+        'membership_date': null,
+        'exclusively_member': false,
       };
 
       final connection = Connection.fromJson(json);
@@ -60,6 +66,8 @@ void main() {
       expect(connection.address, isNull);
       expect(connection.category, isNull);
       expect(connection.active, isFalse);
+      expect(connection.membershipDate, isNull);
+      expect(connection.exclusivelyMember, isFalse);
     });
   });
 
@@ -78,7 +86,22 @@ void main() {
         'address_id': 'addr1',
         'category_id': 'cat1',
         'active': true,
+        'membership_date': null,
+        'exclusively_member': false,
       });
+    });
+
+    test('formats membership_date as an ISO yyyy-MM-dd string', () {
+      final connection = Connection(
+        customerId: 'cust1',
+        addressId: 'addr1',
+        categoryId: 'cat1',
+        membershipDate: DateTime(2024, 3, 5),
+        exclusivelyMember: true,
+      );
+
+      expect(connection.toJson()['membership_date'], '2024-03-05');
+      expect(connection.toJson()['exclusively_member'], isTrue);
     });
 
     test('omits the id when creating a new connection', () {

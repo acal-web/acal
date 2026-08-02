@@ -13,19 +13,25 @@ RSpec.describe Connections::CreateService do
     expect(connection.address_id).to eq(address.id)
     expect(connection.category_id).to eq(category.id)
     expect(connection.active).to be(true)
+    expect(connection.membership_date).to be_nil
+    expect(connection.exclusively_member).to be(false)
   end
 
-  it "accepts an explicit active flag and a legacy_id" do
+  it "accepts an explicit active flag, a legacy_id, a membership_date and exclusively_member" do
     connection = described_class.call(
       customer_id: customer.id,
       address_id: address.id,
       category_id: category.id,
       active: false,
-      legacy_id: 123
+      legacy_id: 123,
+      membership_date: Date.new(2024, 3, 15),
+      exclusively_member: true
     )
 
     expect(connection.active).to be(false)
     expect(connection.legacy_id).to eq(123)
+    expect(connection.membership_date).to eq(Date.new(2024, 3, 15))
+    expect(connection.exclusively_member).to be(true)
   end
 
   it "raises when the address already has an active connection" do

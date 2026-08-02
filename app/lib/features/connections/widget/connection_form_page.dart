@@ -11,6 +11,7 @@ import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
+import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -46,6 +47,9 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
   Address? _selectedAddress;
   Category? _selectedCategory;
   late bool _active;
+  DateTime? _membershipDate;
+  late final TextEditingController _membershipDateController;
+  late bool _exclusivelyMember;
   bool _saving = false;
 
   bool get _isEditing => widget.connection != null;
@@ -64,6 +68,35 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
     _selectedAddress = widget.connection?.address;
     _selectedCategory = widget.connection?.category;
     _active = widget.connection?.active ?? true;
+    _membershipDate = widget.connection?.membershipDate;
+    _membershipDateController = TextEditingController(
+      text: _membershipDate != null ? _formatDate(_membershipDate!) : '',
+    );
+    _exclusivelyMember = widget.connection?.exclusivelyMember ?? false;
+  }
+
+  @override
+  void dispose() {
+    _membershipDateController.dispose();
+    super.dispose();
+  }
+
+  String _formatDate(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+  Future<void> _pickMembershipDate() async {
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _membershipDate ?? DateTime.now(),
+      firstDate: DateTime(1900),
+      lastDate: DateTime.now(),
+    );
+    if (picked != null) {
+      setState(() {
+        _membershipDate = picked;
+        _membershipDateController.text = _formatDate(picked);
+      });
+    }
   }
 
   Future<void> _save() async {
@@ -77,6 +110,8 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
         addressId: _selectedAddress!.id!,
         categoryId: _selectedCategory!.id!,
         active: _active,
+        membershipDate: _membershipDate,
+        exclusivelyMember: _exclusivelyMember,
       );
       if (_isEditing) {
         await _service.update(connection);
@@ -147,10 +182,31 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             validator: (c) => c == null ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 16),
+          LabeledField(
+            label: 'Data da Matrícula',
+            child: TextFormField(
+              controller: _membershipDateController,
+              readOnly: true,
+              decoration: const InputDecoration(
+                border: OutlineInputBorder(),
+                hintText: 'Selecione a data',
+                suffixIcon: Icon(Icons.calendar_today, size: 18),
+              ),
+              onTap: _pickMembershipDate,
+            ),
+          ),
+          const SizedBox(height: 16),
           CheckboxListTile(
             value: _active,
             onChanged: (v) => setState(() => _active = v ?? true),
             title: const Text('Ativa'),
+            controlAffinity: ListTileControlAffinity.leading,
+            contentPadding: EdgeInsets.zero,
+          ),
+          CheckboxListTile(
+            value: _exclusivelyMember,
+            onChanged: (v) => setState(() => _exclusivelyMember = v ?? false),
+            title: const Text('Exclusivamente Sócio'),
             controlAffinity: ListTileControlAffinity.leading,
             contentPadding: EdgeInsets.zero,
           ),

@@ -171,6 +171,8 @@ RSpec.describe "Connections", type: :request do
           "category_id" => category.id,
           "active" => true,
           "legacy_id" => nil,
+          "membership_date" => nil,
+          "exclusively_member" => false,
           "created_at" => connection.created_at.as_json,
           "updated_at" => connection.updated_at.as_json,
           "deleted_at" => nil,
@@ -225,6 +227,27 @@ RSpec.describe "Connections", type: :request do
         expect(response).to have_http_status(:created)
         expect(connection.legacy_id).to eq(123)
         expect(response.parsed_body["legacy_id"]).to eq(123)
+      end
+
+      it "accepts and returns a membership_date and exclusively_member flag, defaulting exclusively_member to false" do
+        post "/connections", params: {
+          connection: valid_params[:connection].merge(membership_date: "2024-03-15", exclusively_member: true)
+        }
+
+        connection = Connection.last
+
+        expect(response).to have_http_status(:created)
+        expect(connection.membership_date).to eq(Date.new(2024, 3, 15))
+        expect(connection.exclusively_member).to eq(true)
+        expect(response.parsed_body["membership_date"]).to eq("2024-03-15")
+        expect(response.parsed_body["exclusively_member"]).to eq(true)
+      end
+
+      it "defaults exclusively_member to false and membership_date to nil when omitted" do
+        post "/connections", params: valid_params
+
+        expect(response.parsed_body["membership_date"]).to be_nil
+        expect(response.parsed_body["exclusively_member"]).to eq(false)
       end
 
       it "allows creating a new connection for an address whose previous connection was ended" do
@@ -331,6 +354,19 @@ RSpec.describe "Connections", type: :request do
 
         expect(response).to have_http_status(:ok)
         expect(response.parsed_body["category_id"]).to eq(new_category.id)
+      end
+
+      it "updates the membership_date and exclusively_member flag" do
+        post "/connections", params: valid_params
+        id = response.parsed_body["id"]
+
+        patch "/connections/#{id}", params: {
+          connection: valid_params[:connection].merge(membership_date: "2024-03-15", exclusively_member: true)
+        }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["membership_date"]).to eq("2024-03-15")
+        expect(response.parsed_body["exclusively_member"]).to eq(true)
       end
 
       it "ends a connection by setting active to false without blocking itself" do

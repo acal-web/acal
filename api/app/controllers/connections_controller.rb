@@ -23,13 +23,15 @@ class ConnectionsController < ApplicationController
 
   # POST /connections
   def create
-    @connection = Connections::CreateService.call(customer_id:, address_id:, category_id:, active:, legacy_id:)
+    @connection = Connections::CreateService.call(
+      customer_id:, address_id:, category_id:, active:, legacy_id:, membership_date:, exclusively_member:
+    )
     render json: @connection, status: :created, location: @connection, include: CONNECTION_INCLUDES
   end
 
   # PATCH/PUT /connections/1
   def update
-    @connection.update!(customer_id:, address_id:, category_id:, active:, legacy_id:)
+    @connection.update!(customer_id:, address_id:, category_id:, active:, legacy_id:, membership_date:, exclusively_member:)
     render json: @connection, include: CONNECTION_INCLUDES
   end
 
@@ -44,7 +46,7 @@ class ConnectionsController < ApplicationController
     end
 
     def connection_params
-      params.expect(connection: [ :customer_id, :address_id, :category_id, :active, :legacy_id ])
+      params.expect(connection: [ :customer_id, :address_id, :category_id, :active, :legacy_id, :membership_date, :exclusively_member ])
     end
 
     def customer_id
@@ -65,5 +67,13 @@ class ConnectionsController < ApplicationController
 
     def legacy_id
       connection_params[:legacy_id]
+    end
+
+    def membership_date
+      connection_params[:membership_date]
+    end
+
+    def exclusively_member
+      connection_params.fetch(:exclusively_member, false)
     end
 end

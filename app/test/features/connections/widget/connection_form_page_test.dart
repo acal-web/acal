@@ -135,14 +135,43 @@ void main() {
   testWidgets('the Ativa checkbox defaults to checked and can be toggled off', (tester) async {
     await _pump(tester);
 
-    var checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
+    var checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(0));
     expect(checkbox.value, isTrue);
 
-    await tester.tap(find.byType(CheckboxListTile));
+    await tester.tap(find.byType(CheckboxListTile).at(0));
     await tester.pump();
 
-    checkbox = tester.widget<Checkbox>(find.byType(Checkbox));
+    checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(0));
     expect(checkbox.value, isFalse);
+  });
+
+  testWidgets('the Exclusivamente Sócio checkbox defaults to unchecked and can be toggled on', (tester) async {
+    await _pump(tester);
+
+    var checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(1));
+    expect(checkbox.value, isFalse);
+
+    await tester.tap(find.byType(CheckboxListTile).at(1));
+    await tester.pump();
+
+    checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(1));
+    expect(checkbox.value, isTrue);
+  });
+
+  testWidgets('picking a membership date fills the field with dd/MM/yyyy', (tester) async {
+    await _pump(tester);
+
+    await tester.tap(find.byType(TextFormField));
+    await tester.pumpAndSettle();
+
+    // The Material date picker defaults to today — just confirm a pick
+    // closes the dialog and fills the field with *some* dd/MM/yyyy value,
+    // without pinning down "today" as a magic value that breaks tomorrow.
+    await tester.tap(find.text('OK'));
+    await tester.pumpAndSettle();
+
+    final field = tester.widget<TextFormField>(find.byType(TextFormField));
+    expect(field.controller!.text, matches(RegExp(r'^\d{2}/\d{2}/\d{4}$')));
   });
 
   testWidgets('shows a clear message when the address already has an active connection', (tester) async {

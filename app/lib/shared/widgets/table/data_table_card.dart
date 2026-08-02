@@ -65,8 +65,8 @@ class DataTableCard<T> extends StatelessWidget {
                 itemCount: items.length,
                 itemBuilder: (context, i) => Column(
                   children: [
-                    Container(
-                      color: i.isEven ? cs.surface : Colors.transparent,
+                    _HoverableRow(
+                      baseColor: i.isEven ? cs.surface : Colors.transparent,
                       child: rowBuilder(context, items[i]),
                     ),
                     const Divider(height: 1),
@@ -83,6 +83,37 @@ class DataTableCard<T> extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+/// Highlights a row on mouse hover, blending a tint over its zebra-stripe
+/// [baseColor] instead of replacing it, so the stripe stays visible through
+/// the highlight.
+class _HoverableRow extends StatefulWidget {
+  const _HoverableRow({required this.baseColor, required this.child});
+
+  final Color baseColor;
+  final Widget child;
+
+  @override
+  State<_HoverableRow> createState() => _HoverableRowState();
+}
+
+class _HoverableRowState extends State<_HoverableRow> {
+  bool _hovering = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovering = true),
+      onExit: (_) => setState(() => _hovering = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        color: _hovering ? Color.alphaBlend(cs.primary.withValues(alpha: 0.06), widget.baseColor) : widget.baseColor,
+        child: widget.child,
       ),
     );
   }

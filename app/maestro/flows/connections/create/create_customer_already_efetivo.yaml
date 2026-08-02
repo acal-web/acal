@@ -27,11 +27,11 @@ url: http://localhost:8080/#/customers
 - tapOn: "Logradouros"
 - assertVisible: "Logradouros"
 - runFlow:
-    file: ../../../subflows/addresses/create_address.yaml
+    file: ../../../subflows/address/create_address.yaml
     env:
       NAME: "Efetivo Duplo Endereco Um"
 - runFlow:
-    file: ../../../subflows/addresses/create_address.yaml
+    file: ../../../subflows/address/create_address.yaml
     env:
       NAME: "Efetivo Duplo Endereco Dois"
 
