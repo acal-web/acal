@@ -77,3 +77,8 @@ jobs:
             alexandreqrz/api-acal:${{ github.sha }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Trigger Coolify deploy
+        run: |
+          curl --fail-with-body --request GET "${{ secrets.COOLIFY_DEPLOY_URL }}" \
+            --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
