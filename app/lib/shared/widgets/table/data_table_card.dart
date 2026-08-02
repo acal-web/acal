@@ -47,6 +47,7 @@ class DataTableCard<T> extends StatelessWidget {
       // Table rows zebra-stripe against the page ground, not the card fill —
       // override the card's default surface color to make that visible.
       color: Theme.of(context).scaffoldBackgroundColor,
+      clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
         side: BorderSide(color: cs.outlineVariant),
@@ -60,20 +61,26 @@ class DataTableCard<T> extends StatelessWidget {
             Expanded(child: Center(child: Text(emptyMessage)))
           else
             Expanded(
-              child: ListView.separated(
+              child: ListView.builder(
                 itemCount: items.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) => Container(
-                  color: i.isEven ? cs.surface : Colors.transparent,
-                  child: rowBuilder(context, items[i]),
+                itemBuilder: (context, i) => Column(
+                  children: [
+                    Container(
+                      color: i.isEven ? cs.surface : Colors.transparent,
+                      child: rowBuilder(context, items[i]),
+                    ),
+                    const Divider(height: 1),
+                  ],
                 ),
               ),
             ),
-          const Divider(height: 1),
-          _PaginationBar(
-            pagination: pagination,
-            itemCount: items.length,
-            onPageChanged: onPageChanged,
+          Container(
+            color: cs.surface,
+            child: _PaginationBar(
+              pagination: pagination,
+              itemCount: items.length,
+              onPageChanged: onPageChanged,
+            ),
           ),
         ],
       ),

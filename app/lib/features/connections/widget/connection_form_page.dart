@@ -4,6 +4,7 @@ import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
+import 'package:acalapp/features/categories/widget/category_select_field.dart';
 import 'package:acalapp/features/connections/data/connection_service.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
@@ -124,12 +125,10 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             validator: (a) => a == null ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 16),
-          SearchSelectField<Category>(
-            label: 'Categoria',
-            hintText: 'Buscar categoria por nome',
+          CategorySelectField(
+            categoryService: _categoryService,
             initialValue: _selectedCategory,
-            search: (query) => _categoryService.findAll(name: query, size: 10).then((r) => r.data),
-            labelBuilder: (c) => '${c.name} (${groupLabel(c.group)})',
+
             onSelected: (c) => setState(() => _selectedCategory = c),
             validator: (c) => c == null ? 'Obrigatório' : null,
           ),

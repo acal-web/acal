@@ -150,6 +150,31 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           ),
         );
 
+        // Matches LabeledField's label + gap height with an invisible label,
+        // so the button lines up with the category/situação fields instead of
+        // sitting shorter and higher than them. Left at its natural height
+        // (rather than IntrinsicHeight) because categoryField's SearchSelectField
+        // can grow a shrink-wrapped suggestions list that doesn't support
+        // intrinsic sizing.
+        final clearButtonWide = SizedBox(
+          width: _actionButtonWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Opacity(
+                opacity: 0,
+                child: Text(' ', style: Theme.of(context).textTheme.labelLarge),
+              ),
+              const SizedBox(height: 8),
+              OutlinedButton.icon(
+                onPressed: _clear,
+                icon: const Icon(Icons.clear, size: 18),
+                label: const Text('Limpar'),
+              ),
+            ],
+          ),
+        );
+
         final fields = narrow
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -188,7 +213,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                       const SizedBox(width: 12),
                       Expanded(child: activeField),
                       const SizedBox(width: 12),
-                      SizedBox(width: _actionButtonWidth, child: clearButton),
+                      clearButtonWide,
                     ],
                   ),
                 ],

@@ -85,62 +85,84 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < _filterBarNarrowBreakpoint;
 
-    return Scaffold(
-      body: Padding(
-        padding: EdgeInsets.all(narrow ? 16 : 24),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            PageHeader(
-              title: 'Ligações',
-              subtitle: 'Gerencie as ligações de água.',
-              action: SizedBox(
-                width: _actionButtonWidth,
-                child: FilledButton.icon(
-                  onPressed: _openForm,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Nova Ligação'),
-                ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            const Divider(),
-            const SizedBox(height: 16),
-            ConnectionFilterBar(onSearch: _search),
-            const SizedBox(height: 16),
-            Expanded(
-              child: Card(
-                elevation: 1,
-                child: Padding(
-                  padding: EdgeInsets.all(narrow ? 16 : 24),
-                  child: PagedListView<Connection>(
-                    future: _future,
-                    columns: const [
-                      DataTableColumn('Sócio', flex: 3),
-                      DataTableColumn('Logradouro', flex: 3),
-                      DataTableColumn('Categoria', flex: 2),
-                      DataTableColumn('Ativa', width: 70),
-                      DataTableColumn('Ações', width: 88),
-                    ],
-                    emptyMessage: 'Nenhuma ligação cadastrada.',
-                    errorMessage: 'Erro ao carregar ligações',
-                    onRetry: _load,
-                    onPageChanged: _goToPage,
-                    pageSize: _pageSize,
-                    onPageSizeChanged: _changePageSize,
-                    rowBuilder: (context, connection) => _ConnectionRow(
-                      connection: connection,
-                      onEdit: () => _openForm(connection: connection),
-                      onDelete: () => _delete(connection),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
+    final header = PageHeader(
+      title: 'Ligações',
+      subtitle: 'Gerencie as ligações de água.',
+      action: SizedBox(
+        width: _actionButtonWidth,
+        child: FilledButton.icon(
+          onPressed: _openForm,
+          icon: const Icon(Icons.add, size: 18),
+          label: const Text('Nova Ligação'),
         ),
       ),
     );
+
+    final table = Card(
+      elevation: 1,
+      child: Padding(
+        padding: EdgeInsets.all(narrow ? 16 : 24),
+        child: PagedListView<Connection>(
+          future: _future,
+          columns: const [
+            DataTableColumn('Sócio', flex: 3),
+            DataTableColumn('Logradouro', flex: 3),
+            DataTableColumn('Categoria', flex: 2),
+            DataTableColumn('Ativa', width: 70),
+            DataTableColumn('Ações', width: 88),
+          ],
+          emptyMessage: 'Nenhuma ligação cadastrada.',
+          errorMessage: 'Erro ao carregar ligações',
+          onRetry: _load,
+          onPageChanged: _goToPage,
+          pageSize: _pageSize,
+          onPageSizeChanged: _changePageSize,
+          rowBuilder: (context, connection) => _ConnectionRow(
+            connection: connection,
+            onEdit: () => _openForm(connection: connection),
+            onDelete: () => _delete(connection),
+          ),
+        ),
+      ),
+    );
+
+    // ConnectionFilterBar has five stacked fields on narrow screens, tall
+    // enough that header + filters alone can exceed a phone's viewport
+    // height — scroll the page and give the table a fixed height instead of
+    // forcing it into whatever (possibly negative) space an Expanded leaves.
+    final body = narrow
+        ? SingleChildScrollView(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                header,
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                ConnectionFilterBar(onSearch: _search),
+                const SizedBox(height: 16),
+                SizedBox(height: 480, child: table),
+              ],
+            ),
+          )
+        : Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                header,
+                const SizedBox(height: 16),
+                const Divider(),
+                const SizedBox(height: 16),
+                ConnectionFilterBar(onSearch: _search),
+                const SizedBox(height: 16),
+                Expanded(child: table),
+              ],
+            ),
+          );
+
+    return Scaffold(body: body);
   }
 }
 

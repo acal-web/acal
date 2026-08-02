@@ -107,10 +107,10 @@ void main() {
     await tester.tap(find.text('Rua Principal'));
     await tester.pump();
 
-    await tester.enterText(_categoryField(), 'padr');
-    await _settleSearch(tester);
-    await tester.tap(find.text('Padrão (Efetivo)'));
-    await tester.pump();
+    await tester.tap(_categoryField());
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Padrão').last);
+    await tester.pumpAndSettle();
 
     final formState = tester.state<FormState>(find.byType(Form));
     expect(formState.validate(), isTrue);
