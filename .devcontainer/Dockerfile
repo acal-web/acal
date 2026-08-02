@@ -2,7 +2,7 @@
 # Not meant for production — the api/Dockerfile handles that separately.
 
 # Keep in sync with api/.ruby-version
-ARG RUBY_VERSION=3.2.3
+ARG RUBY_VERSION=3.4.10
 FROM docker.io/library/ruby:${RUBY_VERSION}-slim
 
 # Keep in sync with the Flutter version used to develop app/ (see `flutter --version`)
