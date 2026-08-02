@@ -19,7 +19,7 @@ RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
     build-essential \
     libpq-dev libyaml-dev libvips postgresql-client \
-    git curl unzip xz-utils zip ca-certificates sudo \
+    git openssh-client curl unzip xz-utils zip ca-certificates sudo \
     chromium \
     chromium-driver \
     chromium-sandbox \
@@ -40,7 +40,10 @@ RUN echo 'export CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox"' > /etc/chromium.
 RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && useradd --uid ${USER_UID} --gid ${USER_GID} --create-home --shell /bin/bash ${USERNAME} \
     && echo "${USERNAME} ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/${USERNAME} \
-    && chmod 0440 /etc/sudoers.d/${USERNAME}
+    && chmod 0440 /etc/sudoers.d/${USERNAME} \
+    && mkdir -p /home/${USERNAME}/.ssh \
+    && chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.ssh \
+    && chmod 0700 /home/${USERNAME}/.ssh
 
 RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git /opt/flutter \
     && chown -R ${USERNAME}:${USERNAME} /opt/flutter \
