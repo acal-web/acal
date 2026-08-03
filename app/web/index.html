@@ -31,6 +31,14 @@
 
   <title>Acal</title>
   <link rel="manifest" href="manifest.json">
+
+  <!--
+    Runtime config, not baked in at build time — lets the same image be
+    deployed to different environments. In local dev this is the checked-in
+    default below; in the Docker image it's regenerated from a real env var
+    at container start (see app/Dockerfile + app/docker/docker-entrypoint.d).
+  -->
+  <script src="config.js"></script>
 </head>
 <body>
   <!--
