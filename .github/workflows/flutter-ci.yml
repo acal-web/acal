@@ -65,7 +65,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-    # - name: Trigger Coolify deploy
-    #   run: |
-    #     curl --fail-with-body --request GET "${{ secrets.COOLIFY_DEPLOY_URL_APP }}" \
-    #       --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+      - name: Trigger Coolify deploy
+        run: |
+          curl --fail-with-body --request GET "${{ secrets.COOLIFY_DEPLOY_URL_APP }}" \
+            --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
