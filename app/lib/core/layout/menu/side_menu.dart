@@ -44,14 +44,15 @@ class SideMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
     final location = GoRouterState.of(context).uri.path;
 
     return Container(
       width: LayoutConfig.sideMenuWidth,
       height: double.infinity,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: theme.scaffoldBackgroundColor,
         border: Border(right: BorderSide(color: cs.outlineVariant)),
       ),
       child: SingleChildScrollView(
@@ -85,7 +86,7 @@ class _SectionHeader extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 6),
       child: Text(
         title,
         style: TextStyle(
@@ -141,11 +142,11 @@ class _MenuItem extends StatelessWidget {
             onNavigate?.call();
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
                 Icon(icon, color: iconColor, size: 20),
-                const SizedBox(width: 12),
+                const SizedBox(width: 8),
                 Expanded(
                   child: Text(
                     label,

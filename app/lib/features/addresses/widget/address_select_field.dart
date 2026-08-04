@@ -73,7 +73,14 @@ class _AddressSelectFieldState extends FormFieldState<Address> {
           // header), but `label` is what fills the field once selected —
           // show the kind there too so the closed field isn't ambiguous.
           label: address.fullAddress,
-          labelWidget: Text(address.name),
+          // Capped and truncated: DropdownMenu sizes the popup to its widest
+          // row (it only floors the width to the anchor, never caps it), so
+          // one unusually long address name would otherwise stretch the
+          // whole menu past the field.
+          labelWidget: SizedBox(
+            width: 360,
+            child: Text(address.name, overflow: TextOverflow.ellipsis, maxLines: 1),
+          ),
         ),
       ],
     ];
@@ -95,6 +102,9 @@ class _AddressSelectFieldState extends FormFieldState<Address> {
             selectOnly: true,
             hintText: loading ? 'Carregando...' : 'Selecione o logradouro',
             errorText: hasError ? errorText : null,
+            // Up to 500 addresses are preloaded (see _future above) — without
+            // a cap the popup grows to fit all of them instead of scrolling.
+            menuHeight: 320,
             dropdownMenuEntries: entries,
             onSelected: (address) {
               didChange(address);

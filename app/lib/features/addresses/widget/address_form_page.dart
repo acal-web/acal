@@ -121,7 +121,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 kindField,
-                const SizedBox(height: 16),
+                const SizedBox(height: 12),
                 nameField,
               ],
             );
@@ -131,7 +131,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Expanded(child: kindField),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(flex: 2, child: nameField),
             ],
           );

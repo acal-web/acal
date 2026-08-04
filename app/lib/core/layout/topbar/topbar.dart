@@ -10,10 +10,11 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Material(
-      color: Colors.white,
+      color: theme.scaffoldBackgroundColor,
       elevation: 0,
       child: DecoratedBox(
         decoration: BoxDecoration(
@@ -27,7 +28,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
               TopBarLogo(onMenuTap: onMenuTap),
               Expanded(child: TopBarBody()),
               const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 12),
                 child: TopBarHelpers(),
               ),
             ],

@@ -140,9 +140,9 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   nameField,
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   documentField,
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
                   clearButtonNarrow,
                 ],
               )
@@ -151,9 +151,9 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     Expanded(child: nameField),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     Expanded(child: documentField),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 8),
                     clearButtonWide,
                   ],
                 ),
@@ -166,11 +166,11 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
               alignment: Alignment.centerRight,
               child: searchButton,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Card(
               elevation: 1,
               child: Padding(
-                padding: EdgeInsets.all(narrow ? 16 : 24),
+                padding: EdgeInsets.all(narrow ? 12 : 16),
                 child: fields,
               ),
             ),

@@ -38,7 +38,7 @@ class PageHeader extends StatelessWidget {
             children: [
               titleBlock,
               if (action != null) ...[
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 action!,
               ],
             ],

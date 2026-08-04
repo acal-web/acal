@@ -167,21 +167,21 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             onSelected: (c) => setState(() => _selectedCustomer = c),
             validator: (c) => c == null ? 'Obrigatório' : null,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           AddressSelectField(
             addressService: _addressService,
             initialValue: _selectedAddress,
             onSelected: (a) => setState(() => _selectedAddress = a),
             validator: (a) => a == null ? 'Obrigatório' : null,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           CategorySelectField(
             categoryService: _categoryService,
             initialValue: _selectedCategory,
             onSelected: (c) => setState(() => _selectedCategory = c),
             validator: (c) => c == null ? 'Obrigatório' : null,
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LabeledField(
             label: 'Data da Matrícula',
             child: TextFormField(
@@ -195,7 +195,7 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
               onTap: _pickMembershipDate,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           CheckboxListTile(
             value: _active,
             onChanged: (v) => setState(() => _active = v ?? true),

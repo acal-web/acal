@@ -3,34 +3,44 @@ import 'package:google_fonts/google_fonts.dart';
 
 // Eva — color tokens (see design_handoff_eva_design_system/design-system/
 // tokens/colors.css, the "Acal Designer" Claude design-system this theme
-// was imported from — Eva Design System / UI Kitten inspired).
+// was imported from — Eva Design System / UI Kitten inspired), re-tinted
+// dark following VS Code's classic "Dark (Visual Studio)" surface hierarchy —
+// note this is the OPPOSITE relationship from that theme's newer "Dark
+// Modern": here the editor (content — our cards/tables/dialogs) is the
+// darkest layer (#1e1e1e), and the chrome around it (sideBar/activityBar —
+// our topbar/side menu) sits one step lighter (#252526). Borders are also
+// more visible than Dark Modern's near-invisible ones. Brand blue stays the
+// app's primary.
 
-// primary (brand blue) ramp
-const _primary100 = Color(0xFFF2F6FF);
-const _primary200 = Color(0xFFD6E4FF);
-const _primary300 = Color(0xFFA6C1FF);
-const _primary500 = Color(0xFF3366FF);
-const _primary600 = Color(0xFF274BDB);
-const _primary700 = Color(0xFF1A34B8);
-const _primary800 = Color(0xFF102694);
+// primary (brand blue) ramp — containers re-tinted dark, hover/pressed
+// lightened instead of darkened (darkening a saturated blue toward black
+// reads muddy on a dark surface).
+const _primary100 = Color(0xFF16223F); // primaryContainer
+const _primary200 = Color(0xFF1D2E52); // secondaryContainer
+const _primary300 = Color(0xFFA6C1FF); // onPrimaryContainer / inversePrimary
+const _primary500 = Color(0xFF3366FF); // primary (unchanged brand blue)
+const _primary600 = Color(0xFF5580FF); // hover (lighter, not darker)
+const _primary700 = Color(0xFF2952CC); // pressed
+const _primary800 = Color(0xFFD6E4FF); // onSecondaryContainer
 
-// semantic ramps
-const _dangerContainer = Color(0xFFFFE3EA);
-const _danger500 = Color(0xFFFF3D71);
-const _danger700 = Color(0xFFDB2C5C);
+// semantic ramps — standard Material 3 dark error tokens (contrast-vetted).
+const _dangerContainer = Color(0xFF93000A);
+const _danger500 = Color(0xFFFFB4AB);
+const _danger700 = Color(0xFFFFDAD6);
 
-// basic (neutrals)
-const _basic100 = Color(0xFFFFFFFF); // --color-surface
-const _basic200 = Color(0xFFF7F9FC); // --color-bg
-const _basic300 = Color(0xFFEDF1F7);
-const _basic400 = Color(0xFFE4E9F2); // --color-border
-const _basic500 = Color(0xFFC5CEE0);
-const _basic600 = Color(0xFF8F9BB3); // --color-text-hint
-const _basic700 = Color(0xFF2E3A59);
-const _basic900 = Color(0xFF222B45); // --color-text
+// basic (neutrals) — VS Code "Dark (Visual Studio)" inspired.
+const _basic100 = Color(0xFF1E1E1E); // --color-surface (cards/tables/dialogs, like editor.background — darkest layer here)
+const _basic200 = Color(0xFF252526); // --color-bg (page canvas + chrome, like sideBar.background — one step lighter)
+const _basic300 = Color(0xFF2A2D2E); // hover tint / row stripe, like list.hoverBackground
+const _basic400 = Color(0xFF454545); // --color-border, like the classic theme's visible contrast borders
+const _basic500 = Color(0xFF6B6B6B); // outline, a step stronger than _basic400
+const _basic600 = Color(0xFF9D9D9D); // --color-text-hint, muted grey like editorLineNumber.foreground
+const _basic700 = Color(0xFFCCCCCC); // medium-emphasis text/icon
+const _basic900 = Color(0xFFD4D4D4); // --color-text primary/headings, this theme's actual "foreground" token
 
-// Shadows are ink-tinted (rgba(34,43,69,x) === basic-900 at low alpha).
-const _shadowColor = _basic900;
+// Shadows are ink-tinted; on a dark surface pure black reads better than
+// the old basic-900 tint (which is now a light color).
+const _shadowColor = Color(0xFF000000);
 
 /// Spacing scale (`--space-*`), 4px base.
 abstract class EvaSpacing {
@@ -81,17 +91,45 @@ TextStyle _body(double fontSize, {FontWeight weight = FontWeight.w400, double? h
       color: color ?? _basic900,
     );
 
+// Inputs — bg fill, square corners, border, primary focus ring. Reused for
+// both ThemeData.inputDecorationTheme and ThemeData.dropdownMenuTheme below:
+// DropdownMenu (used by AddressSelectField/CategorySelectField) doesn't pick
+// up ThemeData.inputDecorationTheme on its own — it reads a separate
+// DropdownMenuTheme that defaults to Flutter's stock (light) input styling
+// when unset, which is why those fields looked mismatched in dark mode.
+final _inputDecorationTheme = InputDecorationTheme(
+  filled: true,
+  fillColor: _basic200,
+  contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+  prefixIconConstraints: const BoxConstraints(minWidth: 36),
+  suffixIconConstraints: const BoxConstraints(minWidth: 36),
+  border: const OutlineInputBorder(
+    borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md)),
+    borderSide: BorderSide(color: _basic400),
+  ),
+  enabledBorder: const OutlineInputBorder(
+    borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md)),
+    borderSide: BorderSide(color: _basic400),
+  ),
+  focusedBorder: const OutlineInputBorder(
+    borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md)),
+    borderSide: BorderSide(color: _primary500, width: 2),
+  ),
+  labelStyle: _body(12, weight: FontWeight.w600, color: _basic600),
+  hintStyle: _body(14, color: _basic600),
+);
+
 final ThemeData evaTheme = ThemeData(
   useMaterial3: true,
-  brightness: Brightness.light,
+  brightness: Brightness.dark,
 
   colorScheme: const ColorScheme(
-    brightness: Brightness.light,
+    brightness: Brightness.dark,
 
     primary: _primary500,
     onPrimary: Colors.white,
     primaryContainer: _primary100,
-    onPrimaryContainer: _primary600,
+    onPrimaryContainer: _primary300,
     inversePrimary: _primary300,
 
     secondary: _primary600,
@@ -99,13 +137,16 @@ final ThemeData evaTheme = ThemeData(
     secondaryContainer: _primary200,
     onSecondaryContainer: _primary800,
 
+    // tertiary is dark-on-light in the old light theme (onTertiaryContainer
+    // is read directly by side_menu.dart as the inactive nav-icon color, so
+    // it must stay legible on the dark _basic300 tertiaryContainer below).
     tertiary: _basic900,
-    onTertiary: Colors.white,
+    onTertiary: _basic200,
     tertiaryContainer: _basic300,
     onTertiaryContainer: _basic700,
 
     error: _danger500,
-    onError: Colors.white,
+    onError: Color(0xFF690005),
     errorContainer: _dangerContainer,
     onErrorContainer: _danger700,
 
@@ -139,7 +180,7 @@ final ThemeData evaTheme = ThemeData(
     labelSmall: _body(12, weight: FontWeight.w700),  // badges
   ),
 
-  // Cards — white surface, square corners, no border, elevation by shadow only.
+  // Cards — dark surface, square corners, no border, elevation by shadow only.
   cardTheme: CardThemeData(
     color: _basic100,
     elevation: 0,
@@ -150,28 +191,10 @@ final ThemeData evaTheme = ThemeData(
     margin: EdgeInsets.zero,
   ),
 
-  // Inputs — bg fill, square corners, border, primary focus ring.
-  inputDecorationTheme: InputDecorationTheme(
-    filled: true,
-    fillColor: _basic200,
-    contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-    prefixIconConstraints: const BoxConstraints(minWidth: 36),
-    suffixIconConstraints: const BoxConstraints(minWidth: 36),
-    border: const OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md)),
-      borderSide: BorderSide(color: _basic400),
-    ),
-    enabledBorder: const OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md)),
-      borderSide: BorderSide(color: _basic400),
-    ),
-    focusedBorder: const OutlineInputBorder(
-      borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md)),
-      borderSide: BorderSide(color: _primary500, width: 2),
-    ),
-    labelStyle: _body(12, weight: FontWeight.w600, color: _basic600),
-    hintStyle: _body(14, color: _basic600),
-  ),
+  inputDecorationTheme: _inputDecorationTheme,
+
+  // See _inputDecorationTheme's doc comment above for why this is needed.
+  dropdownMenuTheme: DropdownMenuThemeData(inputDecorationTheme: _inputDecorationTheme),
 
   // Buttons — Primary: solid brand blue, square corners.
   elevatedButtonTheme: ElevatedButtonThemeData(
@@ -251,7 +274,7 @@ final ThemeData evaTheme = ThemeData(
     ),
   ),
 
-  // Dialogs/modals — white surface, square corners.
+  // Dialogs/modals — dark surface, square corners.
   dialogTheme: DialogThemeData(
     backgroundColor: _basic100,
     elevation: 0,
@@ -260,7 +283,7 @@ final ThemeData evaTheme = ThemeData(
     ),
   ),
 
-  // AppBar — white surface, dark ink foreground.
+  // AppBar — dark surface, light ink foreground.
   appBarTheme: AppBarTheme(
     backgroundColor: _basic100,
     foregroundColor: _basic900,

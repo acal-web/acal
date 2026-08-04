@@ -84,6 +84,23 @@ RSpec.describe "Connections", type: :request do
         expect(row["category"]).to eq(category_json(category))
       end
 
+      it "still embeds the full customer, address and category even after they're soft deleted" do
+        post "/connections", params: valid_params
+        customer.soft_delete!
+        address.soft_delete!
+        category.soft_delete!
+
+        get "/connections"
+
+        row = response.parsed_body["content"].first
+        expect(row["customer"].except("deleted_at")).to eq(customer_json(customer.reload).except("deleted_at"))
+        expect(row["address"].except("deleted_at")).to eq(address_json(address.reload).except("deleted_at"))
+        expect(row["category"].except("deleted_at")).to eq(category_json(category.reload).except("deleted_at"))
+        expect(row["customer"]["deleted_at"]).not_to be_nil
+        expect(row["address"]["deleted_at"]).not_to be_nil
+        expect(row["category"]["deleted_at"]).not_to be_nil
+      end
+
       it "excludes soft deleted connections" do
         post "/connections", params: valid_params
         id = response.parsed_body["id"]
@@ -133,6 +150,15 @@ RSpec.describe "Connections", type: :request do
         expect(response.parsed_body["content"].map { |c| c["category_id"] }).to eq([ category.id ])
       end
 
+      it "excludes connections whose category was soft deleted, even when filtering by that category_id" do
+        create(:connection, customer: customer, address: address, category: category)
+        category.soft_delete!
+
+        get "/connections", params: { category_id: category.id }
+
+        expect(response.parsed_body["content"]).to eq([])
+      end
+
       it "filters by active status" do
         create(:connection, customer: customer, address: address, category: category, active: true)
         ended_address = create(:address, name: "Ended Street")
@@ -180,6 +206,25 @@ RSpec.describe "Connections", type: :request do
           "address" => address_json(address),
           "category" => category_json(category)
         )
+      end
+
+      it "still returns the full customer, address and category even after they're soft deleted" do
+        post "/connections", params: valid_params
+        id = response.parsed_body["id"]
+        customer.soft_delete!
+        address.soft_delete!
+        category.soft_delete!
+
+        get "/connections/#{id}"
+
+        expect(response).to have_http_status(:ok)
+        body = response.parsed_body
+        expect(body["customer"].except("deleted_at")).to eq(customer_json(customer.reload).except("deleted_at"))
+        expect(body["address"].except("deleted_at")).to eq(address_json(address.reload).except("deleted_at"))
+        expect(body["category"].except("deleted_at")).to eq(category_json(category.reload).except("deleted_at"))
+        expect(body["customer"]["deleted_at"]).not_to be_nil
+        expect(body["address"]["deleted_at"]).not_to be_nil
+        expect(body["category"]["deleted_at"]).not_to be_nil
       end
     end
 

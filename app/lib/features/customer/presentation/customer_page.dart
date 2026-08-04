@@ -78,7 +78,7 @@ class _CustomersPageState extends State<CustomersPage> {
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.all(narrow ? 16 : 24),
+        padding: EdgeInsets.all(narrow ? 12 : 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -94,16 +94,16 @@ class _CustomersPageState extends State<CustomersPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             const Divider(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             CustomerFilterBar(onSearch: _search),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Expanded(
               child: Card(
                 elevation: 1,
                 child: Padding(
-                  padding: EdgeInsets.all(narrow ? 16 : 24),
+                  padding: EdgeInsets.all(narrow ? 12 : 16),
                   child: PagedListView<Customer>(
                     future: _future,
                     columns: const [
@@ -151,7 +151,7 @@ class _CustomerRow extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           Expanded(

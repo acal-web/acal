@@ -143,7 +143,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
               validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LabeledField(
             label: _documentKind == DocumentKind.cpf ? 'Documento (CPF)' : 'Documento (CNPJ)',
             child: TextFormField(
@@ -164,7 +164,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
               validator: _validateDocument,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LabeledField(
             label: 'Número de Sócio (opcional)',
             child: TextFormField(
@@ -175,7 +175,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
               validator: _validateMembershipNumber,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           CheckboxListTile(
             value: _voter,
             onChanged: (v) => setState(() => _voter = v ?? false),

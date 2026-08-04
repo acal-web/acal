@@ -129,7 +129,7 @@ class _Header extends StatelessWidget {
     final cs = Theme.of(context).colorScheme;
     final style = Theme.of(context).textTheme.labelLarge;
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           for (final column in columns)
@@ -282,7 +282,7 @@ class _PaginationBar extends StatelessWidget {
     );
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: LayoutBuilder(
         builder: (context, constraints) {
           if (constraints.maxWidth < _narrowBreakpoint) {

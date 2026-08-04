@@ -34,7 +34,7 @@ class AppFormDialog extends StatelessWidget {
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: const EdgeInsets.all(16),
           child: Form(
             key: formKey,
             child: Column(
@@ -45,9 +45,9 @@ class AppFormDialog extends StatelessWidget {
                   title: title,
                   onClose: () => Navigator.of(context).pop(false),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 8),
                 fields,
-                const SizedBox(height: 28),
+                const SizedBox(height: 16),
                 FormActions(
                   onCancel: () => Navigator.of(context).pop(false),
                   onSave: onSave,

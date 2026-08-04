@@ -63,7 +63,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.all(narrow ? 16 : 24),
+        padding: EdgeInsets.all(narrow ? 12 : 16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -79,16 +79,16 @@ class _CategoriesPageState extends State<CategoriesPage> {
                 ),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             const Divider(),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             _CategoryFilterBar(onSearch: _load),
-            const SizedBox(height: 16),
+            const SizedBox(height: 8),
             Expanded(
               child: Card(
                 elevation: 1,
                 child: Padding(
-                  padding: EdgeInsets.all(narrow ? 16 : 24),
+                  padding: EdgeInsets.all(narrow ? 12 : 16),
                   child: PagedListView<Category>(
                     future: _future,
                     columns: const [
@@ -97,6 +97,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       DataTableColumn('Hidrômetro', width: 100),
                       DataTableColumn('Valor Água', flex: 2),
                       DataTableColumn('Valor Societário', flex: 2),
+                      DataTableColumn('Total', flex: 2),
                       DataTableColumn('Ações', width: 88),
                     ],
                     emptyMessage: 'Nenhuma categoria cadastrada.',
@@ -169,7 +170,7 @@ class _CategoryRow extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           Expanded(
@@ -195,6 +196,13 @@ class _CategoryRow extends StatelessWidget {
           Expanded(
             flex: 2,
             child: Text(formatBRL(category.membershipPrice), style: theme.textTheme.bodyMedium),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text(
+              formatBRL(category.waterPrice + category.membershipPrice),
+              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+            ),
           ),
           SizedBox(
             width: 88,

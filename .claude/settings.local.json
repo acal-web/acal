@@ -32,7 +32,17 @@
       "Read(//var/run/**)",
       "Bash(env)",
       "Bash(getent hosts *)",
-      "Bash(pg_isready -h db -p 5432 -U api)"
+      "Bash(pg_isready -h db -p 5432 -U api)",
+      "Bash(sed -n '1700,1780p' /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart)",
+      "Read(//opt/flutter/packages/flutter/lib/src/material/**)",
+      "Bash(sed -n '1190,1260p' /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart)",
+      "Bash(grep -n \"_buildDefaultDecoration\\\\b\" /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart)",
+      "Bash(sed -n '1424,1460p' /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart)",
+      "Bash(grep -n \"Material\\(\\\\|surfaceTintColor\\\\|elevation:\" /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart | head -40)",
+      "Bash(grep -n \"applyDefaults\" /opt/flutter/packages/flutter/lib/src/material/input_decorator.dart | head)",
+      "Bash(sed -n '4039,4110p' /opt/flutter/packages/flutter/lib/src/material/input_decorator.dart)",
+      "Bash(sed -n '1100,1190p' /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart)",
+      "Bash(grep -n \"class DropdownMenuThemeData\\\\|this.inputDecorationTheme\\\\|final.*inputDecorationTheme\" /opt/flutter/packages/flutter/lib/src/material/dropdown_menu_theme.dart)"
     ]
   }
 }

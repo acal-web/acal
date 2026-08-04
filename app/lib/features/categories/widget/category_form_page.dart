@@ -113,7 +113,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
               validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LabeledField(
             label: 'Descrição',
             child: TextFormField(
@@ -125,7 +125,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
               ),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           LabeledField(
             label: 'Grupo',
             child: DropdownButtonFormField<String>(
@@ -137,7 +137,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
               decoration: const InputDecoration(border: OutlineInputBorder()),
             ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
@@ -155,7 +155,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                   ),
                 ),
               ),
-              const SizedBox(width: 16),
+              const SizedBox(width: 12),
               Expanded(
                 child: LabeledField(
                   label: 'Valor Societário',

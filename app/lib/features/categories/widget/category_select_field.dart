@@ -67,7 +67,14 @@ class _CategorySelectFieldState extends FormFieldState<Category> {
           // header), but `label` is what fills the field once selected —
           // show the group there too so the closed field isn't ambiguous.
           label: '${groupLabel(category.group)} - ${category.name}',
-          labelWidget: Text(category.name),
+          // Capped and truncated: DropdownMenu sizes the popup to its widest
+          // row (it only floors the width to the anchor, never caps it), so
+          // one unusually long category name would otherwise stretch the
+          // whole menu past the field.
+          labelWidget: SizedBox(
+            width: 360,
+            child: Text(category.name, overflow: TextOverflow.ellipsis, maxLines: 1),
+          ),
         ),
       ],
     ];
@@ -89,6 +96,10 @@ class _CategorySelectFieldState extends FormFieldState<Category> {
             selectOnly: true,
             hintText: loading ? 'Carregando...' : 'Selecione a categoria',
             errorText: hasError ? errorText : null,
+            // Up to 500 categories are preloaded (see _future above) —
+            // without a cap the popup grows to fit all of them instead of
+            // scrolling.
+            menuHeight: 320,
             dropdownMenuEntries: entries,
             onSelected: (category) {
               didChange(category);

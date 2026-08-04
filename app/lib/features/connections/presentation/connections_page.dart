@@ -101,7 +101,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     final table = Card(
       elevation: 1,
       child: Padding(
-        padding: EdgeInsets.all(narrow ? 16 : 24),
+        padding: EdgeInsets.all(narrow ? 12 : 16),
         child: PagedListView<Connection>(
           future: _future,
           columns: const [
@@ -132,31 +132,31 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     // forcing it into whatever (possibly negative) space an Expanded leaves.
     final body = narrow
         ? SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
+            padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 header,
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 const Divider(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 ConnectionFilterBar(onSearch: _search),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 SizedBox(height: 480, child: table),
               ],
             ),
           )
         : Padding(
-            padding: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 header,
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 const Divider(),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 ConnectionFilterBar(onSearch: _search),
-                const SizedBox(height: 16),
+                const SizedBox(height: 8),
                 Expanded(child: table),
               ],
             ),
@@ -182,7 +182,7 @@ class _ConnectionRow extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
         children: [
           Expanded(

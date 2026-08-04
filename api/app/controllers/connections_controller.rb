@@ -5,13 +5,13 @@ class ConnectionsController < ApplicationController
 
   # GET /connections
   def index
-    connections = Connection
-      .filter_by_customer_name(params[:customer_name])
-      .filter_by_customer_document(params[:customer_document])
-      .filter_by_address_name(params[:address_name])
-      .filter_by_category_id(params[:category_id])
-      .filter_by_active(params[:active])
-      .includes(:customer, :address, :category)
+    connections = Connections::SearchService.call(
+      customer_name: params[:customer_name],
+      customer_document: params[:customer_document],
+      address_name: params[:address_name],
+      category_id: params[:category_id],
+      active: params[:active]
+    )
 
     render json: paginate(connections), include: CONNECTION_INCLUDES
   end
