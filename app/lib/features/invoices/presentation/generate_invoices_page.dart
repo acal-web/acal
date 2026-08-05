@@ -448,45 +448,72 @@ class _GenerateBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      runSpacing: 12,
-      spacing: 16,
+    final narrow = MediaQuery.sizeOf(context).width < _narrowBreakpoint;
+
+    final infoText = Row(
+      mainAxisSize: MainAxisSize.min,
       children: [
+        const Icon(Icons.info_outline, size: 18),
+        const SizedBox(width: 8),
+        Text('$foundCount encontradas, ${formatBRL(amount)}', style: Theme.of(context).textTheme.bodyMedium),
+      ],
+    );
+
+    final dueDateField = SizedBox(
+      width: 180,
+      child: LabeledField(
+        label: 'Vencimento',
+        child: TextFormField(
+          key: const Key('due-date-field'),
+          controller: TextEditingController(text: dueDate == null ? '' : _formatDate(dueDate!)),
+          readOnly: true,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            hintText: '--/--/----',
+            suffixIcon: Icon(Icons.calendar_today, size: 18),
+          ),
+          onTap: onDueDateTap,
+        ),
+      ),
+    );
+
+    final confirmButton = SizedBox(
+      width: narrow ? double.infinity : 220,
+      child: FilledButton.icon(
+        onPressed: onConfirm,
+        icon: generating
+            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
+            : const Icon(Icons.check, size: 18),
+        label: const Text('Confirmar Geração'),
+      ),
+    );
+
+    if (narrow) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          infoText,
+          const SizedBox(height: 12),
+          dueDateField,
+          const SizedBox(height: 12),
+          confirmButton,
+        ],
+      );
+    }
+
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.end,
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        infoText,
         Row(
           mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Icon(Icons.info_outline, size: 18),
-            const SizedBox(width: 8),
-            Text('$foundCount encontradas, ${formatBRL(amount)}', style: Theme.of(context).textTheme.bodyMedium),
+            dueDateField,
+            const SizedBox(width: 16),
+            confirmButton,
           ],
-        ),
-        SizedBox(
-          width: 180,
-          child: LabeledField(
-            label: 'Vencimento',
-            child: TextFormField(
-              key: const Key('due-date-field'),
-              controller: TextEditingController(text: dueDate == null ? '' : _formatDate(dueDate!)),
-              readOnly: true,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: '--/--/----',
-                suffixIcon: Icon(Icons.calendar_today, size: 18),
-              ),
-              onTap: onDueDateTap,
-            ),
-          ),
-        ),
-        SizedBox(
-          width: 220,
-          child: FilledButton.icon(
-            onPressed: onConfirm,
-            icon: generating
-                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                : const Icon(Icons.check, size: 18),
-            label: const Text('Confirmar Geração'),
-          ),
         ),
       ],
     );
