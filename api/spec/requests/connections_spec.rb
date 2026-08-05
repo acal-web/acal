@@ -47,7 +47,7 @@ RSpec.describe "Connections", type: :request do
   let(:address) { create(:address) }
   let(:category) { create(:category) }
   let(:valid_params) do
-    { connection: { customer_id: customer.id, address_id: address.id, category_id: category.id } }
+    { connection: { customer_id: customer.id, address_id: address.id, category_id: category.id, number: 1 } }
   end
 
   describe "GET /connections" do
@@ -195,6 +195,8 @@ RSpec.describe "Connections", type: :request do
           "customer_id" => customer.id,
           "address_id" => address.id,
           "category_id" => category.id,
+          "number" => 1,
+          "letter" => nil,
           "active" => true,
           "legacy_id" => nil,
           "membership_date" => nil,
@@ -303,11 +305,29 @@ RSpec.describe "Connections", type: :request do
         new_customer = create(:customer, name: "Ciclano")
 
         expect {
-          post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
+          # The ended connection's row still exists (not deleted), so it
+          # still holds number 1 on this address — the new one needs a
+          # different number.
+          post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 2 } }
         }.to change(Connection, :count).by(1)
 
         expect(response).to have_http_status(:created)
         expect(response.parsed_body["active"]).to eq(true)
+      end
+
+      it "allows a second connection with the same address and number when the letter differs" do
+        post "/connections", params: valid_params.deep_merge(connection: { active: false })
+
+        new_customer = create(:customer, name: "Ciclano")
+
+        expect {
+          post "/connections", params: {
+            connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 1, letter: "A", active: false }
+          }
+        }.to change(Connection, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+        expect(response.parsed_body["letter"]).to eq("A")
       end
 
       it "allows creating a new connection for an address whose previous connection was soft deleted" do
@@ -318,7 +338,8 @@ RSpec.describe "Connections", type: :request do
         new_customer = create(:customer, name: "Ciclano")
 
         expect {
-          post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
+          # Soft deleted, so it no longer occupies number 1 on this address.
+          post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 1 } }
         }.to change(Connection, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -326,6 +347,35 @@ RSpec.describe "Connections", type: :request do
     end
 
     context "when it fails" do
+      it "rejects a request without a number" do
+        post "/connections", params: { connection: valid_params[:connection].except(:number) }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body).to eq("number" => [ "can't be blank", "is not a number" ])
+      end
+
+      it "rejects a second connection with the same address and number, with no letter on either" do
+        post "/connections", params: valid_params.deep_merge(connection: { active: false })
+
+        new_customer = create(:customer, name: "Ciclano")
+        post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 1, active: false } }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body).to eq("code" => 1001, "message" => "Connection already exists")
+      end
+
+      it "rejects a second connection with the same address, number and letter" do
+        post "/connections", params: valid_params.deep_merge(connection: { letter: "A", active: false })
+
+        new_customer = create(:customer, name: "Ciclano")
+        post "/connections", params: {
+          connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 1, letter: "A", active: false }
+        }
+
+        expect(response).to have_http_status(:unprocessable_content)
+        expect(response.parsed_body).to eq("code" => 1001, "message" => "Connection already exists")
+      end
+
       it "rejects a request without a customer" do
         post "/connections", params: { connection: valid_params[:connection].except(:customer_id) }
 
@@ -353,7 +403,7 @@ RSpec.describe "Connections", type: :request do
         new_customer = create(:customer, name: "Ciclano")
 
         expect {
-          post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
+          post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 2 } }
         }.not_to change(Connection, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
@@ -366,7 +416,7 @@ RSpec.describe "Connections", type: :request do
         new_address = create(:address, name: "Second Street")
 
         expect {
-          post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: category.id } }
+          post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: category.id, number: 1 } }
         }.not_to change(Connection, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
@@ -380,7 +430,7 @@ RSpec.describe "Connections", type: :request do
         temporario_category = create(:category, name: "Visitante", group: "temporario")
 
         expect {
-          post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: temporario_category.id } }
+          post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: temporario_category.id, number: 1 } }
         }.to change(Connection, :count).by(1)
 
         expect(response).to have_http_status(:created)
@@ -442,7 +492,7 @@ RSpec.describe "Connections", type: :request do
         patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: false) }
 
         new_customer = create(:customer, name: "Ciclano")
-        post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id } }
+        post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 2 } }
 
         patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: true) }
 
@@ -456,7 +506,7 @@ RSpec.describe "Connections", type: :request do
         patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: false) }
 
         new_address = create(:address, name: "Second Street")
-        post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: category.id } }
+        post "/connections", params: { connection: { customer_id: customer.id, address_id: new_address.id, category_id: category.id, number: 1 } }
 
         patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: true) }
 

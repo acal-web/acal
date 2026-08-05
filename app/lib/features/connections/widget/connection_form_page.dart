@@ -15,6 +15,7 @@ import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ConnectionFormPage extends StatefulWidget {
   final Connection? connection;
@@ -46,6 +47,8 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
   Customer? _selectedCustomer;
   Address? _selectedAddress;
   Category? _selectedCategory;
+  late final TextEditingController _numberController;
+  late final TextEditingController _letterController;
   late bool _active;
   DateTime? _membershipDate;
   late final TextEditingController _membershipDateController;
@@ -67,6 +70,8 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
     _selectedCustomer = widget.connection?.customer;
     _selectedAddress = widget.connection?.address;
     _selectedCategory = widget.connection?.category;
+    _numberController = TextEditingController(text: widget.connection?.number.toString() ?? '');
+    _letterController = TextEditingController(text: widget.connection?.letter ?? '');
     _active = widget.connection?.active ?? true;
     _membershipDate = widget.connection?.membershipDate;
     _membershipDateController = TextEditingController(
@@ -77,6 +82,8 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
 
   @override
   void dispose() {
+    _numberController.dispose();
+    _letterController.dispose();
     _membershipDateController.dispose();
     super.dispose();
   }
@@ -104,11 +111,14 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
 
     setState(() => _saving = true);
     try {
+      final letter = _letterController.text.trim();
       final connection = Connection(
         id: widget.connection?.id,
         customerId: _selectedCustomer!.id!,
         addressId: _selectedAddress!.id!,
         categoryId: _selectedCategory!.id!,
+        number: int.parse(_numberController.text.trim()),
+        letter: letter.isEmpty ? null : letter,
         active: _active,
         membershipDate: _membershipDate,
         exclusivelyMember: _exclusivelyMember,
@@ -173,6 +183,37 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             initialValue: _selectedAddress,
             onSelected: (a) => setState(() => _selectedAddress = a),
             validator: (a) => a == null ? 'Obrigatório' : null,
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                flex: 2,
+                child: LabeledField(
+                  label: 'Número',
+                  child: TextFormField(
+                    controller: _numberController,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    decoration: const InputDecoration(border: OutlineInputBorder()),
+                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: LabeledField(
+                  label: 'Letra',
+                  child: TextFormField(
+                    controller: _letterController,
+                    maxLength: 1,
+                    textCapitalization: TextCapitalization.characters,
+                    decoration: const InputDecoration(border: OutlineInputBorder(), counterText: ''),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
           CategorySelectField(

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_02_195757) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_04_040000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -21,7 +21,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_195757) do
     t.integer "legacy_id"
     t.string "name"
     t.datetime "updated_at", null: false
-    t.index "lower((kind)::text), lower((name)::text)", name: "index_addresses_on_kind_and_name_unique", unique: true, where: "(deleted_at IS NULL)"
     t.index ["name"], name: "index_addresses_on_name"
   end
 
@@ -49,8 +48,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_195757) do
     t.datetime "deleted_at"
     t.boolean "exclusively_member", default: false, null: false
     t.integer "legacy_id"
+    t.string "letter"
     t.date "membership_date"
+    t.integer "number", null: false
     t.datetime "updated_at", null: false
+    t.index "address_id, number, COALESCE(letter, ''::character varying)", name: "index_connections_on_address_id_number_letter_unique", unique: true, where: "(deleted_at IS NULL)"
     t.index ["address_id"], name: "index_connections_on_address_id"
     t.index ["address_id"], name: "index_connections_on_address_id_active_unique", unique: true, where: "((active = true) AND (deleted_at IS NULL))"
     t.index ["category_id"], name: "index_connections_on_category_id"
@@ -70,7 +72,32 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_02_195757) do
     t.index ["name"], name: "index_customers_on_name"
   end
 
+  create_table "invoices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.decimal "amount", precision: 10, scale: 2, null: false
+    t.uuid "connection_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.date "due_date", null: false
+    t.date "reference_date", null: false
+    t.datetime "updated_at", null: false
+    t.index ["connection_id", "reference_date"], name: "index_invoices_on_connection_id_and_reference_date_unique", unique: true, where: "(deleted_at IS NULL)"
+    t.index ["connection_id"], name: "index_invoices_on_connection_id"
+  end
+
+  create_table "quality_analyses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.integer "analyzed", null: false
+    t.integer "compliant", null: false
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.string "param_name", null: false
+    t.date "reference_date", null: false
+    t.integer "required", null: false
+    t.datetime "updated_at", null: false
+    t.index ["reference_date", "param_name"], name: "index_quality_analyses_on_reference_date_and_param_name_unique", unique: true, where: "(deleted_at IS NULL)"
+  end
+
   add_foreign_key "connections", "addresses"
   add_foreign_key "connections", "categories"
   add_foreign_key "connections", "customers"
+  add_foreign_key "invoices", "connections"
 end

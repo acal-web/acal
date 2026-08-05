@@ -13,6 +13,8 @@ class Connection < ApplicationRecord
   belongs_to :address, -> { unscope(where: :deleted_at) }
   belongs_to :category, -> { unscope(where: :deleted_at) }
 
+  validates :number, presence: true, numericality: { only_integer: true, greater_than: 0 }
+
   validate :address_not_already_active, if: :active?
   validate :customer_not_already_efetivo, if: :active?
 
@@ -35,6 +37,14 @@ class Connection < ApplicationRecord
 
   scope :filter_by_active, ->(active) {
     where(active: ActiveModel::Type::Boolean.new.cast(active)) unless active.nil? || active == ""
+  }
+
+  scope :filter_by_address_id, ->(address_id) {
+    where(address_id: address_id) if address_id.present?
+  }
+
+  scope :filter_by_has_water_meter, ->(has_water_meter) {
+    joins(:category).merge(Category.all).where(categories: { has_water_meter: ActiveModel::Type::Boolean.new.cast(has_water_meter) }) unless has_water_meter.nil? || has_water_meter == ""
   }
 
   private

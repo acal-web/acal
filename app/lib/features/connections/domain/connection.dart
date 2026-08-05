@@ -7,6 +7,8 @@ class Connection {
   final String customerId;
   final String addressId;
   final String categoryId;
+  final int number;
+  final String? letter;
   final bool active;
   final DateTime? membershipDate;
   final bool exclusivelyMember;
@@ -19,6 +21,8 @@ class Connection {
     required this.customerId,
     required this.addressId,
     required this.categoryId,
+    required this.number,
+    this.letter,
     this.active = true,
     this.membershipDate,
     this.exclusivelyMember = false,
@@ -32,6 +36,8 @@ class Connection {
         customerId: json['customer_id'].toString(),
         addressId: json['address_id'].toString(),
         categoryId: json['category_id'].toString(),
+        number: json['number'] as int,
+        letter: json['letter'] as String?,
         active: json['active'] as bool,
         membershipDate: json['membership_date'] != null ? DateTime.parse(json['membership_date'] as String) : null,
         exclusivelyMember: json['exclusively_member'] as bool,
@@ -45,6 +51,8 @@ class Connection {
         'customer_id': customerId,
         'address_id': addressId,
         'category_id': categoryId,
+        'number': number,
+        'letter': letter,
         'active': active,
         'membership_date': membershipDate == null ? null : _formatDate(membershipDate!),
         'exclusively_member': exclusivelyMember,
@@ -58,6 +66,8 @@ class Connection {
     String? customerId,
     String? addressId,
     String? categoryId,
+    int? number,
+    String? letter,
     bool? active,
     DateTime? membershipDate,
     bool? exclusivelyMember,
@@ -70,6 +80,8 @@ class Connection {
         customerId: customerId ?? this.customerId,
         addressId: addressId ?? this.addressId,
         categoryId: categoryId ?? this.categoryId,
+        number: number ?? this.number,
+        letter: letter ?? this.letter,
         active: active ?? this.active,
         membershipDate: membershipDate ?? this.membershipDate,
         exclusivelyMember: exclusivelyMember ?? this.exclusivelyMember,

@@ -183,10 +183,9 @@ class _CategoryRow extends StatelessWidget {
           ),
           SizedBox(
             width: 100,
-            child: Icon(
-              category.hasWaterMeter ? Icons.check : Icons.close,
-              size: 18,
-              color: category.hasWaterMeter ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant,
+            child: Text(
+              category.hasWaterMeter ? "Sim" : "Não",
+              style: theme.textTheme.bodyMedium,
             ),
           ),
           Expanded(

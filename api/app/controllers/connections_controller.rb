@@ -24,14 +24,14 @@ class ConnectionsController < ApplicationController
   # POST /connections
   def create
     @connection = Connections::CreateService.call(
-      customer_id:, address_id:, category_id:, active:, legacy_id:, membership_date:, exclusively_member:
+      customer_id:, address_id:, category_id:, number:, letter:, active:, legacy_id:, membership_date:, exclusively_member:
     )
     render json: @connection, status: :created, location: @connection, include: CONNECTION_INCLUDES
   end
 
   # PATCH/PUT /connections/1
   def update
-    @connection.update!(customer_id:, address_id:, category_id:, active:, legacy_id:, membership_date:, exclusively_member:)
+    @connection.update!(customer_id:, address_id:, category_id:, number:, letter:, active:, legacy_id:, membership_date:, exclusively_member:)
     render json: @connection, include: CONNECTION_INCLUDES
   end
 
@@ -46,7 +46,7 @@ class ConnectionsController < ApplicationController
     end
 
     def connection_params
-      params.expect(connection: [ :customer_id, :address_id, :category_id, :active, :legacy_id, :membership_date, :exclusively_member ])
+      params.expect(connection: [ :customer_id, :address_id, :category_id, :number, :letter, :active, :legacy_id, :membership_date, :exclusively_member ])
     end
 
     def customer_id
@@ -59,6 +59,14 @@ class ConnectionsController < ApplicationController
 
     def category_id
       connection_params[:category_id]
+    end
+
+    def number
+      connection_params[:number]
+    end
+
+    def letter
+      connection_params[:letter]
     end
 
     def active

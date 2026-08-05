@@ -3,6 +3,14 @@ Rails.application.routes.draw do
   resources :categories
   resources :connections
   resources :customers
+  resources :quality_analyses
+
+  resources :invoices, only: [ :index ] do
+    collection do
+      get :eligible
+      post :generate
+    end
+  end
 
   # Test-only reset endpoint for the Maestro E2E suite — the block below is
   # never evaluated outside RAILS_ENV=test, so the route doesn't exist in

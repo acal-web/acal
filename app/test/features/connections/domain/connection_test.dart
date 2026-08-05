@@ -9,6 +9,8 @@ void main() {
         'customer_id': 'cust1',
         'address_id': 'addr1',
         'category_id': 'cat1',
+        'number': 12,
+        'letter': 'A',
         'active': true,
         'membership_date': '2024-03-15',
         'exclusively_member': true,
@@ -41,6 +43,8 @@ void main() {
       expect(connection.customerId, 'cust1');
       expect(connection.addressId, 'addr1');
       expect(connection.categoryId, 'cat1');
+      expect(connection.number, 12);
+      expect(connection.letter, 'A');
       expect(connection.active, isTrue);
       expect(connection.customer?.name, 'Fulano de Tal');
       expect(connection.address?.fullAddress, 'Rua Principal');
@@ -55,6 +59,8 @@ void main() {
         'customer_id': 'cust1',
         'address_id': 'addr1',
         'category_id': 'cat1',
+        'number': 5,
+        'letter': null,
         'active': false,
         'membership_date': null,
         'exclusively_member': false,
@@ -65,6 +71,7 @@ void main() {
       expect(connection.customer, isNull);
       expect(connection.address, isNull);
       expect(connection.category, isNull);
+      expect(connection.letter, isNull);
       expect(connection.active, isFalse);
       expect(connection.membershipDate, isNull);
       expect(connection.exclusivelyMember, isFalse);
@@ -78,6 +85,7 @@ void main() {
         customerId: 'cust1',
         addressId: 'addr1',
         categoryId: 'cat1',
+        number: 12,
       );
 
       expect(connection.toJson(), {
@@ -85,6 +93,8 @@ void main() {
         'customer_id': 'cust1',
         'address_id': 'addr1',
         'category_id': 'cat1',
+        'number': 12,
+        'letter': null,
         'active': true,
         'membership_date': null,
         'exclusively_member': false,
@@ -96,6 +106,7 @@ void main() {
         customerId: 'cust1',
         addressId: 'addr1',
         categoryId: 'cat1',
+        number: 12,
         membershipDate: DateTime(2024, 3, 5),
         exclusivelyMember: true,
       );
@@ -109,6 +120,7 @@ void main() {
         customerId: 'cust1',
         addressId: 'addr1',
         categoryId: 'cat1',
+        number: 12,
       );
 
       expect(connection.toJson().containsKey('id'), isFalse);

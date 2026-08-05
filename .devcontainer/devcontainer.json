@@ -39,7 +39,7 @@
   "customizations": {
     "vscode": {
       "settings": {
-        "workbench.colorTheme": "Monokai Dimmed",
+        "workbench.colorTheme": "Dark Modern",
         "dart.flutterSdkPath": "/opt/flutter"
       },
       "extensions": [

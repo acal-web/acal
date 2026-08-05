@@ -90,10 +90,16 @@ Future<void> _settleSearch(WidgetTester tester) async {
   await tester.pump();
 }
 
-// Field order in ConnectionFormPage: Sócio, Logradouro, Categoria.
+// Field order in ConnectionFormPage: Sócio, Logradouro, [Número, Letra],
+// Categoria, Data da Matrícula. SearchSelectField and DropdownMenu each
+// render a bare TextField; Número/Letra/Data are TextFormFields (which are
+// also TextFields under the hood), so they all share the same TextField
+// finder space in tree order.
 Finder _customerField() => find.byType(TextField).at(0);
 Finder _addressField() => find.byType(TextField).at(1);
-Finder _categoryField() => find.byType(TextField).at(2);
+Finder _numberField() => find.byType(TextField).at(2);
+Finder _letterField() => find.byType(TextField).at(3);
+Finder _categoryField() => find.byType(TextField).at(4);
 
 Future<void> _fillAllFields(WidgetTester tester) async {
   await tester.enterText(_customerField(), 'fulano');
@@ -105,6 +111,8 @@ Future<void> _fillAllFields(WidgetTester tester) async {
   await tester.pumpAndSettle();
   await tester.tap(find.text('Principal').last);
   await tester.pumpAndSettle();
+
+  await tester.enterText(_numberField(), '12');
 
   await tester.tap(_categoryField());
   await tester.pumpAndSettle();
@@ -120,13 +128,27 @@ void main() {
     expect(formState.validate(), isFalse);
     await tester.pump();
 
-    expect(find.text('Obrigatório'), findsNWidgets(3));
+    expect(find.text('Obrigatório'), findsNWidgets(4));
   });
 
   testWidgets('selecting an option in each picker satisfies validation', (tester) async {
     await _pump(tester);
 
     await _fillAllFields(tester);
+
+    final formState = tester.state<FormState>(find.byType(Form));
+    expect(formState.validate(), isTrue);
+  });
+
+  testWidgets('Letra is optional and limited to a single character', (tester) async {
+    await _pump(tester);
+    await _fillAllFields(tester);
+
+    await tester.enterText(_letterField(), 'AB');
+    await tester.pump();
+
+    final field = tester.widget<TextField>(_letterField());
+    expect(field.controller!.text, 'A');
 
     final formState = tester.state<FormState>(find.byType(Form));
     expect(formState.validate(), isTrue);
@@ -161,7 +183,11 @@ void main() {
   testWidgets('picking a membership date fills the field with dd/MM/yyyy', (tester) async {
     await _pump(tester);
 
-    await tester.tap(find.byType(TextFormField));
+    // Número, Letra and Data da Matrícula are all TextFormFields — Data is
+    // the third (index 2).
+    final dateField = find.byType(TextFormField).at(2);
+
+    await tester.tap(dateField);
     await tester.pumpAndSettle();
 
     // The Material date picker defaults to today — just confirm a pick
@@ -170,7 +196,7 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    final field = tester.widget<TextFormField>(find.byType(TextFormField));
+    final field = tester.widget<TextFormField>(dateField);
     expect(field.controller!.text, matches(RegExp(r'^\d{2}/\d{2}/\d{4}$')));
   });
 

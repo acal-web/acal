@@ -146,6 +146,16 @@ RSpec.describe "Addresses", type: :request do
         expect(response).to have_http_status(:created)
         expect(response.parsed_body["name"]).to eq("Main Street")
       end
+
+      it "allows a duplicate address" do
+        post "/addresses", params: valid_params
+
+        expect {
+          post "/addresses", params: valid_params
+        }.to change(Address, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+      end
     end
 
     context "when it fails" do
@@ -161,28 +171,6 @@ RSpec.describe "Addresses", type: :request do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body).to eq("name" => [ "can't be blank", "is too short (minimum is 3 characters)" ])
-      end
-
-      it "rejects a duplicate address" do
-        post "/addresses", params: valid_params
-
-        expect {
-          post "/addresses", params: valid_params
-        }.not_to change(Address, :count)
-
-        expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
-      end
-
-      it "rejects a duplicate address with a different case" do
-        post "/addresses", params: valid_params
-
-        expect {
-          post "/addresses", params: { address: { kind: "HOME", name: "MAIN STREET" } }
-        }.not_to change(Address, :count)
-
-        expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
       end
     end
   end
@@ -207,6 +195,18 @@ RSpec.describe "Addresses", type: :request do
           "legacy_id" => nil
         )
       end
+
+      it "allows updating to a duplicate address" do
+        post "/addresses", params: valid_params
+        post "/addresses", params: { address: { kind: "work", name: "Other Street" } }
+        id = response.parsed_body["id"]
+
+        patch "/addresses/#{id}", params: { address: { kind: "home", name: "Main Street" } }
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["kind"]).to eq("home")
+        expect(response.parsed_body["name"]).to eq("Main Street")
+      end
     end
 
     context "when it fails" do
@@ -228,17 +228,6 @@ RSpec.describe "Addresses", type: :request do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body).to eq("name" => [ "can't be blank", "is too short (minimum is 3 characters)" ])
-      end
-
-      it "rejects a duplicate address" do
-        post "/addresses", params: valid_params
-        post "/addresses", params: { address: { kind: "work", name: "Other Street" } }
-        id = response.parsed_body["id"]
-
-        patch "/addresses/#{id}", params: { address: { kind: "home", name: "Main Street" } }
-
-        expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
       end
     end
   end

@@ -107,6 +107,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
           columns: const [
             DataTableColumn('Sócio', flex: 3),
             DataTableColumn('Logradouro', flex: 3),
+            DataTableColumn('Nº', width: 70),
             DataTableColumn('Categoria', flex: 2),
             DataTableColumn('Ativa', width: 70),
             DataTableColumn('Ações', width: 88),
@@ -202,6 +203,13 @@ class _ConnectionRow extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Text(connection.address?.fullAddress ?? '—', style: theme.textTheme.bodyMedium),
+          ),
+          SizedBox(
+            width: 70,
+            child: Text(
+              connection.letter == null ? '${connection.number}' : '${connection.number} ${connection.letter}',
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 2,
