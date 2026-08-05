@@ -6,6 +6,7 @@ import 'package:acalapp/features/connections/presentation/connections_page.dart'
 import 'package:acalapp/features/dashboard/presentation/dashboard_page.dart';
 import 'package:acalapp/features/documentation/presentation/documentation_page.dart';
 import 'package:acalapp/features/elections/presentation/elections_page.dart';
+import 'package:acalapp/features/invoices/presentation/cobranca_page.dart';
 import 'package:acalapp/features/invoices/presentation/generate_invoices_page.dart';
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/features/quality/presentation/quality_page.dart';
@@ -45,6 +46,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/invoices/generate',
           pageBuilder: (context, state) => const NoTransitionPage(child: GenerateInvoicesPage()),
+        ),
+        GoRoute(
+          path: '/invoices/cobranca',
+          pageBuilder: (context, state) => const NoTransitionPage(child: CobrancaPage()),
         ),
         GoRoute(
           path: '/invoices',

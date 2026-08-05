@@ -1,7 +1,10 @@
+import 'dart:typed_data';
+
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/features/invoices/domain/invoice_candidate.dart';
+import 'package:acalapp/features/invoices/domain/overdue_connection.dart';
 
 class InvoiceService {
   InvoiceService({HttpService? http}) : _http = http ?? HttpService();
@@ -50,6 +53,27 @@ class InvoiceService {
     }) as List;
     return data.map((e) => Invoice.fromJson(e as Map<String, dynamic>)).toList();
   }
+
+  Future<Uint8List> pdf(String invoiceId) => _http.getBytes('/invoices/$invoiceId/pdf');
+
+  Future<Invoice> markPaid(String invoiceId) async {
+    final data = await _http.patch('/invoices/$invoiceId/pay', {}) as Map<String, dynamic>;
+    return Invoice.fromJson(data);
+  }
+
+  Future<List<OverdueConnection>> overdue({int? days}) async {
+    final query = {if (days != null) 'days': '$days'};
+    final data = await _http.get('/invoices/overdue', query: query) as List;
+    return data.map((e) => OverdueConnection.fromJson(e as Map<String, dynamic>)).toList();
+  }
+
+  Future<Uint8List> cobrancaPdf({String? connectionId, int? days}) => _http.getBytes(
+        '/invoices/cobranca_pdf',
+        query: {
+          'connection_id': ?connectionId,
+          if (days != null) 'days': '$days',
+        },
+      );
 
   static String _formatDate(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';

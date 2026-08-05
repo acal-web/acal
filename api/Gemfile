@@ -34,6 +34,11 @@ gem "image_processing", "~> 1.2"
 # Use Rack CORS for handling Cross-Origin Resource Sharing (CORS), making cross-origin Ajax possible
 gem "rack-cors"
 
+# PDF generation for invoice/dunning-letter documents
+gem "prawn"
+gem "prawn-table"
+gem "matrix" # prawn dependency; no longer bundled with Ruby by default
+
 group :development do
   # Adds Rails-aware support (model/schema completion, test CodeLens) to the Ruby LSP [https://github.com/Shopify/ruby-lsp-rails]
   gem "ruby-lsp-rails", require: false

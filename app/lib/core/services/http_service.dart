@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'package:http/http.dart' as http;
 import 'package:acalapp/core/config/app_config.dart';
 
@@ -40,6 +41,12 @@ class HttpService {
     return _decode(response);
   }
 
+  Future<Uint8List> getBytes(String path, {Map<String, String>? query}) async {
+    final response = await _client.get(_uri(path, query));
+    _checkStatus(response);
+    return response.bodyBytes;
+  }
+
   Future<dynamic> post(String path, Object body) async {
     final response = await _client.post(
       _uri(path),
@@ -51,6 +58,15 @@ class HttpService {
 
   Future<dynamic> put(String path, Object body) async {
     final response = await _client.put(
+      _uri(path),
+      headers: _jsonHeaders,
+      body: jsonEncode(body),
+    );
+    return _decode(response);
+  }
+
+  Future<dynamic> patch(String path, Object body) async {
+    final response = await _client.patch(
       _uri(path),
       headers: _jsonHeaders,
       body: jsonEncode(body),

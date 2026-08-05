@@ -14,4 +14,11 @@ class Invoice < ApplicationRecord
   }
 
   scope :ordered, -> { order(reference_date: :desc, created_at: :desc) }
+
+  scope :unpaid, -> { where(paid_at: nil) }
+  scope :overdue, ->(days = 30) { unpaid.where("due_date < ?", Date.current - days.days) }
+
+  def paid?
+    paid_at.present?
+  end
 end

@@ -122,4 +122,75 @@ RSpec.describe "Invoices", type: :request do
       end
     end
   end
+
+  describe "GET /invoices/:id/pdf" do
+    it "returns a PDF document for the invoice" do
+      invoice = create(:invoice, connection: connection)
+
+      get "/invoices/#{invoice.id}/pdf"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to eq("application/pdf")
+      expect(response.body).to start_with("%PDF")
+    end
+  end
+
+  describe "PATCH /invoices/:id/pay" do
+    it "marks the invoice as paid" do
+      invoice = create(:invoice, connection: connection)
+
+      patch "/invoices/#{invoice.id}/pay"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["id"]).to eq(invoice.id)
+      expect(invoice.reload.paid_at).to be_present
+    end
+  end
+
+  describe "GET /invoices/overdue" do
+    it "lists connections with overdue, unpaid invoices" do
+      create(:invoice, connection: connection, due_date: Date.current - 45.days)
+
+      get "/invoices/overdue"
+
+      expect(response).to have_http_status(:ok)
+      ids = response.parsed_body.map { |group| group["connection_id"] }
+      expect(ids).to contain_exactly(connection.id)
+    end
+
+    it "excludes connections without overdue invoices" do
+      create(:invoice, connection: connection, due_date: Date.current + 10.days)
+
+      get "/invoices/overdue"
+
+      expect(response.parsed_body).to eq([])
+    end
+  end
+
+  describe "GET /invoices/cobranca_pdf" do
+    it "returns a PDF letter when there are overdue connections" do
+      create(:invoice, connection: connection, due_date: Date.current - 45.days)
+
+      get "/invoices/cobranca_pdf"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to eq("application/pdf")
+      expect(response.body).to start_with("%PDF")
+    end
+
+    it "returns no content when there is nothing overdue" do
+      get "/invoices/cobranca_pdf"
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "filters by connection_id" do
+      other_connection = create(:connection, customer: create(:customer), address: create(:address), category: category)
+      create(:invoice, connection: connection, due_date: Date.current - 45.days)
+
+      get "/invoices/cobranca_pdf", params: { connection_id: other_connection.id }
+
+      expect(response).to have_http_status(:no_content)
+    end
+  end
 end

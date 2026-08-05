@@ -49,12 +49,28 @@ class _FakeInvoiceService extends InvoiceService {
   final List<Invoice> invoices;
   int? lastYear;
   int? lastMonth;
+  String? markedPaidId;
 
   @override
   Future<PagedResult<Invoice>> findAll({int page = 0, int size = 10, int? year, int? month}) async {
     lastYear = year;
     lastMonth = month;
     return PagedResult(data: invoices, pagination: _pagination);
+  }
+
+  @override
+  Future<Invoice> markPaid(String invoiceId) async {
+    markedPaidId = invoiceId;
+    final invoice = invoices.firstWhere((i) => i.id == invoiceId);
+    return Invoice(
+      id: invoice.id,
+      connectionId: invoice.connectionId,
+      referenceDate: invoice.referenceDate,
+      dueDate: invoice.dueDate,
+      amount: invoice.amount,
+      paidAt: DateTime.now(),
+      connection: invoice.connection,
+    );
   }
 }
 
@@ -68,6 +84,10 @@ GoRouter _router(InvoiceService invoiceService) => GoRouter(
         GoRoute(
           path: '/invoices/generate',
           builder: (_, _) => const Scaffold(body: Text('Gerar Faturas Page')),
+        ),
+        GoRoute(
+          path: '/invoices/cobranca',
+          builder: (_, _) => const Scaffold(body: Text('Cobranças Page')),
         ),
       ],
     );
@@ -132,5 +152,47 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Gerar Faturas Page'), findsOneWidget);
+  });
+
+  testWidgets('Cobranças navigates to the dunning letters page', (tester) async {
+    final service = _FakeInvoiceService(invoices: [_invoice]);
+    await _pump(tester, service);
+
+    await tester.tap(find.text('Cobranças'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cobranças Page'), findsOneWidget);
+  });
+
+  testWidgets('marking an invoice as paid calls the service and reloads the list', (tester) async {
+    final service = _FakeInvoiceService(invoices: [_invoice]);
+    await _pump(tester, service);
+
+    expect(find.byIcon(Icons.attach_money), findsOneWidget);
+    expect(find.byIcon(Icons.check_circle), findsNothing);
+
+    await tester.tap(find.byIcon(Icons.attach_money));
+    await tester.pump();
+    await tester.pump(const Duration(seconds: 4));
+    await tester.pump(const Duration(milliseconds: 200));
+
+    expect(service.markedPaidId, 'inv-1');
+  });
+
+  testWidgets('shows a paid indicator instead of the mark-paid action for a paid invoice', (tester) async {
+    final paidInvoice = Invoice(
+      id: 'inv-3',
+      connectionId: 'conn-1',
+      referenceDate: DateTime(2026, 8, 1),
+      dueDate: DateTime(2026, 8, 10),
+      amount: 20.0,
+      paidAt: DateTime(2026, 8, 5),
+      connection: _connection,
+    );
+    final service = _FakeInvoiceService(invoices: [paidInvoice]);
+    await _pump(tester, service);
+
+    expect(find.byIcon(Icons.check_circle), findsOneWidget);
+    expect(find.byIcon(Icons.attach_money), findsNothing);
   });
 }

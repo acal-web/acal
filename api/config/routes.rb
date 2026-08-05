@@ -9,6 +9,13 @@ Rails.application.routes.draw do
     collection do
       get :eligible
       post :generate
+      get :overdue
+      get :cobranca_pdf
+    end
+
+    member do
+      get :pdf
+      patch :pay
     end
   end
 

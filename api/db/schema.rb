@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_04_040000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_05_000000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -78,6 +78,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_04_040000) do
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
     t.date "due_date", null: false
+    t.datetime "paid_at"
     t.date "reference_date", null: false
     t.datetime "updated_at", null: false
     t.index ["connection_id", "reference_date"], name: "index_invoices_on_connection_id_and_reference_date_unique", unique: true, where: "(deleted_at IS NULL)"
