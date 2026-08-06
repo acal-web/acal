@@ -27,6 +27,8 @@ class Category {
     required this.membershipPrice,
   });
 
+  String get fullName => '${groupLabel(group)} $name';
+
   factory Category.fromJson(Map<String, dynamic> json) => Category(
         id: json['id']?.toString(),
         name: json['name'] as String,

@@ -1,13 +1,21 @@
 import 'package:acalapp/core/models/pagination.dart';
 import 'package:flutter/material.dart';
 
+/// Horizontal gap between columns, used both by [DataTableCard]'s own header
+/// and grid lines and by every feature page's row-builder [Row] — keeping
+/// all three in lockstep is what keeps column boundaries aligned.
+const columnSpacing = 12.0;
+
 class DataTableColumn {
-  const DataTableColumn(this.label, {this.flex = 1, this.width, this.sortable = false});
+  const DataTableColumn(this.label, {this.flex = 1, this.width, this.sortable = false, this.sortKey});
 
   final String label;
   final int flex;
   final double? width;
   final bool sortable;
+
+  /// Field name sent to the server when this column is sorted, e.g. `'name'`.
+  final String? sortKey;
 }
 
 /// The standard listing shell used across "Cadastros" pages: an entries-per-page
@@ -25,6 +33,9 @@ class DataTableCard<T> extends StatelessWidget {
     required this.onPageSizeChanged,
     this.pageSizeOptions = const [10, 25, 50, 100],
     this.emptyMessage = 'Nenhum registro encontrado.',
+    this.sortColumn,
+    this.sortAscending = true,
+    this.onSort,
   });
 
   final List<DataTableColumn> columns;
@@ -36,6 +47,15 @@ class DataTableCard<T> extends StatelessWidget {
   final void Function(int size) onPageSizeChanged;
   final List<int> pageSizeOptions;
   final String emptyMessage;
+
+  /// [DataTableColumn.sortKey] of the currently active sort column, if any.
+  final String? sortColumn;
+  final bool sortAscending;
+
+  /// Called with a sortable column's [DataTableColumn.sortKey] when its
+  /// header is tapped. Toggling asc/desc for the active column is the
+  /// caller's responsibility.
+  final void Function(String sortKey)? onSort;
 
   @override
   Widget build(BuildContext context) {
@@ -54,26 +74,39 @@ class DataTableCard<T> extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const Divider(height: 1),
-          _Header(columns: columns),
-          const Divider(height: 1),
-          if (items.isEmpty)
-            Expanded(child: Center(child: Text(emptyMessage)))
-          else
-            Expanded(
-              child: ListView.builder(
-                itemCount: items.length,
-                itemBuilder: (context, i) => Column(
+          Expanded(
+            child: Stack(
+              children: [
+                Column(
                   children: [
-                    _HoverableRow(
-                      baseColor: i.isEven ? cs.surface : Colors.transparent,
-                      child: rowBuilder(context, items[i]),
-                    ),
                     const Divider(height: 1),
+                    _Header(columns: columns, sortColumn: sortColumn, sortAscending: sortAscending, onSort: onSort),
+                    const Divider(height: 1),
+                    if (items.isEmpty)
+                      Expanded(child: Center(child: Text(emptyMessage)))
+                    else
+                      Expanded(
+                        child: ListView.builder(
+                          itemCount: items.length,
+                          itemBuilder: (context, i) => Column(
+                            children: [
+                              _HoverableRow(
+                                baseColor: i.isEven ? cs.surface : Colors.transparent,
+                                child: rowBuilder(context, items[i]),
+                              ),
+                              const Divider(height: 1),
+                            ],
+                          ),
+                        ),
+                      ),
                   ],
                 ),
-              ),
+                Positioned.fill(
+                  child: IgnorePointer(child: _ColumnGridLines(columns: columns)),
+                ),
+              ],
             ),
+          ),
           Container(
             color: cs.surface,
             child: _PaginationBar(
@@ -85,6 +118,41 @@ class DataTableCard<T> extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+/// Vertical separator lines between columns, overlaid across the header and
+/// every row. Reuses each [DataTableColumn]'s flex/width exactly as
+/// [_HeaderCell] does, so the lines land precisely on the cell boundaries
+/// that the header and row builders already align to by convention.
+class _ColumnGridLines extends StatelessWidget {
+  const _ColumnGridLines({required this.columns});
+
+  final List<DataTableColumn> columns;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = Theme.of(context).colorScheme.outlineVariant;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        spacing: columnSpacing,
+        children: [
+          for (var i = 0; i < columns.length; i++) _cell(columns[i], color, isLast: i == columns.length - 1),
+        ],
+      ),
+    );
+  }
+
+  Widget _cell(DataTableColumn column, Color color, {required bool isLast}) {
+    final line = DecoratedBox(
+      decoration: BoxDecoration(border: isLast ? null : Border(right: BorderSide(color: color))),
+    );
+    return column.width != null
+        ? SizedBox(width: column.width, child: line)
+        : Expanded(flex: column.flex, child: line);
   }
 }
 
@@ -120,9 +188,12 @@ class _HoverableRowState extends State<_HoverableRow> {
 }
 
 class _Header extends StatelessWidget {
-  const _Header({required this.columns});
+  const _Header({required this.columns, this.sortColumn, this.sortAscending = true, this.onSort});
 
   final List<DataTableColumn> columns;
+  final String? sortColumn;
+  final bool sortAscending;
+  final void Function(String sortKey)? onSort;
 
   @override
   Widget build(BuildContext context) {
@@ -131,9 +202,17 @@ class _Header extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
+        spacing: columnSpacing,
         children: [
           for (final column in columns)
-            _HeaderCell(column: column, style: style, iconColor: cs.onSurfaceVariant),
+            _HeaderCell(
+              column: column,
+              style: style,
+              iconColor: cs.onSurfaceVariant,
+              active: column.sortKey != null && column.sortKey == sortColumn,
+              ascending: sortAscending,
+              onSort: onSort,
+            ),
         ],
       ),
     );
@@ -141,59 +220,95 @@ class _Header extends StatelessWidget {
 }
 
 class _HeaderCell extends StatelessWidget {
-  const _HeaderCell({required this.column, this.style, required this.iconColor});
+  const _HeaderCell({
+    required this.column,
+    this.style,
+    required this.iconColor,
+    required this.active,
+    required this.ascending,
+    this.onSort,
+  });
 
   final DataTableColumn column;
   final TextStyle? style;
   final Color iconColor;
+  final bool active;
+  final bool ascending;
+  final void Function(String sortKey)? onSort;
 
   @override
   Widget build(BuildContext context) {
     final label = column.sortable
-        ? _SortableLabel(column.label, style: style, iconColor: iconColor)
+        ? _SortableLabel(
+            column.label,
+            style: style,
+            iconColor: iconColor,
+            direction: active ? (ascending ? SortDirection.ascending : SortDirection.descending) : null,
+            onTap: onSort == null || column.sortKey == null ? null : () => onSort!(column.sortKey!),
+          )
         : Text(column.label, style: style);
 
+    // Align so a sortable label's InkWell hugs just the text + arrows
+    // instead of the whole (flex-stretched) cell — otherwise clicking
+    // anywhere across the column's width, not just the label, triggers sort.
+    final cell = Align(alignment: Alignment.centerLeft, child: label);
+
     return column.width != null
-        ? SizedBox(width: column.width, child: label)
-        : Expanded(flex: column.flex, child: label);
+        ? SizedBox(width: column.width, child: cell)
+        : Expanded(flex: column.flex, child: cell);
   }
 }
 
+enum SortDirection { ascending, descending }
+
 class _SortableLabel extends StatelessWidget {
-  const _SortableLabel(this.label, {this.style, required this.iconColor});
+  const _SortableLabel(this.label, {this.style, required this.iconColor, this.direction, this.onTap});
 
   final String label;
   final TextStyle? style;
   final Color iconColor;
 
+  /// Null when this column isn't the active sort column.
+  final SortDirection? direction;
+  final VoidCallback? onTap;
+
   @override
   Widget build(BuildContext context) {
-    return Row(
+    final row = Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(label, style: style),
         const SizedBox(width: 4),
-        _SortArrows(color: iconColor),
+        _SortArrows(color: iconColor, direction: direction),
       ],
     );
+
+    if (onTap == null) return row;
+    return InkWell(onTap: onTap, mouseCursor: SystemMouseCursors.click, child: row);
   }
 }
 
 /// Stacked up/down carets, mirroring the DataTables-style sort indicator.
+/// When [direction] names this column's active sort, the matching caret is
+/// highlighted and the other dims; otherwise both render as a neutral hint.
 class _SortArrows extends StatelessWidget {
-  const _SortArrows({required this.color});
+  const _SortArrows({required this.color, this.direction});
 
   final Color color;
+  final SortDirection? direction;
 
   @override
   Widget build(BuildContext context) {
+    final upColor = direction == SortDirection.ascending ? color : color.withValues(alpha: 0.35);
+    final downColor = direction == SortDirection.descending ? color : color.withValues(alpha: 0.35);
+
     return SizedBox(
       width: 10,
       height: 14,
       child: Stack(
         children: [
-          Positioned(top: -3, child: Icon(Icons.arrow_drop_up, size: 16, color: color)),
-          Positioned(bottom: -3, child: Icon(Icons.arrow_drop_down, size: 16, color: color)),
+          Positioned(top: -3, child: Icon(Icons.arrow_drop_up, size: 16, color: upColor)),
+          Positioned(bottom: -3, child: Icon(Icons.arrow_drop_down, size: 16, color: downColor)),
         ],
       ),
     );

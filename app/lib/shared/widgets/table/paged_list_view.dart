@@ -17,6 +17,9 @@ class PagedListView<T> extends StatelessWidget {
     required this.pageSize,
     required this.onPageSizeChanged,
     this.emptyMessage = 'Nenhum registro encontrado.',
+    this.sortColumn,
+    this.sortAscending = true,
+    this.onSort,
   });
 
   final Future<PagedResult<T>> future;
@@ -28,17 +31,25 @@ class PagedListView<T> extends StatelessWidget {
   final int pageSize;
   final void Function(int size) onPageSizeChanged;
   final String emptyMessage;
+  final String? sortColumn;
+  final bool sortAscending;
+  final void Function(String sortKey)? onSort;
 
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<PagedResult<T>>(
       future: future,
       builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        // FutureBuilder keeps the previous snapshot's data while a new
+        // future is in flight (only clearing it once the new one settles),
+        // so falling through to the still-valid data here — instead of
+        // blanking the table for every page/sort/filter change — is what
+        // avoids a loading-spinner flash on each interaction.
+        if (!snapshot.hasData) {
+          if (snapshot.hasError) {
+            return AsyncErrorView(message: errorMessage, onRetry: onRetry);
+          }
           return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return AsyncErrorView(message: errorMessage, onRetry: onRetry);
         }
 
         final result = snapshot.data!;
@@ -52,6 +63,9 @@ class PagedListView<T> extends StatelessWidget {
           pageSize: pageSize,
           onPageSizeChanged: onPageSizeChanged,
           rowBuilder: rowBuilder,
+          sortColumn: sortColumn,
+          sortAscending: sortAscending,
+          onSort: onSort,
         );
       },
     );

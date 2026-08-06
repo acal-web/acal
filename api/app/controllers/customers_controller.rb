@@ -1,10 +1,12 @@
 class CustomersController < ApplicationController
   before_action :set_customer, only: %i[ show update destroy ]
 
+  SORTABLE_COLUMNS = %w[ name ].freeze
+
   # GET /customers
   def index
     customers = Customer.filter_by_name(params[:name]).filter_by_document(params[:document])
-    render json: paginate(customers)
+    render json: paginate(sort(customers))
   end
 
   # GET /customers/1
@@ -30,6 +32,12 @@ class CustomersController < ApplicationController
   end
 
   private
+    def sort(collection)
+      return collection unless SORTABLE_COLUMNS.include?(params[:sort])
+
+      collection.order(params[:sort] => params[:direction] == "desc" ? :desc : :asc)
+    end
+
     def set_customer
       @customer = Customer.find(params.expect(:id))
     end

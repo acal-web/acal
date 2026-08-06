@@ -89,8 +89,7 @@ class _AddressesPageState extends State<AddressesPage> {
                   child: PagedListView<Address>(
                     future: _future,
                     columns: const [
-                      DataTableColumn('Tipo', flex: 2, sortable: true),
-                      DataTableColumn('Nome', flex: 5, sortable: true),
+                      DataTableColumn('Logradouro', flex: 2, sortable: true),
                       DataTableColumn('Ações', width: 88),
                     ],
                     emptyMessage: 'Nenhum endereço cadastrado.',

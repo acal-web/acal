@@ -92,8 +92,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   child: PagedListView<Category>(
                     future: _future,
                     columns: const [
-                      DataTableColumn('Nome', flex: 3, sortable: true),
-                      DataTableColumn('Grupo', flex: 2),
+                      DataTableColumn('Nome', flex: 5),
                       DataTableColumn('Hidrômetro', width: 100),
                       DataTableColumn('Valor Água', flex: 2),
                       DataTableColumn('Valor Societário', flex: 2),
@@ -172,14 +171,11 @@ class _CategoryRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
+        spacing: columnSpacing,
         children: [
           Expanded(
-            flex: 3,
-            child: Text(category.name, style: theme.textTheme.bodyMedium),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(groupLabel(category.group), style: theme.textTheme.bodyMedium),
+            flex: 5,
+            child: Text(category.fullName, style: theme.textTheme.bodyMedium),
           ),
           SizedBox(
             width: 100,

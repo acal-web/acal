@@ -1,3 +1,4 @@
+import 'package:acalapp/core/theme/eva_theme.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:flutter/material.dart';
@@ -18,6 +19,7 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
   final _nameController = TextEditingController();
   final _documentController = TextEditingController();
   DocumentKind _documentKind = DocumentKind.cpf;
+  bool _expanded = false;
 
   @override
   void dispose() {
@@ -61,29 +63,33 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
         final narrow = constraints.maxWidth < _narrowBreakpoint;
 
         final nameField = LabeledField(
-          label: 'Nome',
+          label: 'Nome:',
           child: TextField(
             controller: _nameController,
+            textAlignVertical: TextAlignVertical.center,
             decoration: const InputDecoration(
               border: OutlineInputBorder(),
-              hintText: 'Buscar por nome',
+              hintText: 'Buscar por nome:',
             ),
             onSubmitted: (_) => _search(),
           ),
         );
 
+        final isCpf = _documentKind == DocumentKind.cpf;
+
         final documentField = LabeledField(
-          label: _documentKind == DocumentKind.cpf ? 'Documento (CPF)' : 'Documento (CNPJ)',
+          label: isCpf ? 'Documento (CPF):' : 'Documento (CNPJ):',
           child: TextField(
             controller: _documentController,
             keyboardType: TextInputType.number,
             inputFormatters: [DocumentInputFormatter(_documentKind)],
+            textAlignVertical: TextAlignVertical.center,
             decoration: InputDecoration(
               border: const OutlineInputBorder(),
-              hintText: _documentKind == DocumentKind.cpf ? '000.000.000-00' : '00.000.000/0000-00',
+              hintText: isCpf ? '000.000.000-00' : '00.000.000/0000-00',
               prefixIcon: IconButton(
-                icon: Icon(_documentKind == DocumentKind.cpf ? Icons.person : Icons.business),
-                tooltip: _documentKind == DocumentKind.cpf
+                icon: Icon(isCpf ? Icons.person : Icons.business),
+                tooltip: isCpf
                     ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
                     : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
                 onPressed: _toggleDocumentKind,
@@ -93,8 +99,7 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
           ),
         );
 
-        final searchButton = SizedBox(
-          width: narrow ? double.infinity : _actionButtonWidth,
+        final searchButtonNarrow = Expanded(
           child: FilledButton.icon(
             onPressed: _search,
             icon: const Icon(Icons.search, size: 18),
@@ -102,8 +107,7 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
           ),
         );
 
-        final clearButtonNarrow = SizedBox(
-          width: double.infinity,
+        final clearButtonNarrow = Expanded(
           child: OutlinedButton.icon(
             onPressed: _clear,
             icon: const Icon(Icons.clear, size: 18),
@@ -111,9 +115,28 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
           ),
         );
 
-        // Matches LabeledField's label + gap height with an invisible label,
-        // so the button (stretched via IntrinsicHeight) lines up with the
-        // text fields instead of sitting shorter and higher than them.
+        final searchButtonWide = SizedBox(
+          width: _actionButtonWidth,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Opacity(
+                opacity: 0,
+                child: Text(' ', style: Theme.of(context).textTheme.labelLarge),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                height: EvaSizes.controlHeight,
+                child: FilledButton.icon(
+                  onPressed: _search,
+                  icon: const Icon(Icons.search, size: 18),
+                  label: const Text('Consultar'),
+                ),
+              ),
+            ],
+          ),
+        );
+
         final clearButtonWide = SizedBox(
           width: _actionButtonWidth,
           child: Column(
@@ -124,7 +147,8 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                 child: Text(' ', style: Theme.of(context).textTheme.labelLarge),
               ),
               const SizedBox(height: 8),
-              Expanded(
+              SizedBox(
+                height: EvaSizes.controlHeight,
                 child: OutlinedButton.icon(
                   onPressed: _clear,
                   icon: const Icon(Icons.clear, size: 18),
@@ -143,36 +167,67 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                   const SizedBox(height: 8),
                   documentField,
                   const SizedBox(height: 8),
-                  clearButtonNarrow,
+                  Row(
+                    children: [
+                      clearButtonNarrow,
+                      const SizedBox(width: 8),
+                      searchButtonNarrow,
+                    ],
+                  ),
                 ],
               )
-            : IntrinsicHeight(
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Expanded(child: nameField),
-                    const SizedBox(width: 8),
-                    Expanded(child: documentField),
-                    const SizedBox(width: 8),
-                    clearButtonWide,
-                  ],
-                ),
+            : Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: nameField),
+                  const SizedBox(width: 8),
+                  Expanded(child: documentField),
+                  const SizedBox(width: 8),
+                  clearButtonWide,
+                  const SizedBox(width: 8),
+                  searchButtonWide,
+                ],
               );
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: searchButton,
-            ),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
+            InkWell(
+              onTap: () => setState(() => _expanded = !_expanded),
               child: Padding(
-                padding: EdgeInsets.all(narrow ? 12 : 16),
-                child: fields,
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Row(
+                  children: [
+                    AnimatedRotation(
+                      turns: _expanded ? 0.5 : 0,
+                      duration: const Duration(milliseconds: 150),
+                      child: const Icon(Icons.expand_more, size: 20),
+                    ),
+                    const SizedBox(width: 4),
+                    Text('Filtros', style: Theme.of(context).textTheme.labelLarge),
+                  ],
+                ),
               ),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: !_expanded
+                  ? const SizedBox.shrink()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        Card(
+                          elevation: 1,
+                          child: Padding(
+                            padding: EdgeInsets.all(narrow ? 12 : 16),
+                            child: fields,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ],
         );

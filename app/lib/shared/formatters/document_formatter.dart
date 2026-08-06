@@ -10,8 +10,6 @@ enum DocumentKind {
   final List<int> _groupBreaks;
   final List<String> _separators;
 
-  /// Infers CPF/CNPJ from how many digits a raw document has. Returns null
-  /// when the length doesn't match either (e.g. still being typed).
   static DocumentKind? fromDigits(String digits) => switch (digits.length) {
         11 => cpf,
         14 => cnpj,
@@ -19,8 +17,7 @@ enum DocumentKind {
       };
 }
 
-/// Applies the CPF ("000.000.000-00") or CNPJ ("00.000.000/0000-00") mask to
-/// a raw digit string, however many digits it currently has.
+
 String maskDocument(String digits, DocumentKind kind) {
   final buffer = StringBuffer();
   var breakIndex = 0;
@@ -47,8 +44,6 @@ int _checkDigit(String digits, List<int> weights) {
 
 bool _allSameDigit(String digits) => digits.split('').toSet().length == 1;
 
-/// Validates a CPF by its check digits (not just its length) — the same
-/// algorithm the API uses.
 bool isValidCpf(String digits) {
   if (digits.length != 11 || _allSameDigit(digits)) return false;
 
@@ -57,8 +52,6 @@ bool isValidCpf(String digits) {
   return d1 == int.parse(digits[9]) && d2 == int.parse(digits[10]);
 }
 
-/// Validates a CNPJ by its check digits (not just its length) — the same
-/// algorithm the API uses.
 bool isValidCnpj(String digits) {
   if (digits.length != 14 || _allSameDigit(digits)) return false;
 
@@ -70,8 +63,6 @@ bool isValidCnpj(String digits) {
 bool isValidDocument(String digits, DocumentKind kind) =>
     kind == DocumentKind.cpf ? isValidCpf(digits) : isValidCnpj(digits);
 
-/// Live mask for a document [TextField] — reformats as CPF or CNPJ (chosen
-/// by [kind]) as the user types, capping input at the kind's digit count.
 class DocumentInputFormatter extends TextInputFormatter {
   DocumentInputFormatter(this.kind);
 

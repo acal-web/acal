@@ -13,6 +13,11 @@ Future<void> _pump(WidgetTester tester, void Function({String? name, String? doc
       home: Scaffold(body: CustomerFilterBar(onSearch: onSearch)),
     ),
   );
+
+  // The filter section starts collapsed — expand it and let the reveal
+  // animation finish so the fields are hit-testable for the rest of the test.
+  await tester.tap(find.text('Filtros'));
+  await tester.pumpAndSettle();
 }
 
 void main() {
@@ -38,13 +43,13 @@ void main() {
     await _pump(tester, ({name, document}) {});
 
     expect(find.byIcon(Icons.person), findsOneWidget);
-    expect(find.text('Documento (CPF)'), findsOneWidget);
+    expect(find.text('Documento (CPF):'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.person));
     await tester.pump();
 
     expect(find.byIcon(Icons.business), findsOneWidget);
-    expect(find.text('Documento (CNPJ)'), findsOneWidget);
+    expect(find.text('Documento (CNPJ):'), findsOneWidget);
   });
 
   testWidgets('clearing resets both fields, the document kind, and reports no filter', (tester) async {
@@ -72,6 +77,6 @@ void main() {
     expect(capturedDocument, isNull);
     expect(find.text('Fulano'), findsNothing);
     expect(find.byIcon(Icons.person), findsOneWidget);
-    expect(find.text('Documento (CPF)'), findsOneWidget);
+    expect(find.text('Documento (CPF):'), findsOneWidget);
   });
 }

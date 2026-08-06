@@ -28,6 +28,8 @@ class _CustomersPageState extends State<CustomersPage> {
   int _pageSize = 10;
   String? _filterName;
   String? _filterDocument;
+  String? _sortColumn;
+  bool _sortAscending = true;
 
   @override
   void initState() {
@@ -40,6 +42,8 @@ class _CustomersPageState extends State<CustomersPage> {
         size: _pageSize,
         name: _filterName,
         document: _filterDocument,
+        sort: _sortColumn,
+        sortAscending: _sortAscending,
       );
 
   void _load() => setState(() {
@@ -60,6 +64,13 @@ class _CustomersPageState extends State<CustomersPage> {
   void _search({String? name, String? document}) => setState(() {
         _filterName = name;
         _filterDocument = document;
+        _page = 0;
+        _future = _fetch();
+      });
+
+  void _sort(String sortKey) => setState(() {
+        _sortAscending = _sortColumn == sortKey ? !_sortAscending : true;
+        _sortColumn = sortKey;
         _page = 0;
         _future = _fetch();
       });
@@ -107,7 +118,7 @@ class _CustomersPageState extends State<CustomersPage> {
                   child: PagedListView<Customer>(
                     future: _future,
                     columns: const [
-                      DataTableColumn('Nome', flex: 3, sortable: true),
+                      DataTableColumn('Nome', flex: 6, sortable: true, sortKey: 'name'),
                       DataTableColumn('Documento', flex: 2),
                       DataTableColumn('Nº Sócio', width: 90),
                       DataTableColumn('Votante', width: 90),
@@ -119,6 +130,9 @@ class _CustomersPageState extends State<CustomersPage> {
                     onPageChanged: _goToPage,
                     pageSize: _pageSize,
                     onPageSizeChanged: _changePageSize,
+                    sortColumn: _sortColumn,
+                    sortAscending: _sortAscending,
+                    onSort: _sort,
                     rowBuilder: (context, customer) => _CustomerRow(
                       customer: customer,
                       onEdit: () => _openForm(customer: customer),
@@ -155,7 +169,7 @@ class _CustomerRow extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            flex: 3,
+            flex: 6,
             child: Text(customer.name, style: theme.textTheme.bodyMedium),
           ),
           Expanded(

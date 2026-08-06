@@ -72,6 +72,33 @@ RSpec.describe "Customers", type: :request do
 
         expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Fulano de Tal" ])
       end
+
+      it "sorts by name ascending" do
+        create(:customer, name: "Fulano de Tal")
+        create(:customer, name: "Ciclano da Silva")
+
+        get "/customers", params: { sort: "name", direction: "asc" }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Ciclano da Silva", "Fulano de Tal" ])
+      end
+
+      it "sorts by name descending" do
+        create(:customer, name: "Fulano de Tal")
+        create(:customer, name: "Ciclano da Silva")
+
+        get "/customers", params: { sort: "name", direction: "desc" }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Fulano de Tal", "Ciclano da Silva" ])
+      end
+
+      it "ignores an unsupported sort column" do
+        create(:customer, name: "Fulano de Tal")
+        create(:customer, name: "Ciclano da Silva")
+
+        get "/customers", params: { sort: "document", direction: "asc" }
+
+        expect(response).to have_http_status(:ok)
+      end
     end
   end
 

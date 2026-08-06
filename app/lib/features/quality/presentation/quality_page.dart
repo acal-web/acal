@@ -158,6 +158,7 @@ class _QualityAnalysisRow extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       child: Row(
+        spacing: columnSpacing,
         children: [
           Expanded(
             flex: 2,

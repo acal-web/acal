@@ -54,6 +54,13 @@ abstract class EvaSpacing {
   static const s8 = 40.0;
 }
 
+/// Shared height for inputs and buttons, so search/filter bars can size a
+/// field and the button beside it identically instead of estimating via
+/// IntrinsicHeight.
+abstract class EvaSizes {
+  static const controlHeight = 40.0;
+}
+
 /// Radius scale (`--radius-*`) — zero everywhere, on purpose (square corners).
 abstract class EvaRadius {
   static const sm = 0.0;
@@ -100,9 +107,17 @@ TextStyle _body(double fontSize, {FontWeight weight = FontWeight.w400, double? h
 final _inputDecorationTheme = InputDecorationTheme(
   filled: true,
   fillColor: _basic200,
+  isDense: true,
   contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-  prefixIconConstraints: const BoxConstraints(minWidth: 36),
-  suffixIconConstraints: const BoxConstraints(minWidth: 36),
+  // Pinned to EvaSizes.controlHeight so fields line up exactly with the buttons
+  // next to them (search bars, filter rows) instead of each sizing to its
+  // own content.
+  constraints: const BoxConstraints(minHeight: EvaSizes.controlHeight, maxHeight: EvaSizes.controlHeight),
+  // maxHeight caps icon buttons (e.g. the CPF/CNPJ toggle) to the field's
+  // own height — IconButton's 48px minimum tap target would otherwise
+  // force the whole field taller than the dense text content needs.
+  prefixIconConstraints: const BoxConstraints(minWidth: 36, maxHeight: 36),
+  suffixIconConstraints: const BoxConstraints(minWidth: 36, maxHeight: 36),
   border: const OutlineInputBorder(
     borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md)),
     borderSide: BorderSide(color: _basic400),
@@ -210,8 +225,12 @@ final ThemeData evaTheme = ThemeData(
       shape: const WidgetStatePropertyAll(
         RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md))),
       ),
+      // Vertical padding trimmed so content (padding + text) undershoots
+      // EvaSizes.controlHeight — minimumSize then governs and the button renders at
+      // exactly EvaSizes.controlHeight, matching the input fields beside it.
+      minimumSize: const WidgetStatePropertyAll(Size(64, EvaSizes.controlHeight)),
       padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: EvaSpacing.s5 - 2, vertical: EvaSpacing.s3),
+        EdgeInsets.symmetric(horizontal: EvaSpacing.s5 - 2, vertical: EvaSpacing.s2),
       ),
       textStyle: WidgetStatePropertyAll(_body(14, weight: FontWeight.w700)),
     ),
@@ -231,8 +250,12 @@ final ThemeData evaTheme = ThemeData(
       shape: const WidgetStatePropertyAll(
         RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md))),
       ),
+      // Vertical padding trimmed so content (padding + text) undershoots
+      // EvaSizes.controlHeight — minimumSize then governs and the button renders at
+      // exactly EvaSizes.controlHeight, matching the input fields beside it.
+      minimumSize: const WidgetStatePropertyAll(Size(64, EvaSizes.controlHeight)),
       padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: EvaSpacing.s5 - 2, vertical: EvaSpacing.s3),
+        EdgeInsets.symmetric(horizontal: EvaSpacing.s5 - 2, vertical: EvaSpacing.s2),
       ),
       textStyle: WidgetStatePropertyAll(_body(14, weight: FontWeight.w700)),
     ),
@@ -251,8 +274,12 @@ final ThemeData evaTheme = ThemeData(
       shape: const WidgetStatePropertyAll(
         RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(EvaRadius.md))),
       ),
+      // Vertical padding trimmed so content (padding + text) undershoots
+      // EvaSizes.controlHeight — minimumSize then governs and the button renders at
+      // exactly EvaSizes.controlHeight, matching the input fields beside it.
+      minimumSize: const WidgetStatePropertyAll(Size(64, EvaSizes.controlHeight)),
       padding: const WidgetStatePropertyAll(
-        EdgeInsets.symmetric(horizontal: EvaSpacing.s5 - 2, vertical: EvaSpacing.s3),
+        EdgeInsets.symmetric(horizontal: EvaSpacing.s5 - 2, vertical: EvaSpacing.s2),
       ),
       textStyle: WidgetStatePropertyAll(_body(14, weight: FontWeight.w700)),
     ),

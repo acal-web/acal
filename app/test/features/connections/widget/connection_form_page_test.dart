@@ -21,7 +21,14 @@ class _FakeCustomerService extends CustomerService {
   final List<Customer> items;
 
   @override
-  Future<PagedResult<Customer>> findAll({int page = 0, int size = 10, String? name, String? document}) async {
+  Future<PagedResult<Customer>> findAll({
+    int page = 0,
+    int size = 10,
+    String? name,
+    String? document,
+    String? sort,
+    bool sortAscending = true,
+  }) async {
     final filtered =
         (name == null || name.isEmpty) ? items : items.where((c) => c.name.toLowerCase().contains(name.toLowerCase())).toList();
     return PagedResult(data: filtered, pagination: _pagination);
