@@ -1,7 +1,6 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
 import 'package:acalapp/core/services/http_service.dart';
-import 'package:acalapp/core/theme/light_theme.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
@@ -73,7 +72,6 @@ Future<void> _pump(WidgetTester tester, {required InvoiceService invoiceService}
 
   await tester.pumpWidget(
     MaterialApp(
-      theme: lightTheme,
       home: GenerateInvoicesPage(
         invoiceService: invoiceService,
         addressService: _FakeAddressService(),

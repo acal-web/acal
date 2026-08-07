@@ -1,4 +1,3 @@
-import 'package:acalapp/core/theme/light_theme.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/overdue_connection.dart';
 import 'package:acalapp/features/invoices/presentation/cobranca_page.dart';
@@ -38,7 +37,6 @@ Future<void> _pump(WidgetTester tester, InvoiceService invoiceService) async {
   addTearDown(tester.view.resetDevicePixelRatio);
 
   await tester.pumpWidget(MaterialApp(
-    theme: lightTheme,
     home: CobrancaPage(invoiceService: invoiceService),
   ));
   await tester.pumpAndSettle();

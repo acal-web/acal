@@ -1,6 +1,5 @@
 import 'package:acalapp/core/layout/app_shell.dart';
 import 'package:acalapp/core/layout/menu/side_menu.dart';
-import 'package:acalapp/core/theme/light_theme.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -18,8 +17,7 @@ GoRouter _router() => GoRouter(
       ],
     );
 
-Widget _app(GoRouter router) => MaterialApp.router(
-      theme: lightTheme,
+    Widget _app(GoRouter router) => MaterialApp.router(
       routerConfig: router,
     );
 

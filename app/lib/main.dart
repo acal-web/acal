@@ -1,5 +1,4 @@
 import 'package:acalapp/core/config/router.dart';
-import 'package:acalapp/core/theme/eva_theme.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -18,7 +17,6 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp.router(
-      theme: evaTheme,
       routerConfig: appRouter,
     );
   }

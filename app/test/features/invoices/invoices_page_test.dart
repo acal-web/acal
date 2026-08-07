@@ -1,6 +1,5 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
-import 'package:acalapp/core/theme/light_theme.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
@@ -98,7 +97,7 @@ Future<void> _pump(WidgetTester tester, InvoiceService invoiceService) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  await tester.pumpWidget(MaterialApp.router(theme: lightTheme, routerConfig: _router(invoiceService)));
+  await tester.pumpWidget(MaterialApp.router(routerConfig: _router(invoiceService)));
   await tester.pumpAndSettle();
 }
 

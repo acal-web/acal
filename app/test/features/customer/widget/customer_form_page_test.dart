@@ -1,4 +1,3 @@
-import 'package:acalapp/core/theme/light_theme.dart';
 import 'package:acalapp/features/customer/widget/customer_form_page.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:flutter/material.dart';
@@ -12,7 +11,6 @@ Future<void> _pump(WidgetTester tester) async {
 
   await tester.pumpWidget(
     MaterialApp(
-      theme: lightTheme,
       home: const Scaffold(body: CustomerFormPage()),
     ),
   );

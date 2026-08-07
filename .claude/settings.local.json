@@ -42,7 +42,9 @@
       "Bash(grep -n \"applyDefaults\" /opt/flutter/packages/flutter/lib/src/material/input_decorator.dart | head)",
       "Bash(sed -n '4039,4110p' /opt/flutter/packages/flutter/lib/src/material/input_decorator.dart)",
       "Bash(sed -n '1100,1190p' /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart)",
-      "Bash(grep -n \"class DropdownMenuThemeData\\\\|this.inputDecorationTheme\\\\|final.*inputDecorationTheme\" /opt/flutter/packages/flutter/lib/src/material/dropdown_menu_theme.dart)"
+      "Bash(grep -n \"class DropdownMenuThemeData\\\\|this.inputDecorationTheme\\\\|final.*inputDecorationTheme\" /opt/flutter/packages/flutter/lib/src/material/dropdown_menu_theme.dart)",
+      "Bash(dart analyze *)",
+      "Bash(git rm *)"
     ]
   }
 }

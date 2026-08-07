@@ -6,6 +6,25 @@ import 'package:flutter/material.dart';
 /// all three in lockstep is what keeps column boundaries aligned.
 const columnSpacing = 12.0;
 
+/// Minimum width given to a single flex unit when computing the table's
+/// minimum content width — below this, cell text starts wrapping/overflowing
+/// instead of just feeling cramped, which is what pushes the table into
+/// horizontal scrolling on narrow (mobile) viewports.
+const _flexUnitMinWidth = 80.0;
+
+/// Matches the `EdgeInsets.symmetric(horizontal: 12)` used by [_Header],
+/// [_ColumnGridLines], and every feature page's row [Padding].
+const _horizontalContentPadding = 24.0;
+
+/// The narrowest the table's columns are allowed to get before the table
+/// switches from "shrink columns to fit" to "keep natural width and scroll
+/// horizontally instead".
+double _minContentWidth(List<DataTableColumn> columns) {
+  final columnsWidth = columns.fold<double>(0, (sum, c) => sum + (c.width ?? c.flex * _flexUnitMinWidth));
+  final spacing = columnSpacing * (columns.length - 1);
+  return columnsWidth + spacing + _horizontalContentPadding;
+}
+
 class DataTableColumn {
   const DataTableColumn(this.label, {this.flex = 1, this.width, this.sortable = false, this.sortKey});
 
@@ -75,36 +94,55 @@ class DataTableCard<T> extends StatelessWidget {
       child: Column(
         children: [
           Expanded(
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    const Divider(height: 1),
-                    _Header(columns: columns, sortColumn: sortColumn, sortAscending: sortAscending, onSort: onSort),
-                    const Divider(height: 1),
-                    if (items.isEmpty)
-                      Expanded(child: Center(child: Text(emptyMessage)))
-                    else
-                      Expanded(
-                        child: ListView.builder(
-                          itemCount: items.length,
-                          itemBuilder: (context, i) => Column(
-                            children: [
-                              _HoverableRow(
-                                baseColor: i.isEven ? cs.surface : Colors.transparent,
-                                child: rowBuilder(context, items[i]),
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                final width = _minContentWidth(columns).clamp(constraints.maxWidth, double.infinity);
+
+                return SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  // No-op when width == constraints.maxWidth (the common desktop
+                  // case) — only scrolls once columns hit their minimum width.
+                  child: SizedBox(
+                    width: width,
+                    child: Stack(
+                      children: [
+                        Column(
+                          children: [
+                            const Divider(height: 1),
+                            _Header(
+                              columns: columns,
+                              sortColumn: sortColumn,
+                              sortAscending: sortAscending,
+                              onSort: onSort,
+                            ),
+                            const Divider(height: 1),
+                            if (items.isEmpty)
+                              Expanded(child: Center(child: Text(emptyMessage)))
+                            else
+                              Expanded(
+                                child: ListView.builder(
+                                  itemCount: items.length,
+                                  itemBuilder: (context, i) => Column(
+                                    children: [
+                                      _HoverableRow(
+                                        baseColor: i.isEven ? cs.surface : Colors.transparent,
+                                        child: rowBuilder(context, items[i]),
+                                      ),
+                                      const Divider(height: 1),
+                                    ],
+                                  ),
+                                ),
                               ),
-                              const Divider(height: 1),
-                            ],
-                          ),
+                          ],
                         ),
-                      ),
-                  ],
-                ),
-                Positioned.fill(
-                  child: IgnorePointer(child: _ColumnGridLines(columns: columns)),
-                ),
-              ],
+                        Positioned.fill(
+                          child: IgnorePointer(child: _ColumnGridLines(columns: columns)),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
             ),
           ),
           Container(

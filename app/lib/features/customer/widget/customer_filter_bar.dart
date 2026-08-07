@@ -1,9 +1,7 @@
-import 'package:acalapp/core/theme/eva_theme.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:flutter/material.dart';
 
-const _actionButtonWidth = 180.0;
 const _narrowBreakpoint = 640.0;
 
 class CustomerFilterBar extends StatefulWidget {
@@ -116,46 +114,18 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
         );
 
         final searchButtonWide = SizedBox(
-          width: _actionButtonWidth,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Opacity(
-                opacity: 0,
-                child: Text(' ', style: Theme.of(context).textTheme.labelLarge),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: EvaSizes.controlHeight,
-                child: FilledButton.icon(
-                  onPressed: _search,
-                  icon: const Icon(Icons.search, size: 18),
-                  label: const Text('Consultar'),
-                ),
-              ),
-            ],
+          child: FilledButton.icon(
+            onPressed: _search,
+            icon: const Icon(Icons.search, size: 18),
+            label: const Text('Consultar'),
           ),
         );
 
         final clearButtonWide = SizedBox(
-          width: _actionButtonWidth,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Opacity(
-                opacity: 0,
-                child: Text(' ', style: Theme.of(context).textTheme.labelLarge),
-              ),
-              const SizedBox(height: 8),
-              SizedBox(
-                height: EvaSizes.controlHeight,
-                child: OutlinedButton.icon(
-                  onPressed: _clear,
-                  icon: const Icon(Icons.clear, size: 18),
-                  label: const Text('Limpar'),
-                ),
-              ),
-            ],
+          child: OutlinedButton.icon(
+            onPressed: _clear,
+            icon: const Icon(Icons.clear, size: 18),
+            label: const Text('Limpar'),
           ),
         );
 
@@ -176,16 +146,28 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                   ),
                 ],
               )
-            : Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
+            : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Expanded(child: nameField),
-                  const SizedBox(width: 8),
-                  Expanded(child: documentField),
-                  const SizedBox(width: 8),
-                  clearButtonWide,
-                  const SizedBox(width: 8),
-                  searchButtonWide,
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 9, child: nameField),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 3, child: documentField),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      // Bootstrap-equivalent: offset-8, then two col-2 buttons —
+                      // buttons occupy the right-hand third of the row, split evenly.
+                      const Spacer(flex: 8),
+                      Expanded(flex: 2, child: clearButtonWide),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 2, child: searchButtonWide),
+                    ],
+                  ),
                 ],
               );
 

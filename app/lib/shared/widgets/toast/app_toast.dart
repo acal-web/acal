@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:acalapp/core/theme/eva_theme.dart';
 import 'package:flutter/material.dart';
 
 enum AppToastType { error, warning, success }
@@ -167,7 +166,7 @@ class _ToastCardState extends State<_ToastCard> {
           child: Container(
             width: 340,
             padding: const EdgeInsets.fromLTRB(16, 14, 8, 14),
-            decoration: BoxDecoration(color: background, boxShadow: EvaShadows.lg),
+            decoration: BoxDecoration(color: background),
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
