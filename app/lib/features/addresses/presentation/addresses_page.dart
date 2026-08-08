@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
@@ -8,6 +9,7 @@ import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 
 class AddressesPage extends StatefulWidget {
   const AddressesPage({super.key});
@@ -15,9 +17,6 @@ class AddressesPage extends StatefulWidget {
   @override
   State<AddressesPage> createState() => _AddressesPageState();
 }
-
-const _actionButtonWidth = 180.0;
-const _filterBarNarrowBreakpoint = 640.0;
 
 class _AddressesPageState extends State<AddressesPage> {
   final _service = AddressService();
@@ -32,19 +31,19 @@ class _AddressesPageState extends State<AddressesPage> {
   }
 
   void _load() => setState(() {
-        _future = _service.findAll(page: _page, size: _pageSize);
-      });
+    _future = _service.findAll(page: _page, size: _pageSize);
+  });
 
   void _goToPage(int page) => setState(() {
-        _page = page;
-        _future = _service.findAll(page: _page, size: _pageSize);
-      });
+    _page = page;
+    _future = _service.findAll(page: _page, size: _pageSize);
+  });
 
   void _changePageSize(int size) => setState(() {
-        _pageSize = size;
-        _page = 0;
-        _future = _service.findAll(page: _page, size: _pageSize);
-      });
+    _pageSize = size;
+    _page = 0;
+    _future = _service.findAll(page: _page, size: _pageSize);
+  });
 
   Future<void> _openForm({Address? address}) async {
     if (await openAddress(context, address: address)) _load();
@@ -56,7 +55,8 @@ class _AddressesPageState extends State<AddressesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < _filterBarNarrowBreakpoint;
+    final narrow =
+        MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     return Scaffold(
       body: Padding(
@@ -67,12 +67,17 @@ class _AddressesPageState extends State<AddressesPage> {
             PageHeader(
               title: 'Logradouros',
               subtitle: 'Gerencie os endereços cadastrados.',
-              action: SizedBox(
-                width: _actionButtonWidth,
-                child: FilledButton.icon(
-                  onPressed: _openForm,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Novo Endereço'),
+              action: FButton(
+                mainAxisSize: MainAxisSize.min,
+                onPress: _openForm,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, size: 18),
+                    SizedBox(width: 8),
+                    Text('Novo Endereço'),
+                  ],
                 ),
               ),
             ),
@@ -82,28 +87,22 @@ class _AddressesPageState extends State<AddressesPage> {
             _AddressFilterBar(onSearch: _load),
             const SizedBox(height: 8),
             Expanded(
-              child: Card(
-                elevation: 1,
-                child: Padding(
-                  padding: EdgeInsets.all(narrow ? 12 : 16),
-                  child: PagedListView<Address>(
-                    future: _future,
-                    columns: const [
-                      DataTableColumn('Logradouro', flex: 2, sortable: true),
-                      DataTableColumn('Ações', width: 88),
-                    ],
-                    emptyMessage: 'Nenhum endereço cadastrado.',
-                    errorMessage: 'Erro ao carregar endereços',
-                    onRetry: _load,
-                    onPageChanged: _goToPage,
-                    pageSize: _pageSize,
-                    onPageSizeChanged: _changePageSize,
-                    rowBuilder: (context, address) => _AddressRow(
-                      address: address,
-                      onEdit: () => _openForm(address: address),
-                      onDelete: () => _delete(address),
-                    ),
-                  ),
+              child: PagedListView<Address>(
+                future: _future,
+                columns: const [
+                  DataTableColumn('Logradouro', flex: 2, sortable: true),
+                  DataTableColumn('Ações', width: 88),
+                ],
+                emptyMessage: 'Nenhum endereço cadastrado.',
+                errorMessage: 'Erro ao carregar endereços',
+                onRetry: _load,
+                onPageChanged: _goToPage,
+                pageSize: _pageSize,
+                onPageSizeChanged: _changePageSize,
+                rowBuilder: (context, address) => _AddressRow(
+                  address: address,
+                  onEdit: () => _openForm(address: address),
+                  onDelete: () => _delete(address),
                 ),
               ),
             ),
@@ -123,7 +122,7 @@ class _AddressFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final narrow = constraints.maxWidth < _filterBarNarrowBreakpoint;
+        final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -131,11 +130,19 @@ class _AddressFilterBar extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: SizedBox(
-                width: narrow ? double.infinity : _actionButtonWidth,
-                child: FilledButton.icon(
-                  onPressed: onSearch,
-                  icon: const Icon(Icons.search, size: 18),
-                  label: const Text('Consultar'),
+                width: narrow ? double.infinity : null,
+                child: FButton(
+                  mainAxisSize: MainAxisSize.min,
+                  onPress: onSearch,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.search, size: 18),
+                      SizedBox(width: 8),
+                      Text('Consultar'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -169,7 +176,7 @@ class _AddressRow extends StatelessWidget {
             flex: 2,
             child: Text(address.fullAddress, style: theme.textTheme.bodyMedium),
           ),
-         
+
           SizedBox(
             width: 88,
             child: RowActions(onEdit: onEdit, onDelete: onDelete),
@@ -179,4 +186,3 @@ class _AddressRow extends StatelessWidget {
     );
   }
 }
-

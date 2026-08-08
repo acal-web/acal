@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
@@ -9,11 +10,7 @@ import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
-
-const _actionButtonWidth = 180.0;
-
-// Below this width the filter row no longer fits comfortably, so it stacks.
-const _filterBarNarrowBreakpoint = 640.0;
+import 'package:forui/forui.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
@@ -35,19 +32,19 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   void _load() => setState(() {
-        _future = _service.findAll(page: _page, size: _pageSize);
-      });
+    _future = _service.findAll(page: _page, size: _pageSize);
+  });
 
   void _goToPage(int page) => setState(() {
-        _page = page;
-        _future = _service.findAll(page: _page, size: _pageSize);
-      });
+    _page = page;
+    _future = _service.findAll(page: _page, size: _pageSize);
+  });
 
   void _changePageSize(int size) => setState(() {
-        _pageSize = size;
-        _page = 0;
-        _future = _service.findAll(page: _page, size: _pageSize);
-      });
+    _pageSize = size;
+    _page = 0;
+    _future = _service.findAll(page: _page, size: _pageSize);
+  });
 
   Future<void> _openForm({Category? category}) async {
     if (await openCategory(context, category: category)) _load();
@@ -59,7 +56,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < _filterBarNarrowBreakpoint;
+    final narrow =
+        MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     return Scaffold(
       body: Padding(
@@ -70,12 +68,17 @@ class _CategoriesPageState extends State<CategoriesPage> {
             PageHeader(
               title: 'Categorias',
               subtitle: 'Gerencie as categorias de sócios cadastradas.',
-              action: SizedBox(
-                width: _actionButtonWidth,
-                child: FilledButton.icon(
-                  onPressed: _openForm,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Nova Categoria'),
+              action: FButton(
+                mainAxisSize: MainAxisSize.min,
+                onPress: _openForm,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, size: 18),
+                    SizedBox(width: 8),
+                    Text('Nova Categoria'),
+                  ],
                 ),
               ),
             ),
@@ -85,32 +88,26 @@ class _CategoriesPageState extends State<CategoriesPage> {
             _CategoryFilterBar(onSearch: _load),
             const SizedBox(height: 8),
             Expanded(
-              child: Card(
-                elevation: 1,
-                child: Padding(
-                  padding: EdgeInsets.all(narrow ? 12 : 16),
-                  child: PagedListView<Category>(
-                    future: _future,
-                    columns: const [
-                      DataTableColumn('Nome', flex: 5),
-                      DataTableColumn('Hidrômetro', width: 100),
-                      DataTableColumn('Valor Água', flex: 2),
-                      DataTableColumn('Valor Societário', flex: 2),
-                      DataTableColumn('Total', flex: 2),
-                      DataTableColumn('Ações', width: 88),
-                    ],
-                    emptyMessage: 'Nenhuma categoria cadastrada.',
-                    errorMessage: 'Erro ao carregar categorias',
-                    onRetry: _load,
-                    onPageChanged: _goToPage,
-                    pageSize: _pageSize,
-                    onPageSizeChanged: _changePageSize,
-                    rowBuilder: (context, category) => _CategoryRow(
-                      category: category,
-                      onEdit: () => _openForm(category: category),
-                      onDelete: () => _delete(category),
-                    ),
-                  ),
+              child: PagedListView<Category>(
+                future: _future,
+                columns: const [
+                  DataTableColumn('Nome', flex: 5),
+                  DataTableColumn('Hidrômetro', width: 100),
+                  DataTableColumn('Valor Água', flex: 2),
+                  DataTableColumn('Valor Societário', flex: 2),
+                  DataTableColumn('Total', flex: 2),
+                  DataTableColumn('Ações', width: 88),
+                ],
+                emptyMessage: 'Nenhuma categoria cadastrada.',
+                errorMessage: 'Erro ao carregar categorias',
+                onRetry: _load,
+                onPageChanged: _goToPage,
+                pageSize: _pageSize,
+                onPageSizeChanged: _changePageSize,
+                rowBuilder: (context, category) => _CategoryRow(
+                  category: category,
+                  onEdit: () => _openForm(category: category),
+                  onDelete: () => _delete(category),
                 ),
               ),
             ),
@@ -130,7 +127,7 @@ class _CategoryFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final narrow = constraints.maxWidth < _filterBarNarrowBreakpoint;
+        final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -138,11 +135,19 @@ class _CategoryFilterBar extends StatelessWidget {
             Align(
               alignment: Alignment.centerRight,
               child: SizedBox(
-                width: narrow ? double.infinity : _actionButtonWidth,
-                child: FilledButton.icon(
-                  onPressed: onSearch,
-                  icon: const Icon(Icons.search, size: 18),
-                  label: const Text('Consultar'),
+                width: narrow ? double.infinity : null,
+                child: FButton(
+                  mainAxisSize: MainAxisSize.min,
+                  onPress: onSearch,
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.search, size: 18),
+                      SizedBox(width: 8),
+                      Text('Consultar'),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -186,17 +191,25 @@ class _CategoryRow extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: Text(formatBRL(category.waterPrice), style: theme.textTheme.bodyMedium),
+            child: Text(
+              formatBRL(category.waterPrice),
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 2,
-            child: Text(formatBRL(category.membershipPrice), style: theme.textTheme.bodyMedium),
+            child: Text(
+              formatBRL(category.membershipPrice),
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 2,
             child: Text(
               formatBRL(category.waterPrice + category.membershipPrice),
-              style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w600),
+              style: theme.textTheme.bodyMedium?.copyWith(
+                fontWeight: FontWeight.w600,
+              ),
             ),
           ),
           SizedBox(

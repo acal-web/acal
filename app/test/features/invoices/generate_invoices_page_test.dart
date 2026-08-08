@@ -1,6 +1,7 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
 import 'package:acalapp/core/services/http_service.dart';
+import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
@@ -10,6 +11,7 @@ import 'package:acalapp/features/invoices/presentation/generate_invoices_page.da
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 
 const _pagination = Pagination(number: 0, totalPages: 1, totalElements: 0, size: 500, first: true, last: true);
 
@@ -72,6 +74,10 @@ Future<void> _pump(WidgetTester tester, {required InvoiceService invoiceService}
 
   await tester.pumpWidget(
     MaterialApp(
+      builder: (context, child) => FTheme(
+        data: fThemeLight,
+        child: FToaster(child: FTooltipGroup(child: child!)),
+      ),
       home: GenerateInvoicesPage(
         invoiceService: invoiceService,
         addressService: _FakeAddressService(),
@@ -113,7 +119,7 @@ void main() {
     final now = DateTime.now();
     expect(service.lastEligibleReference, DateTime(now.year, now.month));
 
-    final checkboxes = tester.widgetList<Checkbox>(find.byType(Checkbox));
+    final checkboxes = tester.widgetList<FCheckbox>(find.byType(FCheckbox));
     expect(checkboxes.every((c) => c.value == true), isTrue);
   });
 
@@ -122,8 +128,8 @@ void main() {
     await _pump(tester, invoiceService: service);
 
     // Checkboxes in tree order: header "select all", then one per row.
-    await tester.tap(find.byType(Checkbox).at(2));
-    await tester.pump();
+    await tester.tap(find.byType(FCheckbox).at(2));
+    await tester.pumpAndSettle();
 
     expect(find.text('Total (1)'), findsOneWidget);
     expect(find.text(formatBRL(20.0)), findsWidgets);
@@ -138,19 +144,19 @@ void main() {
     final service = _FakeInvoiceService(candidates: [_candidateA]);
     await _pump(tester, invoiceService: service);
 
-    final button = tester.widget<FilledButton>(find.ancestor(
+    final button = tester.widget<FButton>(find.ancestor(
       of: find.text('Confirmar Geração'),
-      matching: find.byType(FilledButton),
+      matching: find.byType(FButton),
     ));
-    expect(button.onPressed, isNull);
+    expect(button.onPress, isNull);
 
     await _pickDueDate(tester);
 
-    final enabledButton = tester.widget<FilledButton>(find.ancestor(
+    final enabledButton = tester.widget<FButton>(find.ancestor(
       of: find.text('Confirmar Geração'),
-      matching: find.byType(FilledButton),
+      matching: find.byType(FButton),
     ));
-    expect(enabledButton.onPressed, isNotNull);
+    expect(enabledButton.onPress, isNotNull);
   });
 
   testWidgets('shows a success toast and reloads the list after generating', (tester) async {

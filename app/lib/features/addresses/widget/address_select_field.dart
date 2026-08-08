@@ -1,34 +1,33 @@
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
 /// A preloaded combobox for picking an [Address] — it loads the full
 /// address list once and lets the user pick from it (no search-as-you-type),
 /// grouped by [Address.kind] and sorted alphabetically within each kind.
-class AddressSelectField extends FormField<Address> {
-  AddressSelectField({
+class AddressSelectField extends StatefulWidget {
+  const AddressSelectField({
     super.key,
     required this.addressService,
-    super.initialValue,
+    this.initialValue,
     required this.onSelected,
     this.label = 'Logradouro',
-    super.validator,
-  }) : super(builder: (field) => (field as _AddressSelectFieldState)._build(field.context));
+    this.validator,
+  });
 
   final AddressService addressService;
+  final Address? initialValue;
   final ValueChanged<Address?> onSelected;
   final String label;
+  final FormFieldValidator<Address>? validator;
 
   @override
-  FormFieldState<Address> createState() => _AddressSelectFieldState();
+  State<AddressSelectField> createState() => _AddressSelectFieldState();
 }
 
-class _AddressSelectFieldState extends FormFieldState<Address> {
+class _AddressSelectFieldState extends State<AddressSelectField> {
   late final Future<List<Address>> _future;
-
-  @override
-  AddressSelectField get widget => super.widget as AddressSelectField;
 
   @override
   void initState() {
@@ -36,81 +35,41 @@ class _AddressSelectFieldState extends FormFieldState<Address> {
     _future = widget.addressService.findAll(size: 500).then((r) => r.data);
   }
 
-  DropdownMenuEntry<Address> _headerEntry(BuildContext context, String kind) {
-    final style = Theme.of(context).textTheme.labelMedium?.copyWith(
-          fontWeight: FontWeight.bold,
-          color: Theme.of(context).colorScheme.onSurfaceVariant,
-        );
-    return DropdownMenuEntry(
-      // A distinct (identity-equal) Address instance per kind header — never
-      // matches a real address or another header, so it can't be mistaken
-      // for the current selection.
-      value: Address(kind: kind, name: kind),
-      label: kind,
-      enabled: false,
-      labelWidget: Text(kind, style: style),
-      style: MenuItemButton.styleFrom(
-        minimumSize: Size.zero,
-        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-      ),
-    );
-  }
-
-  List<DropdownMenuEntry<Address>> _entries(BuildContext context, List<Address> addresses) {
+  List<FSelectItemMixin> _sections(List<Address> addresses) {
     final sorted = [...addresses]..sort((a, b) {
         final byKind = kinds.indexOf(a.kind).compareTo(kinds.indexOf(b.kind));
         return byKind != 0 ? byKind : a.name.toLowerCase().compareTo(b.name.toLowerCase());
       });
 
-    String? currentKind;
+    final byKind = <String, List<Address>>{};
+    for (final address in sorted) {
+      byKind.putIfAbsent(address.kind, () => []).add(address);
+    }
+
     return [
-      for (final address in sorted) ...[
-        if (address.kind != currentKind) _headerEntry(context, currentKind = address.kind),
-        DropdownMenuEntry(
-          value: address,
-          // The list row just shows the name (it's already under its kind
-          // header), but `label` is what fills the field once selected —
-          // show the kind there too so the closed field isn't ambiguous.
-          label: address.fullAddress,
-          // Capped and truncated: DropdownMenu sizes the popup to its widest
-          // row (it only floors the width to the anchor, never caps it), so
-          // one unusually long address name would otherwise stretch the
-          // whole menu past the field.
-          labelWidget: SizedBox(
-            width: 360,
-            child: Text(address.name, overflow: TextOverflow.ellipsis, maxLines: 1),
-          ),
+      for (final entry in byKind.entries)
+        FSelectSection<Address>(
+          label: Text(entry.key),
+          items: {for (final address in entry.value) address.name: address},
         ),
-      ],
     ];
   }
 
-  Widget _build(BuildContext context) {
+  @override
+  Widget build(BuildContext context) {
     return FutureBuilder<List<Address>>(
       future: _future,
       builder: (context, snapshot) {
         final loading = snapshot.connectionState != ConnectionState.done;
-        final entries = loading ? const <DropdownMenuEntry<Address>>[] : _entries(context, snapshot.data!);
 
-        return LabeledField(
-          label: widget.label,
-          child: DropdownMenu<Address>(
-            enabled: !loading,
-            initialSelection: value,
-            expandedInsets: EdgeInsets.zero,
-            selectOnly: true,
-            hintText: loading ? 'Carregando...' : 'Selecione o logradouro',
-            errorText: hasError ? errorText : null,
-            // Up to 500 addresses are preloaded (see _future above) — without
-            // a cap the popup grows to fit all of them instead of scrolling.
-            menuHeight: 320,
-            dropdownMenuEntries: entries,
-            onSelected: (address) {
-              didChange(address);
-              widget.onSelected(address);
-            },
-          ),
+        return FSelect<Address>.rich(
+          format: (a) => a.fullAddress,
+          control: FSelectControl.managed(initial: widget.initialValue, onChange: widget.onSelected),
+          label: Text(widget.label),
+          hint: loading ? 'Carregando...' : 'Selecione o logradouro',
+          enabled: !loading,
+          validator: widget.validator ?? (_) => null,
+          children: loading ? const [] : _sections(snapshot.data!),
         );
       },
     );

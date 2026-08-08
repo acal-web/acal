@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/quality/data/quality_analysis_service.dart';
 import 'package:acalapp/features/quality/domain/quality_analysis.dart';
@@ -10,9 +11,7 @@ import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
-
-const _actionButtonWidth = 200.0;
-const _narrowBreakpoint = 640.0;
+import 'package:forui/forui.dart';
 
 class QualityPage extends StatefulWidget {
   const QualityPage({super.key});
@@ -35,32 +34,32 @@ class _QualityPageState extends State<QualityPage> {
   }
 
   Future<PagedResult<QualityAnalysis>> _fetch() => _service.findAll(
-        page: _page,
-        size: _pageSize,
-        year: _period?.year,
-        month: _period?.month,
-      );
+    page: _page,
+    size: _pageSize,
+    year: _period?.year,
+    month: _period?.month,
+  );
 
   void _load() => setState(() {
-        _future = _fetch();
-      });
+    _future = _fetch();
+  });
 
   void _goToPage(int page) => setState(() {
-        _page = page;
-        _future = _fetch();
-      });
+    _page = page;
+    _future = _fetch();
+  });
 
   void _changePageSize(int size) => setState(() {
-        _pageSize = size;
-        _page = 0;
-        _future = _fetch();
-      });
+    _pageSize = size;
+    _page = 0;
+    _future = _fetch();
+  });
 
   void _changePeriod(QualityPeriod? period) => setState(() {
-        _period = period;
-        _page = 0;
-        _future = _fetch();
-      });
+    _period = period;
+    _page = 0;
+    _future = _fetch();
+  });
 
   Future<void> _openForm({QualityAnalysis? analysis}) async {
     if (await openQualityAnalysis(context, analysis: analysis)) _load();
@@ -72,7 +71,7 @@ class _QualityPageState extends State<QualityPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < _narrowBreakpoint;
+    final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     return Scaffold(
       body: Padding(
@@ -83,12 +82,17 @@ class _QualityPageState extends State<QualityPage> {
             PageHeader(
               title: 'Análise de Água',
               subtitle: 'Resultados das medições laboratoriais de qualidade.',
-              action: SizedBox(
-                width: _actionButtonWidth,
-                child: FilledButton.icon(
-                  onPressed: _openForm,
-                  icon: const Icon(Icons.add, size: 18),
-                  label: const Text('Adicionar Análise'),
+              action: FButton(
+                mainAxisSize: MainAxisSize.min,
+                onPress: _openForm,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.add, size: 18),
+                    SizedBox(width: 8),
+                    Text('Adicionar Análise'),
+                  ],
                 ),
               ),
             ),
@@ -97,39 +101,39 @@ class _QualityPageState extends State<QualityPage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Text('Filtrar por Período', style: Theme.of(context).textTheme.labelLarge),
+                Text(
+                  'Filtrar por Período',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
                 const SizedBox(width: 12),
-                QualityPeriodFilterButton(period: _period, onChanged: _changePeriod),
+                QualityPeriodFilterButton(
+                  period: _period,
+                  onChanged: _changePeriod,
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: Card(
-                elevation: 1,
-                child: Padding(
-                  padding: EdgeInsets.all(narrow ? 12 : 16),
-                  child: PagedListView<QualityAnalysis>(
-                    future: _future,
-                    columns: const [
-                      DataTableColumn('Referência', flex: 2),
-                      DataTableColumn('Parâmetro', flex: 3),
-                      DataTableColumn('Exigido', flex: 2),
-                      DataTableColumn('Analisado', flex: 2),
-                      DataTableColumn('Conformidade', flex: 2),
-                      DataTableColumn('Ações', width: 88),
-                    ],
-                    emptyMessage: 'Nenhuma análise cadastrada.',
-                    errorMessage: 'Erro ao carregar análises',
-                    onRetry: _load,
-                    onPageChanged: _goToPage,
-                    pageSize: _pageSize,
-                    onPageSizeChanged: _changePageSize,
-                    rowBuilder: (context, analysis) => _QualityAnalysisRow(
-                      analysis: analysis,
-                      onEdit: () => _openForm(analysis: analysis),
-                      onDelete: () => _delete(analysis),
-                    ),
-                  ),
+              child: PagedListView<QualityAnalysis>(
+                future: _future,
+                columns: const [
+                  DataTableColumn('Referência', flex: 2),
+                  DataTableColumn('Parâmetro', flex: 3),
+                  DataTableColumn('Exigido', flex: 2),
+                  DataTableColumn('Analisado', flex: 2),
+                  DataTableColumn('Conformidade', flex: 2),
+                  DataTableColumn('Ações', width: 88),
+                ],
+                emptyMessage: 'Nenhuma análise cadastrada.',
+                errorMessage: 'Erro ao carregar análises',
+                onRetry: _load,
+                onPageChanged: _goToPage,
+                pageSize: _pageSize,
+                onPageSizeChanged: _changePageSize,
+                rowBuilder: (context, analysis) => _QualityAnalysisRow(
+                  analysis: analysis,
+                  onEdit: () => _openForm(analysis: analysis),
+                  onDelete: () => _delete(analysis),
                 ),
               ),
             ),
@@ -162,7 +166,10 @@ class _QualityAnalysisRow extends StatelessWidget {
         children: [
           Expanded(
             flex: 2,
-            child: Text(formatMonthReference(analysis.referenceDate), style: theme.textTheme.bodyMedium),
+            child: Text(
+              formatMonthReference(analysis.referenceDate),
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 3,
@@ -170,15 +177,24 @@ class _QualityAnalysisRow extends StatelessWidget {
           ),
           Expanded(
             flex: 2,
-            child: Text('${analysis.required}', style: theme.textTheme.bodyMedium),
+            child: Text(
+              '${analysis.required}',
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 2,
-            child: Text('${analysis.analyzed}', style: theme.textTheme.bodyMedium),
+            child: Text(
+              '${analysis.analyzed}',
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 2,
-            child: Text('${analysis.compliant}', style: theme.textTheme.bodyMedium),
+            child: Text(
+              '${analysis.compliant}',
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           SizedBox(
             width: 88,

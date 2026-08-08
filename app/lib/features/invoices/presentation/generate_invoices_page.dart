@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/services/api_error_code.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
@@ -7,12 +8,11 @@ import 'package:acalapp/features/invoices/domain/invoice_candidate.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/async_error_view.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 
-const _narrowBreakpoint = 640.0;
 const _checkboxColumnWidth = 56.0;
 const _amountColumnWidth = 140.0;
 const _waterMeterColumnWidth = 120.0;
@@ -135,7 +135,7 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < _narrowBreakpoint;
+    final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     return Scaffold(
       body: Padding(
@@ -166,7 +166,7 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
                 future: _future,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: FCircularProgress());
                   }
                   if (snapshot.hasError) {
                     return AsyncErrorView(message: 'Erro ao carregar conexões elegíveis', onRetry: _search);
@@ -237,57 +237,42 @@ class _FilterBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final waterMeterField = LabeledField(
-      label: 'Tipo Hidrômetro',
-      child: DropdownButtonFormField<bool?>(
-        initialValue: hasWaterMeter,
-        decoration: const InputDecoration(border: OutlineInputBorder()),
-        items: const [
-          DropdownMenuItem(value: null, child: Text('Todos')),
-          DropdownMenuItem(value: true, child: Text('Com Hidrômetro')),
-          DropdownMenuItem(value: false, child: Text('Sem Hidrômetro')),
-        ],
-        onChanged: onHasWaterMeterChanged,
-      ),
+    final waterMeterField = FSelect<bool?>(
+      items: const {'Todos': null, 'Com Hidrômetro': true, 'Sem Hidrômetro': false},
+      control: FSelectControl.managed(initial: hasWaterMeter, onChange: onHasWaterMeterChanged),
+      label: const Text('Tipo Hidrômetro'),
     );
 
-    final referenceField = LabeledField(
-      label: 'Período',
-      child: TextFormField(
-        key: const Key('reference-field'),
-        controller: TextEditingController(text: formatMonthReference(reference)),
-        readOnly: true,
-        decoration: const InputDecoration(
-          border: OutlineInputBorder(),
-          suffixIcon: Icon(Icons.calendar_today, size: 18),
-        ),
-        onTap: onReferenceTap,
-      ),
+    final referenceField = FTextFormField(
+      key: const Key('reference-field'),
+      control: FTextFieldControl.managed(controller: TextEditingController(text: formatMonthReference(reference))),
+      readOnly: true,
+      label: const Text('Período'),
+      suffixBuilder: (context, style, variants) => const Icon(Icons.calendar_today, size: 18),
+      onTap: onReferenceTap,
     );
 
-    final addressField = LabeledField(
-      label: 'Logradouro',
-      child: DropdownButtonFormField<String?>(
-        initialValue: addressId,
-        decoration: InputDecoration(
-          border: const OutlineInputBorder(),
-          hintText: loadingAddresses ? 'Carregando...' : 'Selecione o endereço...',
-        ),
-        items: [
-          const DropdownMenuItem(value: null, child: Text('Todos')),
-          for (final address in addresses)
-            DropdownMenuItem(value: address.id, child: Text(address.fullAddress)),
-        ],
-        onChanged: loadingAddresses ? null : onAddressChanged,
-      ),
+    final addressField = FSelect<String?>(
+      items: {
+        'Todos': null,
+        for (final address in addresses) address.fullAddress: address.id,
+      },
+      control: FSelectControl.managed(initial: addressId, onChange: loadingAddresses ? null : onAddressChanged),
+      label: const Text('Logradouro'),
+      hint: loadingAddresses ? 'Carregando...' : 'Selecione o endereço...',
+      enabled: !loadingAddresses,
     );
 
     final searchButton = SizedBox(
-      width: narrow ? double.infinity : 160,
-      child: FilledButton.icon(
-        onPressed: onSearch,
-        icon: const Icon(Icons.search, size: 18),
-        label: const Text('Consultar'),
+      width: narrow ? double.infinity : null,
+      child: FButton(
+        mainAxisSize: MainAxisSize.min,
+        onPress: onSearch,
+        child: const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [Icon(Icons.search, size: 18), SizedBox(width: 8), Text('Consultar')],
+        ),
       ),
     );
 
@@ -368,9 +353,9 @@ class _CandidatesCard extends StatelessWidget {
                 SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. INICIAL', style: Theme.of(context).textTheme.labelLarge)),
                 SizedBox(
                   width: _checkboxColumnWidth,
-                  child: Checkbox(
+                  child: FCheckbox(
                     value: allSelected,
-                    onChanged: candidates.isEmpty ? null : onToggleAll,
+                    onChange: candidates.isEmpty ? null : onToggleAll,
                   ),
                 ),
               ],
@@ -398,9 +383,9 @@ class _CandidatesCard extends StatelessWidget {
                         const SizedBox(width: _waterMeterColumnWidth, child: Text('0.0')),
                         SizedBox(
                           width: _checkboxColumnWidth,
-                          child: Checkbox(
+                          child: FCheckbox(
                             value: checked,
-                            onChanged: (v) => onToggle(candidate.connectionId, v),
+                            onChange: (v) => onToggle(candidate.connectionId, v),
                           ),
                         ),
                       ],
@@ -448,7 +433,7 @@ class _GenerateBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < _narrowBreakpoint;
+    final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     final infoText = Row(
       mainAxisSize: MainAxisSize.min,
@@ -461,30 +446,40 @@ class _GenerateBar extends StatelessWidget {
 
     final dueDateField = SizedBox(
       width: 180,
-      child: LabeledField(
-        label: 'Vencimento',
-        child: TextFormField(
-          key: const Key('due-date-field'),
+      child: FTextFormField(
+        key: const Key('due-date-field'),
+        control: FTextFieldControl.managed(
           controller: TextEditingController(text: dueDate == null ? '' : _formatDate(dueDate!)),
-          readOnly: true,
-          decoration: const InputDecoration(
-            border: OutlineInputBorder(),
-            hintText: '--/--/----',
-            suffixIcon: Icon(Icons.calendar_today, size: 18),
-          ),
-          onTap: onDueDateTap,
         ),
+        readOnly: true,
+        label: const Text('Vencimento'),
+        hint: '--/--/----',
+        suffixBuilder: (context, style, variants) => const Icon(Icons.calendar_today, size: 18),
+        onTap: onDueDateTap,
       ),
     );
 
     final confirmButton = SizedBox(
-      width: narrow ? double.infinity : 220,
-      child: FilledButton.icon(
-        onPressed: onConfirm,
-        icon: generating
-            ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-            : const Icon(Icons.check, size: 18),
-        label: const Text('Confirmar Geração'),
+      width: narrow ? double.infinity : null,
+      child: FButton(
+        mainAxisSize: MainAxisSize.min,
+        onPress: onConfirm,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (generating)
+              const Padding(
+                padding: EdgeInsets.only(right: 8),
+                child: FCircularProgress(size: FCircularProgressSizeVariant.xs),
+              )
+            else ...[
+              const Icon(Icons.check, size: 18),
+              const SizedBox(width: 8),
+            ],
+            const Text('Confirmar Geração'),
+          ],
+        ),
       ),
     );
 
@@ -539,45 +534,60 @@ class _ReferencePickerDialogState extends State<_ReferencePickerDialog> {
     final currentYear = DateTime.now().year;
     final years = [for (var y = currentYear - 5; y <= currentYear + 1; y++) y];
 
-    return AlertDialog(
-      title: const Text('Período de Referência'),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: DropdownButtonFormField<int>(
-                initialValue: _month,
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: 'Mês'),
-                items: [
-                  for (var m = 1; m <= 12; m++) DropdownMenuItem(value: m, child: Text(monthNames[m - 1])),
+    return FDialog(
+      builder: (context, style) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 360),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Período de Referência', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: FSelect<int>(
+                      items: {for (var m = 1; m <= 12; m++) monthNames[m - 1]: m},
+                      control: FSelectControl.managed(initial: _month, onChange: (v) => setState(() => _month = v!)),
+                      label: const Text('Mês'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FSelect<int>(
+                      items: {for (final y in years) '$y': y},
+                      control: FSelectControl.managed(initial: _year, onChange: (v) => setState(() => _year = v!)),
+                      label: const Text('Ano'),
+                    ),
+                  ),
                 ],
-                onChanged: (v) => setState(() => _month = v!),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: DropdownButtonFormField<int>(
-                initialValue: _year,
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: 'Ano'),
-                items: [for (final y in years) DropdownMenuItem(value: y, child: Text('$y'))],
-                onChanged: (v) => setState(() => _year = v!),
+              const SizedBox(height: 16),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FButton(
+                    variant: FButtonVariant.ghost,
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: () => Navigator.of(context).pop(),
+                    child: const Text('Cancelar'),
+                  ),
+                  FButton(
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: () => Navigator.of(context).pop((year: _year, month: _month)),
+                    child: const Text('Aplicar'),
+                  ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop((year: _year, month: _month)),
-          child: const Text('Aplicar'),
-        ),
-      ],
     );
   }
 }

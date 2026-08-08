@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/pagination.dart';
 import 'package:flutter/material.dart';
 
@@ -55,6 +56,7 @@ class DataTableCard<T> extends StatelessWidget {
     this.sortColumn,
     this.sortAscending = true,
     this.onSort,
+    this.showFooter = false,
   });
 
   final List<DataTableColumn> columns;
@@ -75,6 +77,11 @@ class DataTableCard<T> extends StatelessWidget {
   /// header is tapped. Toggling asc/desc for the active column is the
   /// caller's responsibility.
   final void Function(String sortKey)? onSort;
+
+  /// Repeats the column labels as a footer row at the bottom of the table
+  /// body, above the pagination bar — mirrors the classic DataTables.net
+  /// layout. Defaults to off since most listing pages don't need it.
+  final bool showFooter;
 
   @override
   Widget build(BuildContext context) {
@@ -125,7 +132,7 @@ class DataTableCard<T> extends StatelessWidget {
                                   itemBuilder: (context, i) => Column(
                                     children: [
                                       _HoverableRow(
-                                        baseColor: i.isEven ? cs.surface : Colors.transparent,
+                                        baseColor: i.isEven ? cs.surfaceContainerHigh.withValues(alpha: 0.35) : Colors.transparent,
                                         child: rowBuilder(context, items[i]),
                                       ),
                                       const Divider(height: 1),
@@ -133,6 +140,13 @@ class DataTableCard<T> extends StatelessWidget {
                                   ),
                                 ),
                               ),
+                            // Pinned to the bottom, right above the pagination bar, so it
+                            // stays put regardless of how many rows the current page has —
+                            // rather than hugging the last row and jumping around per page.
+                            if (showFooter) ...[
+                              const Divider(height: 1),
+                              _Footer(columns: columns),
+                            ],
                           ],
                         ),
                         Positioned.fill(
@@ -237,21 +251,24 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final style = Theme.of(context).textTheme.labelLarge;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        spacing: columnSpacing,
-        children: [
-          for (final column in columns)
-            _HeaderCell(
-              column: column,
-              style: style,
-              iconColor: cs.onSurfaceVariant,
-              active: column.sortKey != null && column.sortKey == sortColumn,
-              ascending: sortAscending,
-              onSort: onSort,
-            ),
-        ],
+    return ColoredBox(
+      color: cs.surfaceContainerHigh,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            for (final column in columns)
+              _HeaderCell(
+                column: column,
+                style: style,
+                iconColor: cs.onSurfaceVariant,
+                active: column.sortKey != null && column.sortKey == sortColumn,
+                ascending: sortAscending,
+                onSort: onSort,
+              ),
+          ],
+        ),
       ),
     );
   }
@@ -294,6 +311,36 @@ class _HeaderCell extends StatelessWidget {
     return column.width != null
         ? SizedBox(width: column.width, child: cell)
         : Expanded(flex: column.flex, child: cell);
+  }
+}
+
+/// Non-interactive repeat of [_Header]'s labels, used as the table's footer
+/// when [DataTableCard.showFooter] is set — same flex/width per column as
+/// [_HeaderCell] so it lines up with the grid lines and rows above it.
+class _Footer extends StatelessWidget {
+  const _Footer({required this.columns});
+
+  final List<DataTableColumn> columns;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final style = Theme.of(context).textTheme.labelLarge;
+    return ColoredBox(
+      color: cs.surfaceContainerHigh,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            for (final column in columns)
+              column.width != null
+                  ? SizedBox(width: column.width, child: Text(column.label, style: style))
+                  : Expanded(flex: column.flex, child: Text(column.label, style: style)),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -383,10 +430,6 @@ class _PaginationBar extends StatelessWidget {
     return result;
   }
 
-  // Below this width "Mostrando X a Y de Z registros" plus the page
-  // controls no longer fit on one line without risking overflow.
-  static const _narrowBreakpoint = 640.0;
-
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -438,7 +481,7 @@ class _PaginationBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth < _narrowBreakpoint) {
+          if (constraints.maxWidth < LayoutConfig.narrowBreakpoint) {
             return Column(
               children: [
                 summary,

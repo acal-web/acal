@@ -1,7 +1,9 @@
+import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/customer/widget/customer_form_page.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 
 Future<void> _pump(WidgetTester tester) async {
   tester.view.physicalSize = const Size(1400, 1000);
@@ -11,13 +13,17 @@ Future<void> _pump(WidgetTester tester) async {
 
   await tester.pumpWidget(
     MaterialApp(
+      builder: (context, child) => FTheme(
+        data: fThemeLight,
+        child: FToaster(child: FTooltipGroup(child: child!)),
+      ),
       home: const Scaffold(body: CustomerFormPage()),
     ),
   );
 }
 
 // Field order in CustomerFormPage: Nome, Documento, Número de Sócio.
-Finder _documentField() => find.byType(TextFormField).at(1);
+Finder _documentField() => find.byType(TextField).at(1);
 
 void main() {
   testWidgets('defaults the document field to the CPF (person) icon and mask', (tester) async {
@@ -40,7 +46,7 @@ void main() {
     expect(find.text('123.456.789-09'), findsOneWidget);
 
     await tester.tap(find.byIcon(Icons.person));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.byIcon(Icons.business), findsOneWidget);
     expect(find.text('Documento (CNPJ)'), findsOneWidget);
@@ -51,7 +57,7 @@ void main() {
     await _pump(tester);
 
     await tester.tap(find.byIcon(Icons.person));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     await tester.enterText(_documentField(), '11222333000181');
     await tester.pump();
@@ -67,7 +73,7 @@ void main() {
 
     final formState = tester.state<FormState>(find.byType(Form));
     expect(formState.validate(), isFalse);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('CPF inválido'), findsOneWidget);
   });

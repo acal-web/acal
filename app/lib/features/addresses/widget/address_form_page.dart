@@ -3,9 +3,9 @@ import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 
 class AddressFormPage extends StatefulWidget {
   final Address? address;
@@ -87,31 +87,18 @@ class _AddressFormPageState extends State<AddressFormPage> {
       saving: _saving,
       fields: LayoutBuilder(
         builder: (context, constraints) {
-          final kindField = LabeledField(
-            label: 'Tipo',
-            child: DropdownButtonFormField<String>(
-              initialValue: _kind,
-              items: kinds
-                  .map((t) => DropdownMenuItem(value: t, child: Text(t)))
-                  .toList(),
-              onChanged: (v) {},
-              onSaved: (v) => _kind = v!,
-              validator: (v) =>
-                  (v == null || v.isEmpty) ? 'Obrigatório' : null,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
+          final kindField = FSelect<String>(
+            items: {for (final t in kinds) t: t},
+            control: FSelectControl.managed(initial: _kind, onChange: (v) {}),
+            label: const Text('Tipo'),
+            onSaved: (v) => _kind = v!,
+            validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
           );
-          final nameField = LabeledField(
-            label: 'Nome',
-            child: TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Digite o logradouro',
-              ),
-              validator: (v) =>
-                  (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
-            ),
+          final nameField = FTextFormField(
+            control: FTextFieldControl.managed(controller: _nameController),
+            label: const Text('Nome'),
+            hint: 'Digite o logradouro',
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
           );
 
           // Below this width the two fields no longer fit comfortably side

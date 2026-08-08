@@ -1,6 +1,7 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
 import 'package:acalapp/core/services/http_service.dart';
+import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
@@ -12,6 +13,7 @@ import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 
 const _pagination = Pagination(number: 0, totalPages: 1, totalElements: 1, size: 10, first: true, last: true);
 
@@ -78,6 +80,10 @@ Future<void> _pump(WidgetTester tester, {ConnectionService? connectionService}) 
 
   await tester.pumpWidget(
     MaterialApp(
+      builder: (context, child) => FTheme(
+        data: fThemeLight,
+        child: FToaster(child: FTooltipGroup(child: child!)),
+      ),
       home: Scaffold(
         body: ConnectionFormPage(
           connectionService: connectionService,
@@ -106,11 +112,20 @@ Finder _numberField() => find.byType(TextField).at(2);
 Finder _letterField() => find.byType(TextField).at(3);
 Finder _categoryField() => find.byType(TextField).at(4);
 
+// The popover opened by a SearchSelectField (FSelect) inserts its own inner
+// search TextField wherever the field sits in the tree — not necessarily at
+// the end — so it can't be reached via `find.byType(TextField).last` once
+// there's more than one FSelect-backed field on the page. Its default hint
+// ("Search", from Forui's un-localized default) is stable enough to target.
+Finder _openSearchPopoverField() => find.byWidgetPredicate((w) => w is TextField && w.decoration?.hintText == 'Search');
+
 Future<void> _fillAllFields(WidgetTester tester) async {
-  await tester.enterText(_customerField(), 'fulano');
+  await tester.tap(_customerField());
+  await tester.pump();
+  await tester.enterText(_openSearchPopoverField(), 'fulano');
   await _settleSearch(tester);
   await tester.tap(find.text('Fulano de Tal'));
-  await tester.pump();
+  await tester.pumpAndSettle();
 
   await tester.tap(_addressField());
   await tester.pumpAndSettle();
@@ -119,6 +134,8 @@ Future<void> _fillAllFields(WidgetTester tester) async {
 
   await tester.enterText(_numberField(), '12');
 
+  // Categoria uses CategorySelectField (Material DropdownMenu, not migrated
+  // yet) — unlike Sócio, it shows its options immediately, no typing needed.
   await tester.tap(_categoryField());
   await tester.pumpAndSettle();
   await tester.tap(find.text('Padrão').last);
@@ -131,7 +148,7 @@ void main() {
 
     final formState = tester.state<FormState>(find.byType(Form));
     expect(formState.validate(), isFalse);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Obrigatório'), findsNWidgets(4));
   });
@@ -162,35 +179,35 @@ void main() {
   testWidgets('the Ativa checkbox defaults to checked and can be toggled off', (tester) async {
     await _pump(tester);
 
-    var checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(0));
+    var checkbox = tester.widget<FCheckbox>(find.byType(FCheckbox).at(0));
     expect(checkbox.value, isTrue);
 
-    await tester.tap(find.byType(CheckboxListTile).at(0));
-    await tester.pump();
+    await tester.tap(find.byType(FCheckbox).at(0));
+    await tester.pumpAndSettle();
 
-    checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(0));
+    checkbox = tester.widget<FCheckbox>(find.byType(FCheckbox).at(0));
     expect(checkbox.value, isFalse);
   });
 
   testWidgets('the Exclusivamente Sócio checkbox defaults to unchecked and can be toggled on', (tester) async {
     await _pump(tester);
 
-    var checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(1));
+    var checkbox = tester.widget<FCheckbox>(find.byType(FCheckbox).at(1));
     expect(checkbox.value, isFalse);
 
-    await tester.tap(find.byType(CheckboxListTile).at(1));
-    await tester.pump();
+    await tester.tap(find.byType(FCheckbox).at(1));
+    await tester.pumpAndSettle();
 
-    checkbox = tester.widget<Checkbox>(find.byType(Checkbox).at(1));
+    checkbox = tester.widget<FCheckbox>(find.byType(FCheckbox).at(1));
     expect(checkbox.value, isTrue);
   });
 
   testWidgets('picking a membership date fills the field with dd/MM/yyyy', (tester) async {
     await _pump(tester);
 
-    // Número, Letra and Data da Matrícula are all TextFormFields — Data is
-    // the third (index 2).
-    final dateField = find.byType(TextFormField).at(2);
+    // Full TextField order: Sócio(0), Logradouro(1), Número(2), Letra(3),
+    // Categoria(4), Data da Matrícula(5).
+    final dateField = find.byType(TextField).at(5);
 
     await tester.tap(dateField);
     await tester.pumpAndSettle();
@@ -201,7 +218,7 @@ void main() {
     await tester.tap(find.text('OK'));
     await tester.pumpAndSettle();
 
-    final field = tester.widget<TextFormField>(dateField);
+    final field = tester.widget<TextField>(dateField);
     expect(field.controller!.text, matches(RegExp(r'^\d{2}/\d{2}/\d{4}$')));
   });
 
@@ -214,7 +231,7 @@ void main() {
     );
 
     await _fillAllFields(tester);
-    await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await tester.tap(find.widgetWithText(FButton, 'Salvar'));
     await tester.pump();
 
     expect(find.text('Este logradouro já está com uma ligação ativa.'), findsOneWidget);
@@ -235,7 +252,7 @@ void main() {
     );
 
     await _fillAllFields(tester);
-    await tester.tap(find.widgetWithText(FilledButton, 'Salvar'));
+    await tester.tap(find.widgetWithText(FButton, 'Salvar'));
     await tester.pump();
 
     expect(find.text('Este sócio já está recebendo outra ligação como efetivo.'), findsOneWidget);

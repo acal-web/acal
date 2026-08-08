@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
 /// Standard title + close-button row for a "Novo/Editar X" form dialog,
 /// used across "Cadastros" pages.
@@ -13,11 +15,14 @@ class FormDialogHeader extends StatelessWidget {
     return Row(
       children: [
         Expanded(
-          child: Text(title, style: Theme.of(context).textTheme.titleLarge),
+          child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
         ),
-        IconButton(
-          icon: const Icon(Icons.close),
-          onPressed: onClose,
+        FButton(
+          variant: FButtonVariant.ghost,
+          size: FButtonSizeVariant.sm,
+          mainAxisSize: MainAxisSize.min,
+          onPress: onClose,
+          child: const Icon(Icons.close, size: 18),
         ),
       ],
     );

@@ -4,10 +4,10 @@ import 'package:acalapp/features/quality/data/quality_analysis_service.dart';
 import 'package:acalapp/features/quality/domain/quality_analysis.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:forui/forui.dart';
 
 class QualityAnalysisFormPage extends StatefulWidget {
   final QualityAnalysis? analysis;
@@ -165,28 +165,18 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
             children: [
               Expanded(
                 flex: 2,
-                child: LabeledField(
-                  label: _isEditing ? 'Mês de Referência' : 'Período de Referência',
-                  child: DropdownButtonFormField<int>(
-                    initialValue: _month,
-                    decoration: const InputDecoration(border: OutlineInputBorder()),
-                    items: [
-                      for (var m = 1; m <= 12; m++) DropdownMenuItem(value: m, child: Text(monthNames[m - 1])),
-                    ],
-                    onChanged: (v) => setState(() => _month = v!),
-                  ),
+                child: FSelect<int>(
+                  items: {for (var m = 1; m <= 12; m++) monthNames[m - 1]: m},
+                  control: FSelectControl.managed(initial: _month, onChange: (v) => setState(() => _month = v!)),
+                  label: Text(_isEditing ? 'Mês de Referência' : 'Período de Referência'),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: LabeledField(
-                  label: _isEditing ? 'Ano' : ' ',
-                  child: DropdownButtonFormField<int>(
-                    initialValue: _year,
-                    decoration: const InputDecoration(border: OutlineInputBorder()),
-                    items: [for (final y in years) DropdownMenuItem(value: y, child: Text('$y'))],
-                    onChanged: (v) => setState(() => _year = v!),
-                  ),
+                child: FSelect<int>(
+                  items: {for (final y in years) '$y': y},
+                  control: FSelectControl.managed(initial: _year, onChange: (v) => setState(() => _year = v!)),
+                  label: Text(_isEditing ? 'Ano' : ' '),
                 ),
               ),
             ],
@@ -199,57 +189,42 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
   }
 
   List<Widget> _editingFields() => [
-        LabeledField(
-          label: 'Parâmetro',
-          child: DropdownButtonFormField<String>(
-            initialValue: _paramName,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-            items: [
-              for (final p in qualityAnalysisParamNames) DropdownMenuItem(value: p, child: Text(p)),
-            ],
-            onChanged: (v) => setState(() => _paramName = v!),
-          ),
+        FSelect<String>(
+          items: {for (final p in qualityAnalysisParamNames) p: p},
+          control: FSelectControl.managed(initial: _paramName, onChange: (v) => setState(() => _paramName = v!)),
+          label: const Text('Parâmetro'),
         ),
         const SizedBox(height: 12),
         Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: LabeledField(
-                label: 'Exigido',
-                child: TextFormField(
-                  controller: _requiredController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                  validator: _validateCount,
-                ),
+              child: FTextFormField(
+                control: FTextFieldControl.managed(controller: _requiredController),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                label: const Text('Exigido'),
+                validator: _validateCount,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: LabeledField(
-                label: 'Analisado',
-                child: TextFormField(
-                  controller: _analyzedController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                  validator: _validateCount,
-                ),
+              child: FTextFormField(
+                control: FTextFieldControl.managed(controller: _analyzedController),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                label: const Text('Analisado'),
+                validator: _validateCount,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: LabeledField(
-                label: 'Conformidade',
-                child: TextFormField(
-                  controller: _compliantController,
-                  keyboardType: TextInputType.number,
-                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                  decoration: const InputDecoration(border: OutlineInputBorder()),
-                  validator: _validateCount,
-                ),
+              child: FTextFormField(
+                control: FTextFieldControl.managed(controller: _compliantController),
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                label: const Text('Conformidade'),
+                validator: _validateCount,
               ),
             ),
           ],
@@ -315,34 +290,31 @@ class _ParamRow extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: TextFormField(
-            controller: controllers.required,
+          child: FTextFormField(
+            control: FTextFieldControl.managed(controller: controllers.required),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textAlign: TextAlign.center,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
             validator: validator,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: TextFormField(
-            controller: controllers.analyzed,
+          child: FTextFormField(
+            control: FTextFieldControl.managed(controller: controllers.analyzed),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textAlign: TextAlign.center,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
             validator: validator,
           ),
         ),
         const SizedBox(width: 12),
         Expanded(
-          child: TextFormField(
-            controller: controllers.compliant,
+          child: FTextFormField(
+            control: FTextFieldControl.managed(controller: controllers.compliant),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             textAlign: TextAlign.center,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
             validator: validator,
           ),
         ),

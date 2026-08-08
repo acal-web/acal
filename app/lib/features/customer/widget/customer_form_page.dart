@@ -4,10 +4,11 @@ import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons;
 import 'package:flutter/services.dart';
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
 class CustomerFormPage extends StatefulWidget {
   final Customer? customer;
@@ -132,56 +133,44 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
       fields: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LabeledField(
-            label: 'Nome',
-            child: TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Digite o nome do sócio',
-              ),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
-            ),
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _nameController),
+            label: const Text('Nome'),
+            hint: 'Digite o nome do sócio',
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 12),
-          LabeledField(
-            label: _documentKind == DocumentKind.cpf ? 'Documento (CPF)' : 'Documento (CNPJ)',
-            child: TextFormField(
-              controller: _documentController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [DocumentInputFormatter(_documentKind)],
-              decoration: InputDecoration(
-                border: const OutlineInputBorder(),
-                hintText: _documentKind == DocumentKind.cpf ? '000.000.000-00' : '00.000.000/0000-00',
-                prefixIcon: IconButton(
-                  icon: Icon(_documentKind == DocumentKind.cpf ? Icons.person : Icons.business),
-                  tooltip: _documentKind == DocumentKind.cpf
-                      ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
-                      : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
-                  onPressed: _toggleDocumentKind,
-                ),
-              ),
-              validator: _validateDocument,
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _documentController),
+            label: Text(_documentKind == DocumentKind.cpf ? 'Documento (CPF)' : 'Documento (CNPJ)'),
+            hint: _documentKind == DocumentKind.cpf ? '000.000.000-00' : '00.000.000/0000-00',
+            keyboardType: TextInputType.number,
+            inputFormatters: [DocumentInputFormatter(_documentKind)],
+            prefixBuilder: (context, style, variants) => FButton(
+              variant: FButtonVariant.ghost,
+              size: FButtonSizeVariant.sm,
+              mainAxisSize: MainAxisSize.min,
+              semanticsTooltip: _documentKind == DocumentKind.cpf
+                  ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
+                  : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
+              onPress: _toggleDocumentKind,
+              child: Icon(_documentKind == DocumentKind.cpf ? Icons.person : Icons.business, size: 18),
             ),
+            validator: _validateDocument,
           ),
           const SizedBox(height: 12),
-          LabeledField(
-            label: 'Número de Sócio (opcional)',
-            child: TextFormField(
-              controller: _membershipNumberController,
-              keyboardType: TextInputType.number,
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-              validator: _validateMembershipNumber,
-            ),
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _membershipNumberController),
+            label: const Text('Número de Sócio (opcional)'),
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            validator: _validateMembershipNumber,
           ),
           const SizedBox(height: 12),
-          CheckboxListTile(
+          FCheckbox(
             value: _voter,
-            onChanged: (v) => setState(() => _voter = v ?? false),
-            title: const Text('É votante'),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
+            onChange: (v) => setState(() => _voter = v),
+            label: const Text('É votante'),
           ),
         ],
       ),

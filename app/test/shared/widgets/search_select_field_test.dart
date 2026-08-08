@@ -1,6 +1,8 @@
+import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 
 const _fruits = ['Maçã', 'Banana', 'Manga', 'Uva'];
 
@@ -17,6 +19,10 @@ Future<void> _pump(
 }) async {
   await tester.pumpWidget(
     MaterialApp(
+      builder: (context, child) => FTheme(
+        data: fThemeLight,
+        child: FToaster(child: FTooltipGroup(child: child!)),
+      ),
       home: Scaffold(
         body: Form(
           key: formKey,
@@ -34,7 +40,13 @@ Future<void> _pump(
   );
 }
 
-Future<void> _settleSearch(WidgetTester tester) async {
+// Opens the popover (tap + settle the open animation) and types into its
+// inner search field — the outer field is a read-only display trigger, the
+// second TextField that appears once the popover is open is the real input.
+Future<void> _search_(WidgetTester tester, String query) async {
+  await tester.tap(find.byType(TextField));
+  await tester.pump();
+  await tester.enterText(find.byType(TextField).last, query);
   await tester.pump(const Duration(milliseconds: 350));
   await tester.pump();
 }
@@ -44,8 +56,7 @@ void main() {
     final formKey = GlobalKey<FormState>();
     await _pump(tester, formKey: formKey);
 
-    await tester.enterText(find.byType(TextField), 'ma');
-    await _settleSearch(tester);
+    await _search_(tester, 'ma');
 
     expect(find.text('Maçã'), findsOneWidget);
     expect(find.text('Manga'), findsOneWidget);
@@ -57,25 +68,22 @@ void main() {
     String? selected;
     await _pump(tester, formKey: formKey, onSelected: (v) => selected = v);
 
-    await tester.enterText(find.byType(TextField), 'ban');
-    await _settleSearch(tester);
+    await _search_(tester, 'ban');
 
     await tester.tap(find.text('Banana'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(selected, 'Banana');
-    expect(find.byType(ListTile), findsNothing);
-
-    final textField = tester.widget<TextField>(find.byType(TextField));
-    expect(textField.controller!.text, 'Banana');
+    // The popover's inner search field is gone — only the outer display field remains.
+    expect(find.byType(TextField), findsOneWidget);
+    expect(tester.widget<TextField>(find.byType(TextField)).controller!.text, 'Banana');
   });
 
   testWidgets('shows the no-results message when a search returns nothing', (tester) async {
     final formKey = GlobalKey<FormState>();
     await _pump(tester, formKey: formKey);
 
-    await tester.enterText(find.byType(TextField), 'xyz');
-    await _settleSearch(tester);
+    await _search_(tester, 'xyz');
 
     expect(find.text('Nenhum resultado encontrado'), findsOneWidget);
   });
@@ -85,7 +93,7 @@ void main() {
     await _pump(tester, formKey: formKey, validator: (v) => v == null ? 'Obrigatório' : null);
 
     expect(formKey.currentState!.validate(), isFalse);
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.text('Obrigatório'), findsOneWidget);
   });
@@ -94,10 +102,9 @@ void main() {
     final formKey = GlobalKey<FormState>();
     await _pump(tester, formKey: formKey, validator: (v) => v == null ? 'Obrigatório' : null);
 
-    await tester.enterText(find.byType(TextField), 'uva');
-    await _settleSearch(tester);
+    await _search_(tester, 'uva');
     await tester.tap(find.text('Uva'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(formKey.currentState!.validate(), isTrue);
   });

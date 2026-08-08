@@ -4,9 +4,9 @@ import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 
 class CategoryFormPage extends StatefulWidget {
   final Category? category;
@@ -102,84 +102,62 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
       fields: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          LabeledField(
-            label: 'Nome',
-            child: TextFormField(
-              controller: _nameController,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Digite o nome da categoria',
-              ),
-              validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
-            ),
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _nameController),
+            label: const Text('Nome'),
+            hint: 'Digite o nome da categoria',
+            validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 12),
-          LabeledField(
-            label: 'Descrição',
-            child: TextFormField(
-              controller: _descriptionController,
-              maxLines: 2,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Digite a descrição',
-              ),
-            ),
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _descriptionController),
+            maxLines: 2,
+            label: const Text('Descrição'),
+            hint: 'Digite a descrição',
           ),
           const SizedBox(height: 12),
-          LabeledField(
-            label: 'Grupo',
-            child: DropdownButtonFormField<String>(
-              initialValue: _group,
-              items: groups.map((g) => DropdownMenuItem(value: g, child: Text(groupLabel(g)))).toList(),
-              onChanged: (v) {},
-              onSaved: (v) => _group = v!,
-              validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
-              decoration: const InputDecoration(border: OutlineInputBorder()),
-            ),
+          FSelect<String>(
+            items: {for (final g in groups) groupLabel(g): g},
+            control: FSelectControl.managed(initial: _group, onChange: (v) {}),
+            label: const Text('Grupo'),
+            onSaved: (v) => _group = v!,
+            validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 12),
           Row(
             children: [
               Expanded(
-                child: LabeledField(
-                  label: 'Valor da Água',
-                  child: Semantics(
-                    identifier: 'water-price-field',
-                    child: TextFormField(
-                      controller: _waterPriceController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [CurrencyInputFormatter()],
-                      decoration: const InputDecoration(border: OutlineInputBorder()),
-                      validator: _validatePrice,
-                    ),
+                child: Semantics(
+                  identifier: 'water-price-field',
+                  child: FTextFormField(
+                    control: FTextFieldControl.managed(controller: _waterPriceController),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [CurrencyInputFormatter()],
+                    label: const Text('Valor da Água'),
+                    validator: _validatePrice,
                   ),
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: LabeledField(
-                  label: 'Valor Societário',
-                  child: Semantics(
-                    identifier: 'membership-price-field',
-                    child: TextFormField(
-                      controller: _membershipPriceController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [CurrencyInputFormatter()],
-                      decoration: const InputDecoration(border: OutlineInputBorder()),
-                      validator: _validatePrice,
-                    ),
+                child: Semantics(
+                  identifier: 'membership-price-field',
+                  child: FTextFormField(
+                    control: FTextFieldControl.managed(controller: _membershipPriceController),
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [CurrencyInputFormatter()],
+                    label: const Text('Valor Societário'),
+                    validator: _validatePrice,
                   ),
                 ),
               ),
             ],
           ),
           const SizedBox(height: 12),
-          CheckboxListTile(
+          FCheckbox(
             value: _hasWaterMeter,
-            onChanged: (v) => setState(() => _hasWaterMeter = v ?? false),
-            title: const Text('Possui hidrômetro'),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
+            onChange: (v) => setState(() => _hasWaterMeter = v),
+            label: const Text('Possui hidrômetro'),
           ),
         ],
       ),

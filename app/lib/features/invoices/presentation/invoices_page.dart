@@ -9,10 +9,10 @@ import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:printing/printing.dart';
 
-const _actionButtonWidth = 160.0;
 const _dueDateColumnWidth = 110.0;
 const _amountColumnWidth = 120.0;
 const _actionsColumnWidth = 88.0;
@@ -41,32 +41,32 @@ class _InvoicesPageState extends State<InvoicesPage> {
   }
 
   Future<PagedResult<Invoice>> _fetch() => _service.findAll(
-        page: _page,
-        size: _pageSize,
-        year: _period?.year,
-        month: _period?.month,
-      );
+    page: _page,
+    size: _pageSize,
+    year: _period?.year,
+    month: _period?.month,
+  );
 
   void _load() => setState(() {
-        _future = _fetch();
-      });
+    _future = _fetch();
+  });
 
   void _goToPage(int page) => setState(() {
-        _page = page;
-        _future = _fetch();
-      });
+    _page = page;
+    _future = _fetch();
+  });
 
   void _changePageSize(int size) => setState(() {
-        _pageSize = size;
-        _page = 0;
-        _future = _fetch();
-      });
+    _pageSize = size;
+    _page = 0;
+    _future = _fetch();
+  });
 
   void _changePeriod(InvoicePeriod? period) => setState(() {
-        _period = period;
-        _page = 0;
-        _future = _fetch();
-      });
+    _period = period;
+    _page = 0;
+    _future = _fetch();
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -85,20 +85,29 @@ class _InvoicesPageState extends State<InvoicesPage> {
                 spacing: 8,
                 runSpacing: 8,
                 children: [
-                  SizedBox(
-                    width: _actionButtonWidth,
-                    child: OutlinedButton.icon(
-                      onPressed: () => context.go('/invoices/cobranca'),
-                      icon: const Icon(Icons.mark_email_unread_outlined, size: 18),
-                      label: const Text('Cobranças'),
+                  FButton(
+                    variant: FButtonVariant.outline,
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: () => context.go('/invoices/cobranca'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.mark_email_unread_outlined, size: 18),
+                        SizedBox(width: 8),
+                        Text('Cobranças'),
+                      ],
                     ),
                   ),
-                  SizedBox(
-                    width: _actionButtonWidth,
-                    child: FilledButton.icon(
-                      onPressed: () => context.go('/invoices/generate'),
-                      icon: const Icon(Icons.note_add, size: 18),
-                      label: const Text('Gerar Faturas'),
+                  FButton(
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: () => context.go('/invoices/generate'),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.note_add, size: 18),
+                        SizedBox(width: 8),
+                        Text('Gerar Faturas'),
+                      ],
                     ),
                   ),
                 ],
@@ -109,35 +118,39 @@ class _InvoicesPageState extends State<InvoicesPage> {
             const SizedBox(height: 8),
             Row(
               children: [
-                Text('Filtrar por Período', style: Theme.of(context).textTheme.labelLarge),
+                Text(
+                  'Filtrar por Período',
+                  style: Theme.of(context).textTheme.labelLarge,
+                ),
                 const SizedBox(width: 12),
-                InvoicePeriodFilterButton(period: _period, onChanged: _changePeriod),
+                InvoicePeriodFilterButton(
+                  period: _period,
+                  onChanged: _changePeriod,
+                ),
               ],
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: Card(
-                elevation: 1,
-                child: Padding(
-                  padding: EdgeInsets.all(narrow ? 12 : 16),
-                  child: PagedListView<Invoice>(
-                    future: _future,
-                    columns: const [
-                      DataTableColumn('Referência', flex: 1),
-                      DataTableColumn('Sócio', flex: 3),
-                      DataTableColumn('Ligação', flex: 3),
-                      DataTableColumn('Vencimento', width: _dueDateColumnWidth),
-                      DataTableColumn('Valor', width: _amountColumnWidth),
-                      DataTableColumn('Ações', width: _actionsColumnWidth),
-                    ],
-                    emptyMessage: 'Nenhuma fatura emitida.',
-                    errorMessage: 'Erro ao carregar faturas',
-                    onRetry: _load,
-                    onPageChanged: _goToPage,
-                    pageSize: _pageSize,
-                    onPageSizeChanged: _changePageSize,
-                    rowBuilder: (context, invoice) => _InvoiceRow(invoice: invoice, service: _service, onChanged: _load),
-                  ),
+              child: PagedListView<Invoice>(
+                future: _future,
+                columns: const [
+                  DataTableColumn('Referência', flex: 1),
+                  DataTableColumn('Sócio', flex: 3),
+                  DataTableColumn('Ligação', flex: 3),
+                  DataTableColumn('Vencimento', width: _dueDateColumnWidth),
+                  DataTableColumn('Valor', width: _amountColumnWidth),
+                  DataTableColumn('Ações', width: _actionsColumnWidth),
+                ],
+                emptyMessage: 'Nenhuma fatura emitida.',
+                errorMessage: 'Erro ao carregar faturas',
+                onRetry: _load,
+                onPageChanged: _goToPage,
+                pageSize: _pageSize,
+                onPageSizeChanged: _changePageSize,
+                rowBuilder: (context, invoice) => _InvoiceRow(
+                  invoice: invoice,
+                  service: _service,
+                  onChanged: _load,
                 ),
               ),
             ),
@@ -149,7 +162,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
 }
 
 class _InvoiceRow extends StatefulWidget {
-  const _InvoiceRow({required this.invoice, required this.service, required this.onChanged});
+  const _InvoiceRow({
+    required this.invoice,
+    required this.service,
+    required this.onChanged,
+  });
 
   final Invoice invoice;
   final InvoiceService service;
@@ -186,7 +203,9 @@ class _InvoiceRowState extends State<_InvoiceRow> {
         widget.onChanged();
       }
     } catch (_) {
-      if (mounted) AppToast.error(context, 'Erro ao marcar a fatura como paga.');
+      if (mounted) {
+        AppToast.error(context, 'Erro ao marcar a fatura como paga.');
+      }
     } finally {
       if (mounted) setState(() => _marking = false);
     }
@@ -204,11 +223,17 @@ class _InvoiceRowState extends State<_InvoiceRow> {
         children: [
           Expanded(
             flex: 1,
-            child: Text(formatMonthReference(invoice.referenceDate), style: theme.textTheme.bodyMedium),
+            child: Text(
+              formatMonthReference(invoice.referenceDate),
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 3,
-            child: Text(connection?.customer?.name ?? '—', style: theme.textTheme.bodyMedium),
+            child: Text(
+              connection?.customer?.name ?? '—',
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           Expanded(
             flex: 3,
@@ -221,44 +246,57 @@ class _InvoiceRowState extends State<_InvoiceRow> {
           ),
           SizedBox(
             width: _dueDateColumnWidth,
-            child: Text(_formatDate(invoice.dueDate), style: theme.textTheme.bodyMedium),
+            child: Text(
+              _formatDate(invoice.dueDate),
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           SizedBox(
             width: _amountColumnWidth,
-            child: Text(formatBRL(invoice.amount), style: theme.textTheme.bodyMedium),
+            child: Text(
+              formatBRL(invoice.amount),
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
           SizedBox(
             width: _actionsColumnWidth,
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                  tooltip: 'Baixar/imprimir boleto',
-                  visualDensity: VisualDensity.compact,
-                  constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                  padding: EdgeInsets.zero,
-                  onPressed: _downloadPdf,
+                FButton(
+                  variant: FButtonVariant.ghost,
+                  size: FButtonSizeVariant.sm,
+                  mainAxisSize: MainAxisSize.min,
+                  semanticsTooltip: 'Baixar/imprimir boleto',
+                  onPress: _downloadPdf,
+                  child: const Icon(Icons.picture_as_pdf_outlined, size: 20),
                 ),
                 if (invoice.isPaid)
-                  const Tooltip(
-                    message: 'Paga',
-                    child: Icon(Icons.check_circle, color: Colors.green, size: 20),
+                  FTooltip(
+                    tipBuilder: (context, controller) => const Text('Paga'),
+                    child: const Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20,
+                    ),
                   )
                 else if (_marking)
                   const SizedBox(
                     width: 20,
                     height: 20,
-                    child: Padding(padding: EdgeInsets.all(2), child: CircularProgressIndicator(strokeWidth: 2)),
+                    child: Padding(
+                      padding: EdgeInsets.all(2),
+                      child: FCircularProgress(),
+                    ),
                   )
                 else
-                  IconButton(
-                    icon: const Icon(Icons.attach_money, size: 20),
-                    tooltip: 'Marcar como paga',
-                    visualDensity: VisualDensity.compact,
-                    constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-                    padding: EdgeInsets.zero,
-                    onPressed: _markPaid,
+                  FButton(
+                    variant: FButtonVariant.ghost,
+                    size: FButtonSizeVariant.sm,
+                    mainAxisSize: MainAxisSize.min,
+                    semanticsTooltip: 'Marcar como paga',
+                    onPress: _markPaid,
+                    child: const Icon(Icons.attach_money, size: 20),
                   ),
               ],
             ),

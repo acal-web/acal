@@ -4,6 +4,7 @@ import 'package:acalapp/features/cashbox/presentation/cashbox_page.dart';
 import 'package:acalapp/features/categories/presentation/categories_page.dart';
 import 'package:acalapp/features/connections/presentation/connections_page.dart';
 import 'package:acalapp/features/dashboard/presentation/dashboard_page.dart';
+import 'package:acalapp/features/design_system/presentation/design_system_demo_page.dart';
 import 'package:acalapp/features/documentation/presentation/documentation_page.dart';
 import 'package:acalapp/features/elections/presentation/elections_page.dart';
 import 'package:acalapp/features/invoices/presentation/cobranca_page.dart';
@@ -66,6 +67,10 @@ final appRouter = GoRouter(
         GoRoute(
           path: '/documentation',
           pageBuilder: (context, state) => const NoTransitionPage(child: DocumentationPage()),
+        ),
+        GoRoute(
+          path: '/design-system',
+          pageBuilder: (context, state) => const NoTransitionPage(child: DesignSystemDemoPage()),
         ),
       ],
     ),

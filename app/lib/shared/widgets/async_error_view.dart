@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
 /// Standard "failed to load" state for a [FutureBuilder] — an error icon,
 /// message, and retry button, used across "Cadastros" pages.
@@ -10,17 +12,17 @@ class AsyncErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cs = Theme.of(context).colorScheme;
+    final style = context.theme.colors.destructive;
 
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.error_outline, color: cs.error, size: 40),
+          Icon(Icons.error_outline, color: style, size: 40),
           const SizedBox(height: 12),
-          Text(message, style: TextStyle(color: cs.error)),
+          Text(message, style: TextStyle(color: style)),
           const SizedBox(height: 8),
-          OutlinedButton(onPressed: onRetry, child: const Text('Tentar novamente')),
+          FButton(variant: FButtonVariant.outline, onPress: onRetry, child: const Text('Tentar novamente')),
         ],
       ),
     );

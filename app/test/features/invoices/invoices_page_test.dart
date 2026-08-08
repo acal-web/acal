@@ -1,5 +1,6 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
+import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
@@ -10,6 +11,7 @@ import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 
 const _pagination = Pagination(number: 0, totalPages: 1, totalElements: 1, size: 10, first: true, last: true);
@@ -97,7 +99,15 @@ Future<void> _pump(WidgetTester tester, InvoiceService invoiceService) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
-  await tester.pumpWidget(MaterialApp.router(routerConfig: _router(invoiceService)));
+  await tester.pumpWidget(
+    MaterialApp.router(
+      routerConfig: _router(invoiceService),
+      builder: (context, child) => FTheme(
+        data: fThemeLight,
+        child: FToaster(child: FTooltipGroup(child: child!)),
+      ),
+    ),
+  );
   await tester.pumpAndSettle();
 }
 

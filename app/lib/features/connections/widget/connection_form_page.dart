@@ -11,11 +11,11 @@ import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:forui/forui.dart';
 
 class ConnectionFormPage extends StatefulWidget {
   final Connection? connection;
@@ -190,27 +190,21 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             children: [
               Expanded(
                 flex: 2,
-                child: LabeledField(
-                  label: 'Número',
-                  child: TextFormField(
-                    controller: _numberController,
-                    keyboardType: TextInputType.number,
-                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                    decoration: const InputDecoration(border: OutlineInputBorder()),
-                    validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
-                  ),
+                child: FTextFormField(
+                  control: FTextFieldControl.managed(controller: _numberController),
+                  keyboardType: TextInputType.number,
+                  inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                  label: const Text('Número'),
+                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
                 ),
               ),
               const SizedBox(width: 12),
               Expanded(
-                child: LabeledField(
-                  label: 'Letra',
-                  child: TextFormField(
-                    controller: _letterController,
-                    maxLength: 1,
-                    textCapitalization: TextCapitalization.characters,
-                    decoration: const InputDecoration(border: OutlineInputBorder(), counterText: ''),
-                  ),
+                child: FTextFormField(
+                  control: FTextFieldControl.managed(controller: _letterController),
+                  maxLength: 1,
+                  textCapitalization: TextCapitalization.characters,
+                  label: const Text('Letra'),
                 ),
               ),
             ],
@@ -223,33 +217,24 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             validator: (c) => c == null ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 12),
-          LabeledField(
-            label: 'Data da Matrícula',
-            child: TextFormField(
-              controller: _membershipDateController,
-              readOnly: true,
-              decoration: const InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Selecione a data',
-                suffixIcon: Icon(Icons.calendar_today, size: 18),
-              ),
-              onTap: _pickMembershipDate,
-            ),
+          FTextFormField(
+            control: FTextFieldControl.managed(controller: _membershipDateController),
+            readOnly: true,
+            label: const Text('Data da Matrícula'),
+            hint: 'Selecione a data',
+            suffixBuilder: (context, style, variants) => const Icon(Icons.calendar_today, size: 18),
+            onTap: _pickMembershipDate,
           ),
           const SizedBox(height: 12),
-          CheckboxListTile(
+          FCheckbox(
             value: _active,
-            onChanged: (v) => setState(() => _active = v ?? true),
-            title: const Text('Ativa'),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
+            onChange: (v) => setState(() => _active = v),
+            label: const Text('Ativa'),
           ),
-          CheckboxListTile(
+          FCheckbox(
             value: _exclusivelyMember,
-            onChanged: (v) => setState(() => _exclusivelyMember = v ?? false),
-            title: const Text('Exclusivamente Sócio'),
-            controlAffinity: ListTileControlAffinity.leading,
-            contentPadding: EdgeInsets.zero,
+            onChange: (v) => setState(() => _exclusivelyMember = v),
+            label: const Text('Exclusivamente Sócio'),
           ),
         ],
       ),

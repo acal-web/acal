@@ -1,8 +1,7 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:flutter/material.dart';
-
-const _narrowBreakpoint = 640.0;
+import 'package:forui/forui.dart';
 
 class CustomerFilterBar extends StatefulWidget {
   const CustomerFilterBar({super.key, required this.onSearch});
@@ -58,74 +57,79 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final narrow = constraints.maxWidth < _narrowBreakpoint;
+        final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
-        final nameField = LabeledField(
-          label: 'Nome:',
-          child: TextField(
-            controller: _nameController,
-            textAlignVertical: TextAlignVertical.center,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Buscar por nome:',
-            ),
-            onSubmitted: (_) => _search(),
-          ),
+        final nameField = FTextField(
+          control: FTextFieldControl.managed(controller: _nameController),
+          label: const Text('Nome:'),
+          hint: 'Buscar por nome:',
+          onSubmit: (_) => _search(),
         );
 
         final isCpf = _documentKind == DocumentKind.cpf;
 
-        final documentField = LabeledField(
-          label: isCpf ? 'Documento (CPF):' : 'Documento (CNPJ):',
-          child: TextField(
-            controller: _documentController,
-            keyboardType: TextInputType.number,
-            inputFormatters: [DocumentInputFormatter(_documentKind)],
-            textAlignVertical: TextAlignVertical.center,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: isCpf ? '000.000.000-00' : '00.000.000/0000-00',
-              prefixIcon: IconButton(
-                icon: Icon(isCpf ? Icons.person : Icons.business),
-                tooltip: isCpf
-                    ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
-                    : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
-                onPressed: _toggleDocumentKind,
-              ),
-            ),
-            onSubmitted: (_) => _search(),
+        final documentField = FTextField(
+          control: FTextFieldControl.managed(controller: _documentController),
+          label: Text(isCpf ? 'Documento (CPF):' : 'Documento (CNPJ):'),
+          hint: isCpf ? '000.000.000-00' : '00.000.000/0000-00',
+          keyboardType: TextInputType.number,
+          inputFormatters: [DocumentInputFormatter(_documentKind)],
+          prefixBuilder: (context, style, variants) => FButton(
+            variant: FButtonVariant.ghost,
+            size: FButtonSizeVariant.sm,
+            mainAxisSize: MainAxisSize.min,
+            semanticsTooltip: isCpf
+                ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
+                : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
+            onPress: _toggleDocumentKind,
+            child: Icon(isCpf ? Icons.person : Icons.business, size: 18),
           ),
+          onSubmit: (_) => _search(),
         );
 
         final searchButtonNarrow = Expanded(
-          child: FilledButton.icon(
-            onPressed: _search,
-            icon: const Icon(Icons.search, size: 18),
-            label: const Text('Consultar'),
+          child: FButton(
+            onPress: _search,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.search, size: 18), SizedBox(width: 8), Text('Consultar')],
+            ),
           ),
         );
 
         final clearButtonNarrow = Expanded(
-          child: OutlinedButton.icon(
-            onPressed: _clear,
-            icon: const Icon(Icons.clear, size: 18),
-            label: const Text('Limpar'),
+          child: FButton(
+            variant: FButtonVariant.outline,
+            onPress: _clear,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
+            ),
           ),
         );
 
         final searchButtonWide = SizedBox(
-          child: FilledButton.icon(
-            onPressed: _search,
-            icon: const Icon(Icons.search, size: 18),
-            label: const Text('Consultar'),
+          child: FButton(
+            onPress: _search,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.search, size: 18), SizedBox(width: 8), Text('Consultar')],
+            ),
           ),
         );
 
         final clearButtonWide = SizedBox(
-          child: OutlinedButton.icon(
-            onPressed: _clear,
-            icon: const Icon(Icons.clear, size: 18),
-            label: const Text('Limpar'),
+          child: FButton(
+            variant: FButtonVariant.outline,
+            onPress: _clear,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
+            ),
           ),
         );
 
@@ -171,23 +175,28 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                 ],
               );
 
+        final cs = Theme.of(context).colorScheme;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            InkWell(
-              onTap: () => setState(() => _expanded = !_expanded),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 4),
-                child: Row(
-                  children: [
-                    AnimatedRotation(
-                      turns: _expanded ? 0.5 : 0,
-                      duration: const Duration(milliseconds: 150),
-                      child: const Icon(Icons.expand_more, size: 20),
-                    ),
-                    const SizedBox(width: 4),
-                    Text('Filtros', style: Theme.of(context).textTheme.labelLarge),
-                  ],
+            ColoredBox(
+              color: cs.surfaceContainerHigh,
+              child: InkWell(
+                onTap: () => setState(() => _expanded = !_expanded),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(
+                    children: [
+                      AnimatedRotation(
+                        turns: _expanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 150),
+                        child: const Icon(Icons.expand_more, size: 20),
+                      ),
+                      const SizedBox(width: 4),
+                      Text('Filtros', style: Theme.of(context).textTheme.labelLarge),
+                    ],
+                  ),
                 ),
               ),
             ),

@@ -1,180 +1,89 @@
 import 'dart:async';
 
-import 'package:acalapp/shared/widgets/labeled_field.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
-/// A [FormField] that looks up options by text as the user types (debounced,
-/// via [search]) and lets them pick one from a list shown below the field —
-/// used for pickers backed by a paginated API (sócio, logradouro, categoria)
+/// A field that looks up options by text as the user types (debounced, via
+/// [search]) and lets them pick one from a list shown below the field — used
+/// for pickers backed by a paginated API (sócio, logradouro, categoria)
 /// where a plain dropdown loading the whole table wouldn't scale.
-class SearchSelectField<T> extends FormField<T> {
-  SearchSelectField({
+class SearchSelectField<T> extends StatefulWidget {
+  const SearchSelectField({
     super.key,
     required this.label,
     required this.search,
     required this.labelBuilder,
     this.subtitleBuilder,
-    super.initialValue,
+    this.initialValue,
     required this.onSelected,
     this.hintText,
-    super.validator,
+    this.validator,
     this.debounce = const Duration(milliseconds: 300),
     this.minQueryLength = 1,
     this.noResultsText = 'Nenhum resultado encontrado',
-  }) : super(builder: (field) => (field as _SearchSelectFieldState<T>)._build(field.context));
+  });
 
   final String label;
   final Future<List<T>> Function(String query) search;
   final String Function(T) labelBuilder;
   final String Function(T)? subtitleBuilder;
+  final T? initialValue;
   final ValueChanged<T?> onSelected;
   final String? hintText;
+  final FormFieldValidator<T>? validator;
   final Duration debounce;
   final int minQueryLength;
   final String noResultsText;
 
   @override
-  FormFieldState<T> createState() => _SearchSelectFieldState<T>();
+  State<SearchSelectField<T>> createState() => _SearchSelectFieldState<T>();
 }
 
-class _SearchSelectFieldState<T> extends FormFieldState<T> {
-  late final TextEditingController _controller;
+class _SearchSelectFieldState<T> extends State<SearchSelectField<T>> {
   Timer? _debounceTimer;
-  int _searchGeneration = 0;
-  List<T> _options = [];
-  bool _loading = false;
-  bool _searched = false;
-
-  @override
-  SearchSelectField<T> get widget => super.widget as SearchSelectField<T>;
-
-  @override
-  void initState() {
-    super.initState();
-    final initial = value;
-    _controller = TextEditingController(text: initial != null ? widget.labelBuilder(initial) : '');
-  }
 
   @override
   void dispose() {
-    _controller.dispose();
     _debounceTimer?.cancel();
     super.dispose();
   }
 
-  void _onQueryChanged(String query) {
-    final current = value;
-    // TextEditingController listeners fire on *any* text change, including
-    // the one we make ourselves in `_select` below — ignore that echo
-    // instead of treating it as the user clearing their selection.
-    if (current != null && query == widget.labelBuilder(current)) return;
-
-    if (current != null) {
-      didChange(null);
-      widget.onSelected(null);
-    }
-
-    _debounceTimer?.cancel();
-    final generation = ++_searchGeneration;
-
+  // Cancel-and-reschedule debounce: only the timer that survives until it
+  // fires ever calls `search` — a superseded call's Completer is simply
+  // abandoned (never completed), which is harmless in Dart.
+  Future<Iterable<T>> _filter(String query) {
     final trimmed = query.trim();
-    if (trimmed.length < widget.minQueryLength) {
-      setState(() {
-        _options = [];
-        _loading = false;
-        _searched = false;
-      });
-      return;
-    }
+    if (trimmed.length < widget.minQueryLength) return Future.value(const []);
 
-    setState(() => _loading = true);
-    _debounceTimer = Timer(widget.debounce, () async {
-      final results = await widget.search(trimmed);
-      if (!mounted || generation != _searchGeneration) return;
-      setState(() {
-        _options = results;
-        _loading = false;
-        _searched = true;
-      });
-    });
-  }
-
-  void _select(T option) {
-    didChange(option);
-    widget.onSelected(option);
-    _controller.text = widget.labelBuilder(option);
     _debounceTimer?.cancel();
-    _searchGeneration++;
-    setState(() {
-      _options = [];
-      _loading = false;
-      _searched = false;
+    final completer = Completer<Iterable<T>>();
+    _debounceTimer = Timer(widget.debounce, () async {
+      completer.complete(await widget.search(trimmed));
     });
-    FocusScope.of(context).unfocus();
+    return completer.future;
   }
 
-  Widget _build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return LabeledField(
-      label: widget.label,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _controller,
-            decoration: InputDecoration(
-              border: const OutlineInputBorder(),
-              hintText: widget.hintText,
-              errorText: hasError ? errorText : null,
-              suffixIcon: _loading
-                  ? const Padding(
-                      padding: EdgeInsets.all(14),
-                      child: SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      ),
-                    )
-                  : null,
-            ),
-            onChanged: _onQueryChanged,
+  @override
+  Widget build(BuildContext context) {
+    return FSelect<T>.searchBuilder(
+      label: Text(widget.label),
+      hint: widget.hintText,
+      format: widget.labelBuilder,
+      filter: _filter,
+      contentBuilder: (context, query, values) => [
+        for (final value in values)
+          FSelectItem(
+            value: value,
+            title: Text(widget.labelBuilder(value)),
+            subtitle: widget.subtitleBuilder == null ? null : Text(widget.subtitleBuilder!(value)),
           ),
-          if (_options.isNotEmpty)
-            Container(
-              margin: const EdgeInsets.only(top: 4),
-              constraints: const BoxConstraints(maxHeight: 200),
-              decoration: BoxDecoration(
-                border: Border.all(color: theme.colorScheme.outlineVariant),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: ListView.separated(
-                shrinkWrap: true,
-                padding: EdgeInsets.zero,
-                itemCount: _options.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) {
-                  final option = _options[i];
-                  final subtitle = widget.subtitleBuilder?.call(option);
-                  return ListTile(
-                    dense: true,
-                    title: Text(widget.labelBuilder(option)),
-                    subtitle: subtitle != null ? Text(subtitle) : null,
-                    onTap: () => _select(option),
-                  );
-                },
-              ),
-            )
-          else if (!_loading && _searched)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: Text(
-                widget.noResultsText,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant),
-              ),
-            ),
-        ],
+      ],
+      contentEmptyBuilder: (context, style) => Padding(
+        padding: const EdgeInsets.all(12),
+        child: Text(widget.noResultsText),
       ),
+      control: FSelectControl.managed(initial: widget.initialValue, onChange: widget.onSelected),
+      validator: widget.validator ?? (_) => null,
     );
   }
 }

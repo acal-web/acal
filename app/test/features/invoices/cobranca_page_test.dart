@@ -1,9 +1,11 @@
+import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/overdue_connection.dart';
 import 'package:acalapp/features/invoices/presentation/cobranca_page.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:forui/forui.dart';
 
 final _group = OverdueConnection(
   connectionId: 'conn-1',
@@ -37,6 +39,10 @@ Future<void> _pump(WidgetTester tester, InvoiceService invoiceService) async {
   addTearDown(tester.view.resetDevicePixelRatio);
 
   await tester.pumpWidget(MaterialApp(
+    builder: (context, child) => FTheme(
+      data: fThemeLight,
+      child: FToaster(child: FTooltipGroup(child: child!)),
+    ),
     home: CobrancaPage(invoiceService: invoiceService),
   ));
   await tester.pumpAndSettle();
@@ -64,8 +70,8 @@ void main() {
     final service = _FakeInvoiceService(groups: []);
     await _pump(tester, service);
 
-    final button = tester.widget<FilledButton>(find.byType(FilledButton));
-    expect(button.onPressed, isNull);
+    final button = tester.widget<FButton>(find.byType(FButton).first);
+    expect(button.onPress, isNull);
   });
 
   testWidgets('changing the days threshold re-fetches with the new value', (tester) async {
@@ -74,7 +80,7 @@ void main() {
 
     expect(service.lastDays, 30);
 
-    await tester.tap(find.byType(DropdownButtonFormField<int>));
+    await tester.tap(find.byType(TextField));
     await tester.pumpAndSettle();
     await tester.tap(find.text('60 dias').last);
     await tester.pumpAndSettle();

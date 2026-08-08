@@ -33,6 +33,9 @@ const _menuSections = [
     (icon: Icons.how_to_vote, label: 'Eleição', route: '/elections'),
     (icon: Icons.article, label: 'Documentação', route: '/documentation'),
   ]),
+  _MenuSection(title: 'DESENVOLVIMENTO', items: [
+    (icon: Icons.palette_outlined, label: 'Design System', route: '/design-system'),
+  ]),
 ];
 
 class SideMenu extends StatelessWidget {

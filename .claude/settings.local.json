@@ -44,7 +44,8 @@
       "Bash(sed -n '1100,1190p' /opt/flutter/packages/flutter/lib/src/material/dropdown_menu.dart)",
       "Bash(grep -n \"class DropdownMenuThemeData\\\\|this.inputDecorationTheme\\\\|final.*inputDecorationTheme\" /opt/flutter/packages/flutter/lib/src/material/dropdown_menu_theme.dart)",
       "Bash(dart analyze *)",
-      "Bash(git rm *)"
+      "Bash(git rm *)",
+      "Bash(flutter pub *)"
     ]
   }
 }

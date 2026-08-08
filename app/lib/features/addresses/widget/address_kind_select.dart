@@ -1,5 +1,6 @@
 import 'package:acalapp/features/addresses/domain/address.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
 class AddressKindSelect extends StatelessWidget {
   const AddressKindSelect({super.key, this.value = 'Todos', this.onChanged = _noop});
@@ -12,12 +13,9 @@ class AddressKindSelect extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      isExpanded: true,
-      items: _kinds.map((t) => DropdownMenuItem(value: t, child: Text(t))).toList(),
-      onChanged: onChanged,
-      decoration: const InputDecoration(isDense: true),
+    return FSelect<String>(
+      items: {for (final t in _kinds) t: t},
+      control: FSelectControl.managed(initial: value, onChange: onChanged),
     );
   }
 }

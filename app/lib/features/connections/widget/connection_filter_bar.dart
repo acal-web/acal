@@ -1,11 +1,11 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
-import 'package:acalapp/shared/widgets/labeled_field.dart';
 import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 
 const _actionButtonWidth = 180.0;
-const _narrowBreakpoint = 640.0;
 
 typedef ConnectionFilters = ({
   String? customerName,
@@ -70,43 +70,28 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final narrow = constraints.maxWidth < _narrowBreakpoint;
+        final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
-        final customerNameField = LabeledField(
-          label: 'Sócio',
-          child: TextField(
-            controller: _customerNameController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Buscar por nome',
-            ),
-            onSubmitted: (_) => _search(),
-          ),
+        final customerNameField = FTextField(
+          control: FTextFieldControl.managed(controller: _customerNameController),
+          label: const Text('Sócio'),
+          hint: 'Buscar por nome',
+          onSubmit: (_) => _search(),
         );
 
-        final customerDocumentField = LabeledField(
-          label: 'Documento',
-          child: TextField(
-            controller: _customerDocumentController,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'CPF ou CNPJ',
-            ),
-            onSubmitted: (_) => _search(),
-          ),
+        final customerDocumentField = FTextField(
+          control: FTextFieldControl.managed(controller: _customerDocumentController),
+          keyboardType: TextInputType.number,
+          label: const Text('Documento'),
+          hint: 'CPF ou CNPJ',
+          onSubmit: (_) => _search(),
         );
 
-        final addressNameField = LabeledField(
-          label: 'Logradouro',
-          child: TextField(
-            controller: _addressNameController,
-            decoration: const InputDecoration(
-              border: OutlineInputBorder(),
-              hintText: 'Buscar por nome',
-            ),
-            onSubmitted: (_) => _search(),
-          ),
+        final addressNameField = FTextField(
+          control: FTextFieldControl.managed(controller: _addressNameController),
+          label: const Text('Logradouro'),
+          hint: 'Buscar por nome',
+          onSubmit: (_) => _search(),
         );
 
         final categoryField = SearchSelectField<Category>(
@@ -118,40 +103,41 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           onSelected: (c) => _category = c,
         );
 
-        final activeField = LabeledField(
-          label: 'Situação',
-          child: DropdownButtonFormField<bool?>(
-            initialValue: _active,
-            decoration: const InputDecoration(border: OutlineInputBorder()),
-            items: const [
-              DropdownMenuItem(value: null, child: Text('Todas')),
-              DropdownMenuItem(value: true, child: Text('Ativas')),
-              DropdownMenuItem(value: false, child: Text('Encerradas')),
-            ],
-            onChanged: (v) => setState(() => _active = v),
-          ),
+        final activeField = FSelect<bool?>(
+          items: const {'Todas': null, 'Ativas': true, 'Encerradas': false},
+          control: FSelectControl.managed(initial: _active, onChange: (v) => setState(() => _active = v)),
+          label: const Text('Situação'),
         );
 
         final searchButton = SizedBox(
-          width: narrow ? double.infinity : _actionButtonWidth,
-          child: FilledButton.icon(
-            onPressed: _search,
-            icon: const Icon(Icons.search, size: 18),
-            label: const Text('Consultar'),
+          width: narrow ? double.infinity : null,
+          child: FButton(
+            mainAxisSize: MainAxisSize.min,
+            onPress: _search,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.search, size: 18), SizedBox(width: 8), Text('Consultar')],
+            ),
           ),
         );
 
         final clearButton = SizedBox(
-          width: narrow ? double.infinity : _actionButtonWidth,
-          child: OutlinedButton.icon(
-            onPressed: _clear,
-            icon: const Icon(Icons.clear, size: 18),
-            label: const Text('Limpar'),
+          width: narrow ? double.infinity : null,
+          child: FButton(
+            variant: FButtonVariant.outline,
+            mainAxisSize: MainAxisSize.min,
+            onPress: _clear,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
+            ),
           ),
         );
 
-        // Matches LabeledField's label + gap height with an invisible label,
-        // so the button lines up with the category/situação fields instead of
+        // Matches the fields' label + gap height with an invisible label, so
+        // the button lines up with the category/situação fields instead of
         // sitting shorter and higher than them. Left at its natural height
         // (rather than IntrinsicHeight) because categoryField's SearchSelectField
         // can grow a shrink-wrapped suggestions list that doesn't support
@@ -166,10 +152,15 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                 child: Text(' ', style: Theme.of(context).textTheme.labelLarge),
               ),
               const SizedBox(height: 8),
-              OutlinedButton.icon(
-                onPressed: _clear,
-                icon: const Icon(Icons.clear, size: 18),
-                label: const Text('Limpar'),
+              FButton(
+                variant: FButtonVariant.outline,
+                mainAxisSize: MainAxisSize.min,
+                onPress: _clear,
+                child: const Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
+                ),
               ),
             ],
           ),

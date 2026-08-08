@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/overdue_connection.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
@@ -5,13 +6,12 @@ import 'package:acalapp/shared/widgets/async_error_view.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 import 'package:printing/printing.dart';
 
-const _narrowBreakpoint = 640.0;
 const _countColumnWidth = 90.0;
 const _totalColumnWidth = 130.0;
 const _actionColumnWidth = 56.0;
-const _downloadAllButtonWidth = 220.0;
 
 /// Lists connections with unpaid invoices overdue by more than a threshold,
 /// letting the user download the dunning letter (carta de cobrança) for one
@@ -72,7 +72,7 @@ class _CobrancaPageState extends State<CobrancaPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < _narrowBreakpoint;
+    final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     return Scaffold(
       body: Padding(
@@ -91,15 +91,9 @@ class _CobrancaPageState extends State<CobrancaPage> {
                 const SizedBox(width: 12),
                 SizedBox(
                   width: 180,
-                  child: DropdownButtonFormField<int>(
-                    initialValue: _days,
-                    decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
-                    items: const [
-                      DropdownMenuItem(value: 30, child: Text('30 dias')),
-                      DropdownMenuItem(value: 60, child: Text('60 dias')),
-                      DropdownMenuItem(value: 90, child: Text('90 dias')),
-                    ],
-                    onChanged: _changeDays,
+                  child: FSelect<int>(
+                    items: const {'30 dias': 30, '60 dias': 60, '90 dias': 90},
+                    control: FSelectControl.managed(initial: _days, onChange: _changeDays),
                   ),
                 ),
               ],
@@ -110,7 +104,7 @@ class _CobrancaPageState extends State<CobrancaPage> {
                 future: _future,
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return const Center(child: FCircularProgress());
                   }
                   if (snapshot.hasError) {
                     return AsyncErrorView(message: 'Erro ao carregar cobranças em aberto', onRetry: _reload);
@@ -124,12 +118,16 @@ class _CobrancaPageState extends State<CobrancaPage> {
                       const SizedBox(height: 12),
                       Align(
                         alignment: Alignment.centerRight,
-                        child: SizedBox(
-                          width: _downloadAllButtonWidth,
-                          child: FilledButton.icon(
-                            onPressed: groups.isEmpty || _downloadingAll ? null : _downloadAll,
-                            icon: const Icon(Icons.mark_email_read_outlined, size: 18),
-                            label: Text(_downloadingAll ? 'Gerando...' : 'Baixar Todas as Cartas'),
+                        child: FButton(
+                          mainAxisSize: MainAxisSize.min,
+                          onPress: groups.isEmpty || _downloadingAll ? null : _downloadAll,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.mark_email_read_outlined, size: 18),
+                              const SizedBox(width: 8),
+                              Text(_downloadingAll ? 'Gerando...' : 'Baixar Todas as Cartas'),
+                            ],
                           ),
                         ),
                       ),
@@ -192,10 +190,13 @@ class _OverdueCard extends StatelessWidget {
                         SizedBox(width: _totalColumnWidth, child: Text(formatBRL(group.totalAmount))),
                         SizedBox(
                           width: _actionColumnWidth,
-                          child: IconButton(
-                            icon: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                            tooltip: 'Baixar carta de cobrança',
-                            onPressed: () => onDownload(group.connectionId),
+                          child: FButton(
+                            variant: FButtonVariant.ghost,
+                            size: FButtonSizeVariant.sm,
+                            mainAxisSize: MainAxisSize.min,
+                            semanticsTooltip: 'Baixar carta de cobrança',
+                            onPress: () => onDownload(group.connectionId),
+                            child: const Icon(Icons.picture_as_pdf_outlined, size: 20),
                           ),
                         ),
                       ],

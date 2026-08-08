@@ -1,6 +1,8 @@
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/blurred_dialog.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
 typedef InvoicePeriod = ({int year, int month});
 
@@ -23,8 +25,10 @@ class InvoicePeriodFilterButton extends StatelessWidget {
     final p = period;
     final label = p == null ? 'Todos os períodos' : '${monthNames[p.month - 1]}/${p.year}';
 
-    return OutlinedButton.icon(
-      onPressed: () async {
+    return FButton(
+      variant: FButtonVariant.outline,
+      mainAxisSize: MainAxisSize.min,
+      onPress: () async {
         final result = await showBlurredDialog<Object?>(
           context: context,
           builder: (context) => _PeriodPickerDialog(initial: period),
@@ -32,8 +36,10 @@ class InvoicePeriodFilterButton extends StatelessWidget {
         if (result == null) return;
         onChanged(identical(result, _clearPeriod) ? null : result as InvoicePeriod);
       },
-      icon: const Icon(Icons.calendar_today, size: 18),
-      label: Text(label),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [const Icon(Icons.calendar_today, size: 18), const SizedBox(width: 8), Text(label)],
+      ),
     );
   }
 }
@@ -64,49 +70,66 @@ class _PeriodPickerDialogState extends State<_PeriodPickerDialog> {
     final currentYear = DateTime.now().year;
     final years = [for (var y = currentYear - 5; y <= currentYear + 1; y++) y];
 
-    return AlertDialog(
-      title: const Text('Filtrar por Período'),
-      content: ConstrainedBox(
-        constraints: const BoxConstraints(maxWidth: 320),
-        child: Row(
-          children: [
-            Expanded(
-              flex: 2,
-              child: DropdownButtonFormField<int>(
-                initialValue: _month,
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: 'Mês'),
-                items: [
-                  for (var m = 1; m <= 12; m++) DropdownMenuItem(value: m, child: Text(monthNames[m - 1])),
+    return FDialog(
+      builder: (context, style) => Padding(
+        padding: const EdgeInsets.all(16),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 420),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Filtrar por Período', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: FSelect<int>(
+                      items: {for (var m = 1; m <= 12; m++) monthNames[m - 1]: m},
+                      control: FSelectControl.managed(initial: _month, onChange: (v) => setState(() => _month = v!)),
+                      label: const Text('Mês'),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: FSelect<int>(
+                      items: {for (final y in years) '$y': y},
+                      control: FSelectControl.managed(initial: _year, onChange: (v) => setState(() => _year = v!)),
+                      label: const Text('Ano'),
+                    ),
+                  ),
                 ],
-                onChanged: (v) => setState(() => _month = v!),
               ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: DropdownButtonFormField<int>(
-                initialValue: _year,
-                decoration: const InputDecoration(border: OutlineInputBorder(), labelText: 'Ano'),
-                items: [for (final y in years) DropdownMenuItem(value: y, child: Text('$y'))],
-                onChanged: (v) => setState(() => _year = v!),
+              const SizedBox(height: 16),
+              Wrap(
+                alignment: WrapAlignment.end,
+                spacing: 8,
+                runSpacing: 8,
+                children: [
+                  FButton(
+                    variant: FButtonVariant.ghost,
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: () => Navigator.of(context).pop(_clearPeriod),
+                    child: const Text('Todos os períodos'),
+                  ),
+                  FButton(
+                    variant: FButtonVariant.ghost,
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: () => Navigator.of(context).pop(null),
+                    child: const Text('Cancelar'),
+                  ),
+                  FButton(
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: () => Navigator.of(context).pop((year: _year, month: _month)),
+                    child: const Text('Aplicar'),
+                  ),
+                ],
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(_clearPeriod),
-          child: const Text('Todos os períodos'),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(null),
-          child: const Text('Cancelar'),
-        ),
-        FilledButton(
-          onPressed: () => Navigator.of(context).pop((year: _year, month: _month)),
-          child: const Text('Aplicar'),
-        ),
-      ],
     );
   }
 }

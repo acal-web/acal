@@ -1,4 +1,6 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/material.dart' show Icons, IconData;
+import 'package:flutter/widgets.dart';
+import 'package:forui/forui.dart';
 
 /// Standard Cancelar/Salvar button row for a form dialog — the save button
 /// shows a spinner while [saving] is true — used across "Cadastros" forms.
@@ -23,24 +25,25 @@ class FormActions extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        TextButton(
-          onPressed: onCancel,
-          child: const Text('Cancelar'),
-        ),
+        FButton(variant: FButtonVariant.ghost, onPress: onCancel, child: const Text('Cancelar')),
         const SizedBox(width: 8),
-        FilledButton.icon(
-          onPressed: saving ? null : onSave,
-          icon: saving
-              ? const SizedBox(
-                  width: 16,
-                  height: 16,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
+        FButton(
+          onPress: saving ? null : onSave,
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (saving)
+                const Padding(
+                  padding: EdgeInsets.only(right: 8),
+                  child: FCircularProgress(size: FCircularProgressSizeVariant.xs),
                 )
-              : Icon(saveIcon, size: 18),
-          label: Text(saveLabel),
+              else ...[
+                Icon(saveIcon, size: 18),
+                const SizedBox(width: 8),
+              ],
+              Text(saveLabel),
+            ],
+          ),
         ),
       ],
     );
