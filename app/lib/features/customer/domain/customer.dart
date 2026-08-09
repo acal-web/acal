@@ -1,9 +1,11 @@
 class Customer {
+
   final String? id;
   final String name;
   final String document;
   final int? membershipNumber;
   final bool voter;
+  final bool active;
 
   const Customer({
     this.id,
@@ -11,6 +13,7 @@ class Customer {
     required this.document,
     this.membershipNumber,
     required this.voter,
+    this.active = true,
   });
 
   factory Customer.fromJson(Map<String, dynamic> json) => Customer(
@@ -19,6 +22,7 @@ class Customer {
         document: json['document'] as String,
         membershipNumber: json['membership_number'] as int?,
         voter: json['voter'] as bool,
+        active: json['deleted_at'] == null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -35,6 +39,7 @@ class Customer {
     String? document,
     int? membershipNumber,
     bool? voter,
+    bool? active,
   }) =>
       Customer(
         id: id ?? this.id,
@@ -42,5 +47,6 @@ class Customer {
         document: document ?? this.document,
         membershipNumber: membershipNumber ?? this.membershipNumber,
         voter: voter ?? this.voter,
+        active: active ?? this.active,
       );
 }

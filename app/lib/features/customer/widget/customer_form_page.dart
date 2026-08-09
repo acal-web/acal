@@ -5,7 +5,7 @@ import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
-import 'package:flutter/material.dart' show Icons;
+import 'package:flutter/material.dart' show Icons, Divider;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
@@ -115,12 +115,20 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
       }
     } catch (e) {
       if (mounted) {
-        final errorCode = e is ApiException ? ApiErrorCode.fromCode(e.code) : null;
-        AppToast.error(context, errorCode?.description ?? 'Erro ao salvar sócio.');
+        AppToast.error(context, _errorMessage(e));
       }
     } finally {
       if (mounted) setState(() => _saving = false);
     }
+  }
+
+  String _errorMessage(Object e) {
+    if (e is! ApiException) return 'Erro ao salvar sócio.';
+
+    final errorCode = ApiErrorCode.fromCode(e.code);
+    if (errorCode != null) return errorCode.description;
+
+    return e.fieldError('document') ?? 'Erro ao salvar sócio.';
   }
 
   @override
@@ -133,12 +141,14 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
       fields: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const Divider(),
           FTextFormField(
             control: FTextFieldControl.managed(controller: _nameController),
             label: const Text('Nome'),
             hint: 'Digite o nome do sócio',
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
           ),
+          
           const SizedBox(height: 12),
           FTextFormField(
             control: FTextFieldControl.managed(controller: _documentController),
@@ -172,6 +182,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
             onChange: (v) => setState(() => _voter = v),
             label: const Text('É votante'),
           ),
+          const Divider(),
         ],
       ),
     );

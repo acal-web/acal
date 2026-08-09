@@ -139,7 +139,7 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.all(narrow ? 12 : 16),
+        padding: LayoutConfig.pagePadding(narrow),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -310,7 +310,7 @@ class _FilterBar extends StatelessWidget {
     return Card(
       elevation: 1,
       child: Padding(
-        padding: EdgeInsets.all(narrow ? 12 : 16),
+        padding: LayoutConfig.pagePadding(narrow),
         child: fields,
       ),
     );

@@ -15,6 +15,13 @@
       "request": "launch",
       "type": "ruby_lsp",
       "program": "cd api && bin/rails server"
+    },
+    {
+      "name": "Maestro: customers tests",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "xvfb-run --auto-servernum maestro test flows/customers",
+      "cwd": "${workspaceFolder}/app/maestro"
     }
   ],
   "compounds": [

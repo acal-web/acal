@@ -4,7 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 
-Future<void> _pump(WidgetTester tester, void Function({String? name, String? document}) onSearch) async {
+Future<void> _pump(
+  WidgetTester tester,
+  void Function({String? name, String? document, required bool? active}) onSearch,
+) async {
   tester.view.physicalSize = const Size(1400, 800);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -31,7 +34,7 @@ void main() {
     String? capturedName;
     String? capturedDocument;
 
-    await _pump(tester, ({name, document}) {
+    await _pump(tester, ({name, document, required active}) {
       capturedName = name;
       capturedDocument = document;
     });
@@ -46,7 +49,7 @@ void main() {
   });
 
   testWidgets('toggling the document icon switches between CPF and CNPJ labels', (tester) async {
-    await _pump(tester, ({name, document}) {});
+    await _pump(tester, ({name, document, required active}) {});
 
     expect(find.byIcon(Icons.person), findsOneWidget);
     expect(find.text('Documento (CPF):'), findsOneWidget);
@@ -63,7 +66,7 @@ void main() {
     String? capturedName = 'unset';
     String? capturedDocument = 'unset';
 
-    await _pump(tester, ({name, document}) {
+    await _pump(tester, ({name, document, required active}) {
       searchCalls++;
       capturedName = name;
       capturedDocument = document;

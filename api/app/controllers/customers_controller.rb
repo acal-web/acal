@@ -1,11 +1,11 @@
 class CustomersController < ApplicationController
   before_action :set_customer, only: %i[ show update destroy ]
 
-  SORTABLE_COLUMNS = %w[ name ].freeze
+  SORTABLE_COLUMNS = %w[ name document membership_number voter ].freeze
 
   # GET /customers
   def index
-    customers = Customer.filter_by_name(params[:name]).filter_by_document(params[:document])
+    customers = active_scope.filter_by_name(params[:name]).filter_by_document(params[:document])
     render json: paginate(sort(customers))
   end
 
@@ -32,6 +32,15 @@ class CustomersController < ApplicationController
   end
 
   private
+    # "true" (default) → active only, "false" → soft deleted only, "all" → both.
+    def active_scope
+      case params[:active]
+      when "false" then Customer.deleted
+      when "all" then Customer.unscoped
+      else Customer
+      end
+    end
+
     def sort(collection)
       return collection unless SORTABLE_COLUMNS.include?(params[:sort])
 

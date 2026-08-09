@@ -45,7 +45,23 @@
       "Bash(grep -n \"class DropdownMenuThemeData\\\\|this.inputDecorationTheme\\\\|final.*inputDecorationTheme\" /opt/flutter/packages/flutter/lib/src/material/dropdown_menu_theme.dart)",
       "Bash(dart analyze *)",
       "Bash(git rm *)",
-      "Bash(flutter pub *)"
+      "Bash(flutter pub *)",
+      "Bash(find /home/vscode/.pub-cache/hosted/pub.dev/forui-0.25.0 -iname \"*text_field*\" -o -iname \"*text_form_field*\" | head -20)",
+      "Read(//home/vscode/.pub-cache/hosted/pub.dev/forui-0.25.0/**)",
+      "Bash(grep -n \"label\\\\|GestureDetector\\\\|InkWell\\\\|onTap\\\\|TextField\\(\" /home/vscode/.pub-cache/hosted/pub.dev/forui-0.25.0/lib/src/widgets/text_field/text_field.dart | head -60)",
+      "Read(//home/vscode/.pub-cache/hosted/pub.dev/forui-0.25.0/lib/src/widgets/text_field/**)",
+      "Bash(adb devices *)",
+      "Bash(chromium --version)",
+      "Bash(chromium --headless --no-sandbox --disable-gpu --dump-dom about:blank)",
+      "Bash(find / -iname \"CdpWebDriver*\")",
+      "Read(//home/vscode/.maestro/**)",
+      "Bash(find / -iname \"maestro-cli*.jar\")",
+      "Read(//home/vscode/.maestro/tests/**)",
+      "Read(//home/vscode/.maestro/tests/2026-08-08_233043/**)",
+      "Read(//home/vscode/.maestro/tests/2026-08-08_231613/**)",
+      "Bash(ulimit -u)",
+      "Bash(ps -u vscode --no-headers)",
+      "Read(//proc/sys/kernel/**)"
     ]
   }
 }

@@ -84,5 +84,6 @@ ThemeData _materialTheme({
     colorScheme: colorScheme,
     scaffoldBackgroundColor: background,
     cardTheme: const CardThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
+    dialogTheme: const DialogThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
   );
 }

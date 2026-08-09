@@ -27,7 +27,7 @@ double _minContentWidth(List<DataTableColumn> columns) {
 }
 
 class DataTableColumn {
-  const DataTableColumn(this.label, {this.flex = 1, this.width, this.sortable = false, this.sortKey});
+  const DataTableColumn(this.label, {this.flex = 1, this.width, this.sortable = false, this.sortKey, this.headerWidget});
 
   final String label;
   final int flex;
@@ -36,6 +36,11 @@ class DataTableColumn {
 
   /// Field name sent to the server when this column is sorted, e.g. `'name'`.
   final String? sortKey;
+
+  /// Renders in place of [label] in the header row when set — e.g. an
+  /// "add" button for an actions column. Ignored by [_Footer], which always
+  /// shows [label].
+  final Widget? headerWidget;
 }
 
 /// The standard listing shell used across "Cadastros" pages: an entries-per-page
@@ -93,6 +98,7 @@ class DataTableCard<T> extends StatelessWidget {
       // Table rows zebra-stripe against the page ground, not the card fill —
       // override the card's default surface color to make that visible.
       color: Theme.of(context).scaffoldBackgroundColor,
+      margin: EdgeInsets.zero,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
@@ -293,20 +299,25 @@ class _HeaderCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final label = column.sortable
-        ? _SortableLabel(
-            column.label,
-            style: style,
-            iconColor: iconColor,
-            direction: active ? (ascending ? SortDirection.ascending : SortDirection.descending) : null,
-            onTap: onSort == null || column.sortKey == null ? null : () => onSort!(column.sortKey!),
-          )
-        : Text(column.label, style: style);
+    final label =
+        column.headerWidget ??
+        (column.sortable
+            ? _SortableLabel(
+                column.label,
+                style: style,
+                iconColor: iconColor,
+                direction: active ? (ascending ? SortDirection.ascending : SortDirection.descending) : null,
+              )
+            : Text(column.label, style: style));
 
-    // Align so a sortable label's InkWell hugs just the text + arrows
-    // instead of the whole (flex-stretched) cell — otherwise clicking
-    // anywhere across the column's width, not just the label, triggers sort.
-    final cell = Align(alignment: Alignment.centerLeft, child: label);
+    Widget cell = Align(alignment: Alignment.centerLeft, child: label);
+
+    final canSort = column.sortable && onSort != null && column.sortKey != null;
+    if (canSort) {
+      // Wraps the whole cell, not just the label, so clicking anywhere in
+      // the column's header — not only on the text — triggers the sort.
+      cell = InkWell(onTap: () => onSort!(column.sortKey!), mouseCursor: SystemMouseCursors.click, child: cell);
+    }
 
     return column.width != null
         ? SizedBox(width: column.width, child: cell)
@@ -347,7 +358,7 @@ class _Footer extends StatelessWidget {
 enum SortDirection { ascending, descending }
 
 class _SortableLabel extends StatelessWidget {
-  const _SortableLabel(this.label, {this.style, required this.iconColor, this.direction, this.onTap});
+  const _SortableLabel(this.label, {this.style, required this.iconColor, this.direction});
 
   final String label;
   final TextStyle? style;
@@ -355,11 +366,10 @@ class _SortableLabel extends StatelessWidget {
 
   /// Null when this column isn't the active sort column.
   final SortDirection? direction;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
-    final row = Row(
+    return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Text(label, style: style),
@@ -367,9 +377,6 @@ class _SortableLabel extends StatelessWidget {
         _SortArrows(color: iconColor, direction: direction),
       ],
     );
-
-    if (onTap == null) return row;
-    return InkWell(onTap: onTap, mouseCursor: SystemMouseCursors.click, child: row);
   }
 }
 

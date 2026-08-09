@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
@@ -70,11 +71,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < 640;
+    final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     return Scaffold(
       body: Padding(
-        padding: EdgeInsets.all(narrow ? 12 : 16),
+        padding: LayoutConfig.pagePadding(narrow),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [

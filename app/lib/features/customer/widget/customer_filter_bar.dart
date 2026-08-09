@@ -3,10 +3,26 @@ import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
+/// [FSelect] treats a `null` value as "nothing selected" internally, which
+/// breaks the "Todos" option if it's modeled as `bool?`'s `null` — this
+/// enum keeps every option a real, non-null value so the select always
+/// displays the right label.
+enum _ActiveFilter {
+  active,
+  inactive,
+  all;
+
+  bool? get value => switch (this) {
+        _ActiveFilter.active => true,
+        _ActiveFilter.inactive => false,
+        _ActiveFilter.all => null,
+      };
+}
+
 class CustomerFilterBar extends StatefulWidget {
   const CustomerFilterBar({super.key, required this.onSearch});
 
-  final void Function({String? name, String? document}) onSearch;
+  final void Function({String? name, String? document, required bool? active}) onSearch;
 
   @override
   State<CustomerFilterBar> createState() => _CustomerFilterBarState();
@@ -16,6 +32,7 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
   final _nameController = TextEditingController();
   final _documentController = TextEditingController();
   DocumentKind _documentKind = DocumentKind.cpf;
+  _ActiveFilter _active = _ActiveFilter.active;
   bool _expanded = false;
 
   @override
@@ -42,6 +59,7 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
   void _search() => widget.onSearch(
         name: _nameController.text.trim(),
         document: _documentController.text.replaceAll(RegExp(r'[^0-9]'), ''),
+        active: _active.value,
       );
 
   void _clear() {
@@ -49,8 +67,9 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
       _nameController.clear();
       _documentController.clear();
       _documentKind = DocumentKind.cpf;
+      _active = _ActiveFilter.active;
     });
-    widget.onSearch();
+    widget.onSearch(active: true);
   }
 
   @override
@@ -133,6 +152,19 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
           ),
         );
 
+        final activeField = FSelect<_ActiveFilter>(
+          items: const {
+            'Ativos': _ActiveFilter.active,
+            'Inativos': _ActiveFilter.inactive,
+            'Todos': _ActiveFilter.all,
+          },
+          control: FSelectControl.managed(
+            initial: _active,
+            onChange: (v) => setState(() => _active = v ?? _ActiveFilter.active),
+          ),
+          label: const Text('Situação'),
+        );
+
         final fields = narrow
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -140,6 +172,8 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                   nameField,
                   const SizedBox(height: 8),
                   documentField,
+                  const SizedBox(height: 8),
+                  activeField,
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -156,9 +190,11 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(flex: 9, child: nameField),
+                      Expanded(flex: 6, child: nameField),
                       const SizedBox(width: 8),
                       Expanded(flex: 3, child: documentField),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 3, child: activeField),
                     ],
                   ),
                   const SizedBox(height: 8),
@@ -212,8 +248,11 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                         const SizedBox(height: 8),
                         Card(
                           elevation: 1,
+                          margin: EdgeInsets.zero,
+                          color: cs.surfaceContainerHigh,
+                          surfaceTintColor: Colors.transparent,
                           child: Padding(
-                            padding: EdgeInsets.all(narrow ? 12 : 16),
+                            padding: LayoutConfig.pagePadding(narrow),
                             child: fields,
                           ),
                         ),

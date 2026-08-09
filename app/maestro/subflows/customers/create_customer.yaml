@@ -8,7 +8,7 @@
 # when this file is invoked via runFlow.
 url: http://localhost:8080/#/customers
 ---
-- tapOn: "Novo Sócio"
+- tapOn: "Adicionar"
 - tapOn: "Digite o nome do sócio"
 - inputText: "${NAME}"
 - tapOn: "000.000.000-00"

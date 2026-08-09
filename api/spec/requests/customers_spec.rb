@@ -99,6 +99,46 @@ RSpec.describe "Customers", type: :request do
 
         expect(response).to have_http_status(:ok)
       end
+
+      it "defaults to active customers when active is omitted" do
+        create(:customer, name: "Fulano de Tal")
+
+        get "/customers"
+
+        expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Fulano de Tal" ])
+      end
+
+      it "excludes soft deleted customers when active is true" do
+        post "/customers", params: valid_params
+        id = response.parsed_body["id"]
+        delete "/customers/#{id}"
+
+        get "/customers", params: { active: "true" }
+
+        expect(response.parsed_body["content"]).to eq([])
+      end
+
+      it "returns only soft deleted customers when active is false" do
+        create(:customer, name: "Fulano de Tal")
+        post "/customers", params: valid_params.deep_merge(customer: { name: "Ciclano da Silva" })
+        id = response.parsed_body["id"]
+        delete "/customers/#{id}"
+
+        get "/customers", params: { active: "false" }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] }).to eq([ "Ciclano da Silva" ])
+      end
+
+      it "returns both active and soft deleted customers when active is all" do
+        create(:customer, name: "Fulano de Tal")
+        post "/customers", params: valid_params.deep_merge(customer: { name: "Ciclano da Silva" })
+        id = response.parsed_body["id"]
+        delete "/customers/#{id}"
+
+        get "/customers", params: { active: "all" }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] }).to contain_exactly("Fulano de Tal", "Ciclano da Silva")
+      end
     end
   end
 
@@ -256,16 +296,18 @@ RSpec.describe "Customers", type: :request do
         expect(response.parsed_body).to eq("document" => [ "is invalid" ])
       end
 
-      it "rejects a document that is already in use" do
+      it "rejects a document already used by an active customer, naming them" do
         post "/customers", params: valid_params
 
         post "/customers", params: { customer: valid_params[:customer].merge(name: "Outro Nome") }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("document" => [ "has already been taken" ])
+        expect(response.parsed_body).to eq(
+          "document" => [ "Já existe um cadastro para esse documento associado ao usuário Fulano de Tal" ]
+        )
       end
 
-      it "rejects a document already used by a soft deleted customer" do
+      it "rejects a document already used by a soft deleted customer, offering to reactivate" do
         post "/customers", params: valid_params
         id = response.parsed_body["id"]
         delete "/customers/#{id}"
@@ -273,7 +315,9 @@ RSpec.describe "Customers", type: :request do
         post "/customers", params: { customer: valid_params[:customer].merge(name: "Outro Nome") }
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("document" => [ "has already been taken" ])
+        expect(response.parsed_body).to eq(
+          "document" => [ "Esse sócio já está cadastrado, porém inativo. É possível reativar." ]
+        )
       end
 
       it "rejects a membership number that isn't a positive integer" do

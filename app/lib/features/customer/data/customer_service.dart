@@ -14,6 +14,7 @@ class CustomerService {
     String? document,
     String? sort,
     bool sortAscending = true,
+    bool? active = true,
   }) async {
     final query = {
       'page': '$page',
@@ -22,6 +23,7 @@ class CustomerService {
       if (document != null && document.isNotEmpty) 'document': document,
       if (sort != null && sort.isNotEmpty) 'sort': sort,
       if (sort != null && sort.isNotEmpty) 'direction': sortAscending ? 'asc' : 'desc',
+      'active': active == null ? 'all' : '$active',
     };
     final data = await _http.get('/customers', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Customer.fromJson);

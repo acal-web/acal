@@ -93,18 +93,18 @@ void main() {
     expect(capture.sortKey, isNull, reason: 'tapping a data row must not sort');
   });
 
-  testWidgets('tapping the "Nome" column far from its label does not sort', (tester) async {
+  testWidgets('tapping the "Nome" column far from its label still sorts', (tester) async {
     final capture = await _pump(tester);
 
     // The "Nome" header cell is flex 6 (the widest column) — tap its far
-    // right edge, well clear of the "Nome" label and sort arrows, to catch
-    // the InkWell being stretched to fill the whole flexed cell instead of
+    // right edge, well clear of the "Nome" label and sort arrows, to confirm
+    // the InkWell is stretched to fill the whole flexed cell rather than
     // hugging just the label.
     final headerRect = tester.getRect(find.text('Nome'));
     final farRight = Offset(headerRect.right + 200, headerRect.center.dy);
     await tester.tapAt(farRight);
     await tester.pump();
 
-    expect(capture.sortKey, isNull, reason: 'tapping empty space in the Nome header cell must not sort');
+    expect(capture.sortKey, 'name', reason: 'tapping anywhere in the Nome header cell must sort');
   });
 }

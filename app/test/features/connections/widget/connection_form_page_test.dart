@@ -29,6 +29,7 @@ class _FakeCustomerService extends CustomerService {
     String? document,
     String? sort,
     bool sortAscending = true,
+    bool? active = true,
   }) async {
     final filtered =
         (name == null || name.isEmpty) ? items : items.where((c) => c.name.toLowerCase().contains(name.toLowerCase())).toList();

@@ -221,7 +221,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
             Card(
               elevation: 1,
               child: Padding(
-                padding: EdgeInsets.all(narrow ? 12 : 16),
+                padding: LayoutConfig.pagePadding(narrow),
                 child: fields,
               ),
             ),

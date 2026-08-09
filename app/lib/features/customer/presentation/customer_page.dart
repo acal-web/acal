@@ -5,13 +5,14 @@ import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/customer/widget/customer_filter_bar.dart';
 import 'package:acalapp/features/customer/widget/modal/delete_customer.dart';
 import 'package:acalapp/features/customer/widget/modal/open_customer.dart';
+import 'package:acalapp/shared/widgets/bool_text.dart';
 import 'package:acalapp/shared/widgets/document_text.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
+import 'package:acalapp/shared/widgets/table/add_button.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 
 class CustomersPage extends StatefulWidget {
   const CustomersPage({super.key});
@@ -27,6 +28,7 @@ class _CustomersPageState extends State<CustomersPage> {
   int _pageSize = 10;
   String? _filterName;
   String? _filterDocument;
+  bool? _filterActive = true;
   String? _sortColumn;
   bool _sortAscending = true;
 
@@ -41,6 +43,7 @@ class _CustomersPageState extends State<CustomersPage> {
     size: _pageSize,
     name: _filterName,
     document: _filterDocument,
+    active: _filterActive,
     sort: _sortColumn,
     sortAscending: _sortAscending,
   );
@@ -60,9 +63,10 @@ class _CustomersPageState extends State<CustomersPage> {
     _future = _fetch();
   });
 
-  void _search({String? name, String? document}) => setState(() {
+  void _search({String? name, String? document, required bool? active}) => setState(() {
     _filterName = name;
     _filterDocument = document;
+    _filterActive = active;
     _page = 0;
     _future = _fetch();
   });
@@ -84,9 +88,8 @@ class _CustomersPageState extends State<CustomersPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow =
-        MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
-    final padding = EdgeInsets.all(narrow ? 12 : 16);
+    final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
+    final padding = LayoutConfig.pagePadding(narrow);
 
     return Scaffold(
       body: Padding(
@@ -95,43 +98,41 @@ class _CustomersPageState extends State<CustomersPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PageHeader(
-              title: 'Sócios',
-              subtitle: 'Gerencie os sócios cadastrados.',
-              action: FButton(
-                mainAxisSize: MainAxisSize.min,
-                onPress: _openForm,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, size: 18),
-                    SizedBox(width: 8),
-                    Text('Novo Sócio'),
-                  ],
-                ),
-              ),
+              subtitle: 'Sócios.',
             ),
-            const SizedBox(height: 8),
             const Divider(),
-            const SizedBox(height: 8),
             CustomerFilterBar(onSearch: _search),
             const SizedBox(height: 8),
             Expanded(
               child: PagedListView<Customer>(
                 future: _future,
-                columns: const [
-                  DataTableColumn(
+                columns: [
+                  const DataTableColumn(
                     'Nome',
                     flex: 6,
                     sortable: true,
                     sortKey: 'name',
                   ),
-                  DataTableColumn('Documento', flex: 2),
-                  DataTableColumn('Nº Sócio', width: 90),
-                  DataTableColumn('Votante', width: 90),
-                  DataTableColumn('Ações', width: 88),
+                  const DataTableColumn(
+                    'Documento',
+                    flex: 2,
+                    sortable: true,
+                    sortKey: 'document',
+                  ),
+                  const DataTableColumn(
+                    'Nº Sócio',
+                    width: 90,
+                    sortable: true,
+                    sortKey: 'membership_number',
+                  ),
+                  const DataTableColumn(
+                    'Votante',
+                    width: 90,
+                    sortable: true,
+                    sortKey: 'voter',
+                  ),
+                  DataTableColumn('Ações', width: 140, headerWidget: AddButton(onPress: _openForm)),
                 ],
-                emptyMessage: 'Nenhum sócio cadastrado.',
                 errorMessage: 'Erro ao carregar sócios',
                 onRetry: _load,
                 onPageChanged: _goToPage,
@@ -168,44 +169,45 @@ class _CustomerRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    // Dims the customer's data (but not the row actions) so an inactive
+    // sócio visibly reads as out of use, on top of the soft red row tint.
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: customer.active ? null : cs.onSurfaceVariant,
+    );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 6,
-            child: Text(customer.name, style: theme.textTheme.bodyMedium),
-          ),
-          Expanded(
-            flex: 2,
-            child: DocumentText(
-              customer.document,
-              style: theme.textTheme.bodyMedium,
+    return ColoredBox(
+      // Low alpha so the table's zebra striping still shows through.
+      color: customer.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          children: [
+            Expanded(
+              flex: 6,
+              child: Text(customer.name, style: style),
             ),
-          ),
-          SizedBox(
-            width: 90,
-            child: Text(
-              customer.membershipNumber?.toString() ?? '—',
-              style: theme.textTheme.bodyMedium,
+            Expanded(
+              flex: 2,
+              child: DocumentText(customer.document, style: style),
             ),
-          ),
-          SizedBox(
-            width: 90,
-            child: Icon(
-              customer.voter ? Icons.check : Icons.close,
-              size: 18,
-              color: customer.voter
-                  ? theme.colorScheme.primary
-                  : theme.colorScheme.onSurfaceVariant,
+            SizedBox(
+              width: 90,
+              child: Text(
+                customer.membershipNumber?.toString() ?? '—',
+                style: style,
+              ),
             ),
-          ),
-          SizedBox(
-            width: 88,
-            child: RowActions(onEdit: onEdit, onDelete: onDelete),
-          ),
-        ],
+            SizedBox(
+              width: 90,
+              child: BoolText(customer.voter, style: style),
+            ),
+            SizedBox(
+              width: 140,
+              child: Center(child: RowActions(onEdit: onEdit, onDelete: onDelete)),
+            ),
+          ],
+        ),
       ),
     );
   }

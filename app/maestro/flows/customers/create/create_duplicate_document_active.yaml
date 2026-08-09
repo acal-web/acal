@@ -1,0 +1,30 @@
+url: http://localhost:8080/#/customers
+---
+- launchApp
+# Generous timeout: first navigation after a (re)start triggers a cold
+# dartdevc module compile that can take 30-60s depending on machine load.
+- extendedWaitUntil:
+    visible: "Sócios"
+    timeout: 240000
+
+# Arrange: an active sócio with a known document.
+- runFlow:
+    file: ../../../subflows/customers/create_customer.yaml
+    env:
+      NAME: "Maestro Duplicado Ativo Original"
+      DOCUMENT: "44455566619"
+
+# Act: try to register a different sócio with the same document.
+- tapOn: "Adicionar"
+- assertVisible: "Novo Sócio"
+- tapOn: "Digite o nome do sócio"
+- inputText: "Maestro Duplicado Ativo Novo"
+- tapOn: "000.000.000-00"
+- inputText: "44455566619"
+- tapOn: "Salvar"
+
+# Assert: rejected with the conflicting sócio's name, dialog stays open,
+# no second row created.
+- assertVisible: "Já existe um cadastro para esse documento associado ao usuário Maestro Duplicado Ativo Original"
+- assertVisible: "Salvar"
+- assertNotVisible: "Maestro Duplicado Ativo Novo"
