@@ -7,11 +7,11 @@ import 'package:acalapp/features/connections/widget/modal/delete_connection.dart
 import 'package:acalapp/features/connections/widget/modal/open_connection.dart';
 import 'package:acalapp/shared/widgets/document_text.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
+import 'package:acalapp/shared/widgets/table/add_button.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 
 class ConnectionsPage extends StatefulWidget {
   const ConnectionsPage({super.key});
@@ -85,84 +85,44 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     final narrow =
         MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
-    final header = PageHeader(
-      title: 'Ligações',
-      subtitle: 'Gerencie as ligações de água.',
-      action: FButton(
-        mainAxisSize: MainAxisSize.min,
-        onPress: _openForm,
-        child: const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          mainAxisSize: MainAxisSize.min,
+    return Scaffold(
+      body: Padding(
+        padding: LayoutConfig.pagePadding(narrow),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Icon(Icons.add, size: 18),
-            SizedBox(width: 8),
-            Text('Nova Ligação'),
+            const PageHeader(subtitle: 'Gerencie as ligações de água.'),
+            const Divider(),
+            ConnectionFilterBar(onSearch: _search),
+            const SizedBox(height: 8),
+            Expanded(
+              child: PagedListView<Connection>(
+                future: _future,
+                columns: [
+                  const DataTableColumn('Sócio', flex: 3),
+                  const DataTableColumn('Logradouro', flex: 3),
+                  const DataTableColumn('Nº', width: 70),
+                  const DataTableColumn('Categoria', flex: 2),
+                  const DataTableColumn('Ativa', width: 70),
+                  DataTableColumn('Ações', width: 88, headerWidget: AddButton(onPress: _openForm)),
+                ],
+                emptyMessage: 'Nenhuma ligação cadastrada.',
+                errorMessage: 'Erro ao carregar ligações',
+                onRetry: _load,
+                onPageChanged: _goToPage,
+                pageSize: _pageSize,
+                onPageSizeChanged: _changePageSize,
+                rowBuilder: (context, connection) => _ConnectionRow(
+                  connection: connection,
+                  onEdit: () => _openForm(connection: connection),
+                  onDelete: () => _delete(connection),
+                ),
+              ),
+            ),
           ],
         ),
       ),
     );
-
-    final table = PagedListView<Connection>(
-      future: _future,
-      columns: const [
-        DataTableColumn('Sócio', flex: 3),
-        DataTableColumn('Logradouro', flex: 3),
-        DataTableColumn('Nº', width: 70),
-        DataTableColumn('Categoria', flex: 2),
-        DataTableColumn('Ativa', width: 70),
-        DataTableColumn('Ações', width: 88),
-      ],
-      emptyMessage: 'Nenhuma ligação cadastrada.',
-      errorMessage: 'Erro ao carregar ligações',
-      onRetry: _load,
-      onPageChanged: _goToPage,
-      pageSize: _pageSize,
-      onPageSizeChanged: _changePageSize,
-      rowBuilder: (context, connection) => _ConnectionRow(
-        connection: connection,
-        onEdit: () => _openForm(connection: connection),
-        onDelete: () => _delete(connection),
-      ),
-    );
-
-    // ConnectionFilterBar has five stacked fields on narrow screens, tall
-    // enough that header + filters alone can exceed a phone's viewport
-    // height — scroll the page and give the table a fixed height instead of
-    // forcing it into whatever (possibly negative) space an Expanded leaves.
-    final body = narrow
-        ? SingleChildScrollView(
-            padding: const EdgeInsets.all(12),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                header,
-                const SizedBox(height: 8),
-                const Divider(),
-                const SizedBox(height: 8),
-                ConnectionFilterBar(onSearch: _search),
-                const SizedBox(height: 8),
-                SizedBox(height: 480, child: table),
-              ],
-            ),
-          )
-        : Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                header,
-                const SizedBox(height: 8),
-                const Divider(),
-                const SizedBox(height: 8),
-                ConnectionFilterBar(onSearch: _search),
-                const SizedBox(height: 8),
-                Expanded(child: table),
-              ],
-            ),
-          );
-
-    return Scaffold(body: body);
   }
 }
 

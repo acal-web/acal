@@ -9,6 +9,7 @@ import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/async_error_view.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
+import 'package:acalapp/shared/widgets/period_filter_button.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
@@ -73,10 +74,7 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
       });
 
   Future<void> _pickReference() async {
-    final result = await showDialog<({int year, int month})>(
-      context: context,
-      builder: (context) => _ReferencePickerDialog(year: _reference.year, month: _reference.month),
-    );
+    final result = await pickMonthYear(context, initial: (year: _reference.year, month: _reference.month));
     if (result != null) setState(() => _reference = DateTime(result.year, result.month));
   }
 
@@ -144,10 +142,10 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const PageHeader(
-              title: 'Gerar Faturas',
               subtitle: 'Processamento e emissão de cobranças em lote.',
             ),
-            const SizedBox(height: 12),
+            const Divider(),
+            const SizedBox(height: 8),
             _FilterBar(
               narrow: narrow,
               hasWaterMeter: _hasWaterMeter,
@@ -511,83 +509,6 @@ class _GenerateBar extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-class _ReferencePickerDialog extends StatefulWidget {
-  const _ReferencePickerDialog({required this.year, required this.month});
-
-  final int year;
-  final int month;
-
-  @override
-  State<_ReferencePickerDialog> createState() => _ReferencePickerDialogState();
-}
-
-class _ReferencePickerDialogState extends State<_ReferencePickerDialog> {
-  late int _month = widget.month;
-  late int _year = widget.year;
-
-  @override
-  Widget build(BuildContext context) {
-    final currentYear = DateTime.now().year;
-    final years = [for (var y = currentYear - 5; y <= currentYear + 1; y++) y];
-
-    return FDialog(
-      builder: (context, style) => Padding(
-        padding: const EdgeInsets.all(16),
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 360),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Período de Referência', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16)),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: FSelect<int>(
-                      items: {for (var m = 1; m <= 12; m++) monthNames[m - 1]: m},
-                      control: FSelectControl.managed(initial: _month, onChange: (v) => setState(() => _month = v!)),
-                      label: const Text('Mês'),
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: FSelect<int>(
-                      items: {for (final y in years) '$y': y},
-                      control: FSelectControl.managed(initial: _year, onChange: (v) => setState(() => _year = v!)),
-                      label: const Text('Ano'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
-              Wrap(
-                alignment: WrapAlignment.end,
-                spacing: 8,
-                runSpacing: 8,
-                children: [
-                  FButton(
-                    variant: FButtonVariant.ghost,
-                    mainAxisSize: MainAxisSize.min,
-                    onPress: () => Navigator.of(context).pop(),
-                    child: const Text('Cancelar'),
-                  ),
-                  FButton(
-                    mainAxisSize: MainAxisSize.min,
-                    onPress: () => Navigator.of(context).pop((year: _year, month: _month)),
-                    child: const Text('Aplicar'),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
-      ),
     );
   }
 }

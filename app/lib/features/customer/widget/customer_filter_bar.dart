@@ -198,10 +198,9 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
                     ],
                   ),
                   const SizedBox(height: 8),
+                  const Divider(),
                   Row(
                     children: [
-                      // Bootstrap-equivalent: offset-8, then two col-2 buttons —
-                      // buttons occupy the right-hand third of the row, split evenly.
                       const Spacer(flex: 8),
                       Expanded(flex: 2, child: clearButtonWide),
                       const SizedBox(width: 8),

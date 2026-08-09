@@ -4,6 +4,7 @@ import 'package:acalapp/features/quality/data/quality_analysis_service.dart';
 import 'package:acalapp/features/quality/domain/quality_analysis.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
+import 'package:acalapp/shared/widgets/period_filter_button.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -139,11 +140,18 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
     return 'Erro ao salvar análise.';
   }
 
+  Future<void> _pickReference() async {
+    final result = await pickMonthYear(context, initial: (year: _year, month: _month));
+    if (result != null) {
+      setState(() {
+        _year = result.year;
+        _month = result.month;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currentYear = DateTime.now().year;
-    final years = [for (var y = currentYear - 5; y <= currentYear + 1; y++) y];
-
     return AppFormDialog(
       formKey: _formKey,
       title: _title,
@@ -160,26 +168,17 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
             ),
             const SizedBox(height: 16),
           ],
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(
-                flex: 2,
-                child: FSelect<int>(
-                  items: {for (var m = 1; m <= 12; m++) monthNames[m - 1]: m},
-                  control: FSelectControl.managed(initial: _month, onChange: (v) => setState(() => _month = v!)),
-                  label: Text(_isEditing ? 'Mês de Referência' : 'Período de Referência'),
-                ),
+          SizedBox(
+            width: 200,
+            child: FTextFormField(
+              control: FTextFieldControl.managed(
+                controller: TextEditingController(text: formatMonthReference(DateTime(_year, _month))),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: FSelect<int>(
-                  items: {for (final y in years) '$y': y},
-                  control: FSelectControl.managed(initial: _year, onChange: (v) => setState(() => _year = v!)),
-                  label: Text(_isEditing ? 'Ano' : ' '),
-                ),
-              ),
-            ],
+              readOnly: true,
+              label: Text(_isEditing ? 'Mês de Referência' : 'Período de Referência'),
+              suffixBuilder: (context, style, variants) => const Icon(Icons.calendar_today, size: 18),
+              onTap: _pickReference,
+            ),
           ),
           const SizedBox(height: 12),
           if (_isEditing) ..._editingFields() else ..._creationFields(),

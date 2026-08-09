@@ -6,11 +6,12 @@ import 'package:acalapp/features/categories/widget/modal/delete_category.dart';
 import 'package:acalapp/features/categories/widget/modal/open_category.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
+import 'package:acalapp/shared/widgets/table/add_button.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
+import 'package:acalapp/shared/widgets/table/name_filter_bar.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
@@ -24,26 +25,36 @@ class _CategoriesPageState extends State<CategoriesPage> {
   late Future<PagedResult<Category>> _future;
   int _page = 0;
   int _pageSize = 10;
+  String? _filterName;
 
   @override
   void initState() {
     super.initState();
-    _future = _service.findAll(page: _page, size: _pageSize);
+    _future = _fetch();
   }
 
+  Future<PagedResult<Category>> _fetch() =>
+      _service.findAll(page: _page, size: _pageSize, name: _filterName);
+
   void _load() => setState(() {
-    _future = _service.findAll(page: _page, size: _pageSize);
+    _future = _fetch();
   });
 
   void _goToPage(int page) => setState(() {
     _page = page;
-    _future = _service.findAll(page: _page, size: _pageSize);
+    _future = _fetch();
   });
 
   void _changePageSize(int size) => setState(() {
     _pageSize = size;
     _page = 0;
-    _future = _service.findAll(page: _page, size: _pageSize);
+    _future = _fetch();
+  });
+
+  void _search({String? name}) => setState(() {
+    _filterName = name;
+    _page = 0;
+    _future = _fetch();
   });
 
   Future<void> _openForm({Category? category}) async {
@@ -65,38 +76,20 @@ class _CategoriesPageState extends State<CategoriesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PageHeader(
-              title: 'Categorias',
-              subtitle: 'Gerencie as categorias de sócios cadastradas.',
-              action: FButton(
-                mainAxisSize: MainAxisSize.min,
-                onPress: _openForm,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, size: 18),
-                    SizedBox(width: 8),
-                    Text('Nova Categoria'),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
+            const PageHeader(subtitle: 'Gerencie as categorias de sócios cadastradas.'),
             const Divider(),
-            const SizedBox(height: 8),
-            _CategoryFilterBar(onSearch: _load),
+            NameFilterBar(label: 'Categoria:', onSearch: _search),
             const SizedBox(height: 8),
             Expanded(
               child: PagedListView<Category>(
                 future: _future,
-                columns: const [
-                  DataTableColumn('Nome', flex: 5),
-                  DataTableColumn('Hidrômetro', width: 100),
-                  DataTableColumn('Valor Água', flex: 2),
-                  DataTableColumn('Valor Societário', flex: 2),
-                  DataTableColumn('Total', flex: 2),
-                  DataTableColumn('Ações', width: 88),
+                columns: [
+                  const DataTableColumn('Nome', flex: 5),
+                  const DataTableColumn('Hidrômetro', width: 100),
+                  const DataTableColumn('Valor Água', flex: 2),
+                  const DataTableColumn('Valor Societário', flex: 2),
+                  const DataTableColumn('Total', flex: 2),
+                  DataTableColumn('Ações', width: 88, headerWidget: AddButton(onPress: _openForm)),
                 ],
                 emptyMessage: 'Nenhuma categoria cadastrada.',
                 errorMessage: 'Erro ao carregar categorias',
@@ -114,46 +107,6 @@ class _CategoriesPageState extends State<CategoriesPage> {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _CategoryFilterBar extends StatelessWidget {
-  const _CategoryFilterBar({required this.onSearch});
-
-  final VoidCallback onSearch;
-
-  @override
-  Widget build(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: SizedBox(
-                width: narrow ? double.infinity : null,
-                child: FButton(
-                  mainAxisSize: MainAxisSize.min,
-                  onPress: onSearch,
-                  child: const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.search, size: 18),
-                      SizedBox(width: 8),
-                      Text('Consultar'),
-                    ],
-                  ),
-                ),
-              ),
-            ),
-          ],
-        );
-      },
     );
   }
 }

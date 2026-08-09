@@ -35,6 +35,11 @@ Future<void> _pump(WidgetTester tester, void Function(ConnectionFilters filters)
       ),
     ),
   );
+
+  // The filter section starts collapsed — expand it and let the reveal
+  // animation finish so the fields are hit-testable for the rest of the test.
+  await tester.tap(find.text('Filtros'));
+  await tester.pumpAndSettle();
 }
 
 Future<void> _settleSearch(WidgetTester tester) async {

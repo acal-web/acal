@@ -81,24 +81,25 @@ class _CobrancaPageState extends State<CobrancaPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const PageHeader(
-              title: 'Cobranças',
               subtitle: 'Cartas de aviso para ligações com faturas vencidas e não pagas.',
             ),
-            const SizedBox(height: 12),
-            Row(
-              children: [
-                Text('Vencidas há mais de', style: Theme.of(context).textTheme.labelLarge),
-                const SizedBox(width: 12),
-                SizedBox(
-                  width: 180,
-                  child: FSelect<int>(
-                    items: const {'30 dias': 30, '60 dias': 60, '90 dias': 90},
-                    control: FSelectControl.managed(initial: _days, onChange: _changeDays),
+            const Divider(),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Text('Vencidas há mais de', style: Theme.of(context).textTheme.labelLarge),
+                  const SizedBox(width: 12),
+                  SizedBox(
+                    width: 180,
+                    child: FSelect<int>(
+                      items: const {'30 dias': 30, '60 dias': 60, '90 dias': 90},
+                      control: FSelectControl.managed(initial: _days, onChange: _changeDays),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-            const SizedBox(height: 12),
             Expanded(
               child: FutureBuilder<List<OverdueConnection>>(
                 future: _future,

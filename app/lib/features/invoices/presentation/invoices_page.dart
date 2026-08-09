@@ -2,10 +2,10 @@ import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
-import 'package:acalapp/features/invoices/widget/invoice_period_filter_button.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
+import 'package:acalapp/shared/widgets/period_filter_button.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
@@ -32,7 +32,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
   late Future<PagedResult<Invoice>> _future;
   int _page = 0;
   int _pageSize = 10;
-  InvoicePeriod? _period;
+  MonthYear? _period;
 
   @override
   void initState() {
@@ -63,7 +63,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
     _future = _fetch();
   });
 
-  void _changePeriod(InvoicePeriod? period) => setState(() {
+  void _changePeriod(MonthYear? period) => setState(() {
     _period = period;
     _page = 0;
     _future = _fetch();
@@ -80,7 +80,6 @@ class _InvoicesPageState extends State<InvoicesPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             PageHeader(
-              title: 'Faturas',
               subtitle: 'Cobranças emitidas para as ligações de água.',
               action: Wrap(
                 spacing: 8,
@@ -114,23 +113,23 @@ class _InvoicesPageState extends State<InvoicesPage> {
                 ],
               ),
             ),
-            const SizedBox(height: 8),
             const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  'Filtrar por Período',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(width: 12),
-                InvoicePeriodFilterButton(
-                  period: _period,
-                  onChanged: _changePeriod,
-                ),
-              ],
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: Row(
+                children: [
+                  Text(
+                    'Filtrar por Período',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(width: 12),
+                  PeriodFilterButton(
+                    period: _period,
+                    onChanged: _changePeriod,
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(height: 8),
             Expanded(
               child: PagedListView<Invoice>(
                 future: _future,

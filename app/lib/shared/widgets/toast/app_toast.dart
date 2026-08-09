@@ -36,6 +36,14 @@ abstract final class AppToast {
       variant: variant,
       icon: Icon(icon),
       title: Text(message),
+      suffixBuilder: (context, entry) => FButton(
+        variant: FButtonVariant.ghost,
+        size: FButtonSizeVariant.sm,
+        mainAxisSize: MainAxisSize.min,
+        semanticsTooltip: 'Fechar',
+        onPress: entry.dismiss,
+        child: const Icon(Icons.close, size: 16),
+      ),
       alignment: FToastAlignment.topRight,
       duration: duration,
     );

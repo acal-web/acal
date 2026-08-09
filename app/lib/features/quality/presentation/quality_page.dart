@@ -4,14 +4,15 @@ import 'package:acalapp/features/quality/data/quality_analysis_service.dart';
 import 'package:acalapp/features/quality/domain/quality_analysis.dart';
 import 'package:acalapp/features/quality/widget/modal/delete_quality_analysis.dart';
 import 'package:acalapp/features/quality/widget/modal/open_quality_analysis.dart';
-import 'package:acalapp/features/quality/widget/quality_period_filter_button.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
+import 'package:acalapp/shared/widgets/period_filter_button.dart';
+import 'package:acalapp/shared/widgets/table/add_button.dart';
+import 'package:acalapp/shared/widgets/table/collapsible_filter_panel.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 
 class QualityPage extends StatefulWidget {
   const QualityPage({super.key});
@@ -25,7 +26,7 @@ class _QualityPageState extends State<QualityPage> {
   late Future<PagedResult<QualityAnalysis>> _future;
   int _page = 0;
   int _pageSize = 10;
-  QualityPeriod? _period;
+  MonthYear? _period;
 
   @override
   void initState() {
@@ -55,7 +56,7 @@ class _QualityPageState extends State<QualityPage> {
     _future = _fetch();
   });
 
-  void _changePeriod(QualityPeriod? period) => setState(() {
+  void _changePeriod(MonthYear? period) => setState(() {
     _period = period;
     _page = 0;
     _future = _fetch();
@@ -79,50 +80,34 @@ class _QualityPageState extends State<QualityPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PageHeader(
-              title: 'Análise de Água',
-              subtitle: 'Resultados das medições laboratoriais de qualidade.',
-              action: FButton(
-                mainAxisSize: MainAxisSize.min,
-                onPress: _openForm,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.add, size: 18),
-                    SizedBox(width: 8),
-                    Text('Adicionar Análise'),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 8),
+            const PageHeader(subtitle: 'Resultados das medições laboratoriais de qualidade.'),
             const Divider(),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Text(
-                  'Filtrar por Período',
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(width: 12),
-                QualityPeriodFilterButton(
-                  period: _period,
-                  onChanged: _changePeriod,
-                ),
-              ],
+            CollapsibleFilterPanel(
+              builder: (context, narrow) => Row(
+                children: [
+                  Text(
+                    'Filtrar por Período',
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(width: 12),
+                  PeriodFilterButton(
+                    period: _period,
+                    onChanged: _changePeriod,
+                  ),
+                ],
+              ),
             ),
             const SizedBox(height: 8),
             Expanded(
               child: PagedListView<QualityAnalysis>(
                 future: _future,
-                columns: const [
-                  DataTableColumn('Referência', flex: 2),
-                  DataTableColumn('Parâmetro', flex: 3),
-                  DataTableColumn('Exigido', flex: 2),
-                  DataTableColumn('Analisado', flex: 2),
-                  DataTableColumn('Conformidade', flex: 2),
-                  DataTableColumn('Ações', width: 88),
+                columns: [
+                  const DataTableColumn('Referência', flex: 2),
+                  const DataTableColumn('Parâmetro', flex: 3),
+                  const DataTableColumn('Exigido', flex: 2),
+                  const DataTableColumn('Analisado', flex: 2),
+                  const DataTableColumn('Conformidade', flex: 2),
+                  DataTableColumn('Ações', width: 88, headerWidget: AddButton(onPress: _openForm)),
                 ],
                 emptyMessage: 'Nenhuma análise cadastrada.',
                 errorMessage: 'Erro ao carregar análises',

@@ -10,6 +10,7 @@ import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
@@ -102,6 +103,9 @@ Future<void> _pump(WidgetTester tester, InvoiceService invoiceService) async {
   await tester.pumpWidget(
     MaterialApp.router(
       routerConfig: _router(invoiceService),
+      locale: const Locale('pt', 'BR'),
+      supportedLocales: const [Locale('pt', 'BR')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       builder: (context, child) => FTheme(
         data: fThemeLight,
         child: FToaster(child: FTooltipGroup(child: child!)),

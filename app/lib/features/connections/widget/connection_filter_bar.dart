@@ -5,8 +5,6 @@ import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-const _actionButtonWidth = 180.0;
-
 typedef ConnectionFilters = ({
   String? customerName,
   String? customerDocument,
@@ -32,6 +30,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   final _addressNameController = TextEditingController();
   Category? _category;
   bool? _active;
+  bool _expanded = false;
 
   @override
   void initState() {
@@ -109,10 +108,8 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           label: const Text('Situação'),
         );
 
-        final searchButton = SizedBox(
-          width: narrow ? double.infinity : null,
+        final searchButtonNarrow = Expanded(
           child: FButton(
-            mainAxisSize: MainAxisSize.min,
             onPress: _search,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -122,11 +119,9 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           ),
         );
 
-        final clearButton = SizedBox(
-          width: narrow ? double.infinity : null,
+        final clearButtonNarrow = Expanded(
           child: FButton(
             variant: FButtonVariant.outline,
-            mainAxisSize: MainAxisSize.min,
             onPress: _clear,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -136,33 +131,26 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           ),
         );
 
-        // Matches the fields' label + gap height with an invisible label, so
-        // the button lines up with the category/situação fields instead of
-        // sitting shorter and higher than them. Left at its natural height
-        // (rather than IntrinsicHeight) because categoryField's SearchSelectField
-        // can grow a shrink-wrapped suggestions list that doesn't support
-        // intrinsic sizing.
+        final searchButtonWide = SizedBox(
+          child: FButton(
+            onPress: _search,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.search, size: 18), SizedBox(width: 8), Text('Consultar')],
+            ),
+          ),
+        );
+
         final clearButtonWide = SizedBox(
-          width: _actionButtonWidth,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Opacity(
-                opacity: 0,
-                child: Text(' ', style: Theme.of(context).textTheme.labelLarge),
-              ),
-              const SizedBox(height: 8),
-              FButton(
-                variant: FButtonVariant.outline,
-                mainAxisSize: MainAxisSize.min,
-                onPress: _clear,
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
-                ),
-              ),
-            ],
+          child: FButton(
+            variant: FButtonVariant.outline,
+            onPress: _clear,
+            child: const Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
+            ),
           ),
         );
 
@@ -180,11 +168,17 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                   const SizedBox(height: 8),
                   activeField,
                   const SizedBox(height: 8),
-                  clearButton,
+                  Row(
+                    children: [
+                      clearButtonNarrow,
+                      const SizedBox(width: 8),
+                      searchButtonNarrow,
+                    ],
+                  ),
                 ],
               )
             : Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -203,27 +197,67 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                       Expanded(child: categoryField),
                       const SizedBox(width: 8),
                       Expanded(child: activeField),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Spacer(flex: 8),
+                      Expanded(flex: 2, child: clearButtonWide),
                       const SizedBox(width: 8),
-                      clearButtonWide,
+                      Expanded(flex: 2, child: searchButtonWide),
                     ],
                   ),
                 ],
               );
 
+        final cs = Theme.of(context).colorScheme;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Align(
-              alignment: Alignment.centerRight,
-              child: searchButton,
-            ),
-            const SizedBox(height: 8),
-            Card(
-              elevation: 1,
-              child: Padding(
-                padding: LayoutConfig.pagePadding(narrow),
-                child: fields,
+            ColoredBox(
+              color: cs.surfaceContainerHigh,
+              child: InkWell(
+                onTap: () => setState(() => _expanded = !_expanded),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  child: Row(
+                    children: [
+                      AnimatedRotation(
+                        turns: _expanded ? 0.5 : 0,
+                        duration: const Duration(milliseconds: 150),
+                        child: const Icon(Icons.expand_more, size: 20),
+                      ),
+                      const SizedBox(width: 4),
+                      Text('Filtros', style: Theme.of(context).textTheme.labelLarge),
+                    ],
+                  ),
+                ),
               ),
+            ),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              alignment: Alignment.topCenter,
+              child: !_expanded
+                  ? const SizedBox.shrink()
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 8),
+                        Card(
+                          elevation: 1,
+                          margin: EdgeInsets.zero,
+                          color: cs.surfaceContainerHigh,
+                          surfaceTintColor: Colors.transparent,
+                          child: Padding(
+                            padding: LayoutConfig.pagePadding(narrow),
+                            child: fields,
+                          ),
+                        ),
+                      ],
+                    ),
             ),
           ],
         );

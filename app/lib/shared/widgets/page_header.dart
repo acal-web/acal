@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 
 class PageHeader extends StatelessWidget {
-  const PageHeader({super.key, required this.title, this.subtitle, this.action});
+  const PageHeader({super.key, this.title, this.subtitle, this.action});
 
-  final String title;
+  final String? title;
   final String? subtitle;
   final Widget? action;
 
@@ -19,14 +19,13 @@ class PageHeader extends StatelessWidget {
     final titleBlock = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: theme.textTheme.displayMedium),
-        if (subtitle != null) ...[
-          const SizedBox(height: 4),
+        if (title != null) Text(title!, style: theme.textTheme.displayMedium),
+        if (title != null && subtitle != null) const SizedBox(height: 4),
+        if (subtitle != null)
           Text(
             subtitle!,
             style: theme.textTheme.bodyMedium?.copyWith(color: cs.onSurfaceVariant),
           ),
-        ],
       ],
     );
 
