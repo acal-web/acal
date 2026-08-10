@@ -10,17 +10,19 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_05_000000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_10_120002) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
 
   create_table "addresses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
-    t.string "kind"
+    t.citext "kind"
     t.integer "legacy_id"
-    t.string "name"
+    t.citext "name"
     t.datetime "updated_at", null: false
+    t.index ["kind", "name"], name: "index_addresses_on_kind_and_name_unique", unique: true, where: "(deleted_at IS NULL)"
     t.index ["name"], name: "index_addresses_on_name"
   end
 

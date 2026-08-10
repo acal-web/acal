@@ -61,7 +61,10 @@
       "Read(//home/vscode/.maestro/tests/2026-08-08_231613/**)",
       "Bash(ulimit -u)",
       "Bash(ps -u vscode --no-headers)",
-      "Read(//proc/sys/kernel/**)"
+      "Read(//proc/sys/kernel/**)",
+      "Bash(bin/rails runner ' *)",
+      "Bash(bin/rails spec:requests spec/requests/addresses_spec.rb)",
+      "Bash(bin/rails runner *)"
     ]
   }
 }

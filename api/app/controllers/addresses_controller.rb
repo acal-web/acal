@@ -13,13 +13,13 @@ class AddressesController < ApplicationController
 
   # POST /addresses
   def create
-    @address = Address.create!(kind:, name:, legacy_id:)
+    @address = Address.create!(**form.to_h)
     render json: @address, status: :created, location: @address
   end
 
   # PATCH/PUT /addresses/1
   def update
-    @address.update!(kind:, name:, legacy_id:)
+    @address.update!(**form.to_h)
     render json: @address
   end
 
@@ -33,19 +33,7 @@ class AddressesController < ApplicationController
       @address = Address.find(params.expect(:id))
     end
 
-    def address_params
-      params.expect(address: [ :name, :kind, :legacy_id ])
-    end
-
-    def kind
-      address_params[:kind]
-    end
-
-    def name
-      address_params[:name]
-    end
-
-    def legacy_id
-      address_params[:legacy_id]
+    def form
+      AddressForm.new(**params.expect(address: [ :name, :kind, :legacy_id ]).to_h.symbolize_keys)
     end
 end
