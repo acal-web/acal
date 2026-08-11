@@ -20,8 +20,7 @@ class CategoryService {
       'size': '$size',
       'active': active == null ? 'all' : '$active',
       if (name?.isNotEmpty ?? false) 'name': name!,
-      if (sort != null) 'sort': sort,
-      if (sort != null) 'direction': sortAscending ? 'asc' : 'desc',
+      if (sort case final s?) ...<String, String>{'sort': s, 'direction': sortAscending ? 'asc' : 'desc'},
     };
     final data = await _http.get('/categories', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Category.fromJson);

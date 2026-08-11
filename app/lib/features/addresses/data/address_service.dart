@@ -22,8 +22,7 @@ class AddressService {
       'active': active == null ? 'all' : '$active',
       if (name?.isNotEmpty ?? false) 'name': name!,
       if (kind?.isNotEmpty ?? false) 'kind': kind!,
-      if (sort != null) 'sort': sort,
-      if (sort != null) 'direction': sortAscending ? 'asc' : 'desc',
+      if (sort case final s?) ...<String, String>{'sort': s, 'direction': sortAscending ? 'asc' : 'desc'},
     };
     final data = await _http.get('/addresses', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Address.fromJson);
