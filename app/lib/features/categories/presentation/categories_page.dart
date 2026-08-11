@@ -230,51 +230,48 @@ class _CategoryRow extends StatelessWidget {
       color: category.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            spacing: columnSpacing,
-            children: [
-              Expanded(
-                flex: 5,
-                child: Text(category.fullName, style: style),
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            Expanded(
+              flex: 5,
+              child: Text(category.fullName, style: style),
+            ),
+            SizedBox(
+              width: 100,
+              child: Text(
+                category.hasWaterMeter ? "Sim" : "Não",
+                style: style,
               ),
-              SizedBox(
-                width: 100,
-                child: Text(
-                  category.hasWaterMeter ? "Sim" : "Não",
-                  style: style,
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                formatBRL(category.waterPrice),
+                style: style,
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                formatBRL(category.membershipPrice),
+                style: style,
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                formatBRL(category.waterPrice + category.membershipPrice),
+                style: style?.copyWith(
+                  fontWeight: FontWeight.w600,
                 ),
               ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  formatBRL(category.waterPrice),
-                  style: style,
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  formatBRL(category.membershipPrice),
-                  style: style,
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Text(
-                  formatBRL(category.waterPrice + category.membershipPrice),
-                  style: style?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ),
-              SizedBox(
-                width: 88,
-                child: RowActions(onEdit: onEdit, onDelete: onDelete),
-              ),
-            ],
-          ),
+            ),
+            SizedBox(
+              width: 88,
+              child: RowActions(onEdit: onEdit, onDelete: onDelete),
+            ),
+          ],
         ),
       ),
     );
@@ -295,37 +292,34 @@ class _TableHeader extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          spacing: columnSpacing,
-          children: [
-            Expanded(
-              flex: 5,
-              child: Text('Nome', style: headerStyle),
-            ),
-            SizedBox(
-              width: 100,
-              child: Text('Hidrômetro', style: headerStyle),
-            ),
-            Expanded(
-              flex: 2,
-              child: Text('Valor Água', style: headerStyle),
-            ),
-            Expanded(
-              flex: 2,
-              child: Text('Valor Societário', style: headerStyle),
-            ),
-            Expanded(
-              flex: 2,
-              child: Text('Total', style: headerStyle),
-            ),
-            SizedBox(
-              width: 88,
-              child: AddButton(onPress: onAddPress),
-            ),
-          ],
-        ),
+      child: Row(
+        spacing: columnSpacing,
+        children: [
+          Expanded(
+            flex: 5,
+            child: Text('Nome', style: headerStyle),
+          ),
+          SizedBox(
+            width: 100,
+            child: Text('Hidrômetro', style: headerStyle),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text('Valor Água', style: headerStyle),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text('Valor Societário', style: headerStyle),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text('Total', style: headerStyle),
+          ),
+          SizedBox(
+            width: 88,
+            child: AddButton(onPress: onAddPress),
+          ),
+        ],
       ),
     );
   }

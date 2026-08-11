@@ -239,35 +239,32 @@ class _TableHeader extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: Row(
-          spacing: columnSpacing,
-          children: [
-            Expanded(
-              flex: 6,
-              child: Text('Nome', style: headerStyle),
+      child: Row(
+        spacing: columnSpacing,
+        children: [
+          Expanded(
+            flex: 6,
+            child: Text('Nome', style: headerStyle),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text('Documento', style: headerStyle),
+          ),
+          SizedBox(
+            width: 90,
+            child: Text('Nº Sócio', style: headerStyle),
+          ),
+          SizedBox(
+            width: 90,
+            child: Text('Votante', style: headerStyle),
+          ),
+          SizedBox(
+            width: 140,
+            child: Center(
+              child: AddButton(onPress: onAddPress),
             ),
-            Expanded(
-              flex: 2,
-              child: Text('Documento', style: headerStyle),
-            ),
-            SizedBox(
-              width: 90,
-              child: Text('Nº Sócio', style: headerStyle),
-            ),
-            SizedBox(
-              width: 90,
-              child: Text('Votante', style: headerStyle),
-            ),
-            SizedBox(
-              width: 140,
-              child: Center(
-                child: AddButton(onPress: onAddPress),
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -298,43 +295,40 @@ class _CustomerRow extends StatelessWidget {
       color: customer.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            spacing: columnSpacing,
-            children: [
-              Expanded(
-                flex: 6,
-                child: Text(customer.name, style: style),
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            Expanded(
+              flex: 6,
+              child: Text(customer.name, style: style),
+            ),
+            Expanded(
+              flex: 2,
+              child: DocumentText(customer.document, style: style),
+            ),
+            SizedBox(
+              width: 90,
+              child: Text(
+                customer.membershipNumber?.toString() ?? '—',
+                style: style,
               ),
-              Expanded(
-                flex: 2,
-                child: DocumentText(customer.document, style: style),
-              ),
-              SizedBox(
-                width: 90,
-                child: Text(
-                  customer.membershipNumber?.toString() ?? '—',
-                  style: style,
+            ),
+            SizedBox(
+              width: 90,
+              child: BoolText(customer.voter, style: style),
+            ),
+            SizedBox(
+              width: 140,
+              child: Center(
+                child: RowActions(
+                  onEdit: onEdit,
+                  onDelete: onDelete,
+                  active: customer.active,
+                  onReactivate: onReactivate,
                 ),
               ),
-              SizedBox(
-                width: 90,
-                child: BoolText(customer.voter, style: style),
-              ),
-              SizedBox(
-                width: 140,
-                child: Center(
-                  child: RowActions(
-                    onEdit: onEdit,
-                    onDelete: onDelete,
-                    active: customer.active,
-                    onReactivate: onReactivate,
-                  ),
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
