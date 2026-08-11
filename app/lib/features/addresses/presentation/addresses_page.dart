@@ -66,6 +66,8 @@ class _AddressesPageState extends State<AddressesPage> {
         name: _filterName,
         kind: _filterKind,
         active: _filterActive,
+        sort: 'kind,name',
+        sortAscending: true,
       );
 
       setState(() {

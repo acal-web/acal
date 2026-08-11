@@ -12,12 +12,16 @@ class CategoryService {
     int size = 10,
     String? name,
     bool? active = true,
+    String? sort,
+    bool sortAscending = true,
   }) async {
-    final query = {
+    final query = <String, String>{
       'page': '$page',
       'size': '$size',
-      if (name != null && name.isNotEmpty) 'name': name,
       'active': active == null ? 'all' : '$active',
+      if (name?.isNotEmpty ?? false) 'name': name!,
+      if (sort != null) 'sort': sort,
+      if (sort != null) 'direction': sortAscending ? 'asc' : 'desc',
     };
     final data = await _http.get('/categories', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Category.fromJson);

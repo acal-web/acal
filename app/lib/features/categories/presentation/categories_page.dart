@@ -65,6 +65,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
         size: _pageSize,
         name: _filterName,
         active: _filterActive,
+        sort: 'group,name',
+        sortAscending: true,
       );
 
       setState(() {

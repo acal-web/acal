@@ -13,13 +13,17 @@ class AddressService {
     String? name,
     String? kind,
     bool? active = true,
+    String? sort,
+    bool sortAscending = true,
   }) async {
-    final query = {
+    final query = <String, String>{
       'page': '$page',
       'size': '$size',
-      if (name != null && name.isNotEmpty) 'name': name,
-      if (kind != null && kind.isNotEmpty) 'kind': kind,
       'active': active == null ? 'all' : '$active',
+      if (name?.isNotEmpty ?? false) 'name': name!,
+      if (kind?.isNotEmpty ?? false) 'kind': kind!,
+      if (sort != null) 'sort': sort,
+      if (sort != null) 'direction': sortAscending ? 'asc' : 'desc',
     };
     final data = await _http.get('/addresses', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Address.fromJson);
