@@ -1,8 +1,20 @@
 Rails.application.routes.draw do
-  resources :addresses
-  resources :categories
+  resources :addresses do
+    member do
+      patch :restore
+    end
+  end
+  resources :categories do
+    member do
+      patch :restore
+    end
+  end
   resources :connections
-  resources :customers
+  resources :customers do
+    member do
+      patch :restore
+    end
+  end
   resources :quality_analyses
 
   resources :invoices, only: [ :index ] do

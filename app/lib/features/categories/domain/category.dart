@@ -16,6 +16,7 @@ class Category {
   final bool hasWaterMeter;
   final double waterPrice;
   final double membershipPrice;
+  final bool active;
 
   const Category({
     this.id,
@@ -25,6 +26,7 @@ class Category {
     required this.hasWaterMeter,
     required this.waterPrice,
     required this.membershipPrice,
+    this.active = true,
   });
 
   String get fullName => '${groupLabel(group)} $name';
@@ -37,6 +39,7 @@ class Category {
         hasWaterMeter: json['has_water_meter'] as bool,
         waterPrice: double.parse(json['water_price'].toString()),
         membershipPrice: double.parse(json['membership_price'].toString()),
+        active: json['deleted_at'] == null,
       );
 
   Map<String, dynamic> toJson() => {
@@ -57,6 +60,7 @@ class Category {
     bool? hasWaterMeter,
     double? waterPrice,
     double? membershipPrice,
+    bool? active,
   }) =>
       Category(
         id: id ?? this.id,
@@ -66,5 +70,6 @@ class Category {
         hasWaterMeter: hasWaterMeter ?? this.hasWaterMeter,
         waterPrice: waterPrice ?? this.waterPrice,
         membershipPrice: membershipPrice ?? this.membershipPrice,
+        active: active ?? this.active,
       );
 }

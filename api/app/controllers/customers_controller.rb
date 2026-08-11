@@ -1,5 +1,6 @@
 class CustomersController < ApplicationController
   before_action :set_customer, only: %i[ show update destroy ]
+  before_action :set_customer_unscoped, only: %i[ restore ]
 
   SORTABLE_COLUMNS = %w[ name document membership_number voter ].freeze
 
@@ -16,19 +17,25 @@ class CustomersController < ApplicationController
 
   # POST /customers
   def create
-    @customer = Customer.create!(name:, document:, membership_number:, voter:, legacy_id:)
+    @customer = Customer.create!(**form.to_h)
     render json: @customer, status: :created, location: @customer
   end
 
   # PATCH/PUT /customers/1
   def update
-    @customer.update!(name:, document:, membership_number:, voter:, legacy_id:)
+    @customer.update!(**form.to_h)
     render json: @customer
   end
 
   # DELETE /customers/1
   def destroy
     @customer.soft_delete!
+  end
+
+  # PATCH /customers/1/restore
+  def restore
+    @customer.restore!
+    render json: @customer
   end
 
   private
@@ -51,27 +58,12 @@ class CustomersController < ApplicationController
       @customer = Customer.find(params.expect(:id))
     end
 
-    def customer_params
-      params.expect(customer: [ :name, :document, :membership_number, :voter, :legacy_id ])
+    def set_customer_unscoped
+      @customer = Customer.unscoped.find(params.expect(:id))
     end
 
-    def name
-      customer_params[:name]
-    end
-
-    def document
-      customer_params[:document]
-    end
-
-    def membership_number
-      customer_params[:membership_number]
-    end
-
-    def voter
-      customer_params.fetch(:voter, false)
-    end
-
-    def legacy_id
-      customer_params[:legacy_id]
+    def form
+      params_hash = params.expect(customer: [ :name, :document, :membership_number, :voter, :legacy_id ]).to_h.symbolize_keys
+      CustomerForm.new(**params_hash)
     end
 end

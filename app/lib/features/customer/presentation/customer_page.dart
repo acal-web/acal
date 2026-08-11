@@ -86,6 +86,19 @@ class _CustomersPageState extends State<CustomersPage> {
     if (await deleteCustomer(context, _service, customer)) _load();
   }
 
+  Future<void> _reactivate(Customer customer) async {
+    try {
+      await _service.restore(customer.id!);
+      _load();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao reativar sócio')),
+        );
+      }
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
@@ -145,6 +158,7 @@ class _CustomersPageState extends State<CustomersPage> {
                   customer: customer,
                   onEdit: () => _openForm(customer: customer),
                   onDelete: () => _delete(customer),
+                  onReactivate: () => _reactivate(customer),
                 ),
               ),
             ),
@@ -160,11 +174,13 @@ class _CustomerRow extends StatelessWidget {
     required this.customer,
     required this.onEdit,
     required this.onDelete,
+    this.onReactivate,
   });
 
   final Customer customer;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onReactivate;
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +220,14 @@ class _CustomerRow extends StatelessWidget {
             ),
             SizedBox(
               width: 140,
-              child: Center(child: RowActions(onEdit: onEdit, onDelete: onDelete)),
+              child: Center(
+                child: RowActions(
+                  onEdit: onEdit,
+                  onDelete: onDelete,
+                  active: customer.active,
+                  onReactivate: onReactivate,
+                ),
+              ),
             ),
           ],
         ),

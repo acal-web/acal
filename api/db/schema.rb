@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_10_120002) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -22,7 +22,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_120002) do
     t.integer "legacy_id"
     t.citext "name"
     t.datetime "updated_at", null: false
-    t.index ["kind", "name"], name: "index_addresses_on_kind_and_name_unique", unique: true, where: "(deleted_at IS NULL)"
+    t.index ["kind", "name"], name: "index_addresses_on_kind_and_name_unique", unique: true
     t.index ["name"], name: "index_addresses_on_name"
   end
 
@@ -37,7 +37,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_10_120002) do
     t.string "name"
     t.datetime "updated_at", null: false
     t.decimal "water_price", precision: 10, scale: 2
-    t.index "lower((\"group\")::text), lower((name)::text)", name: "index_categories_on_group_and_name_unique", unique: true, where: "(deleted_at IS NULL)"
+    t.index "lower((\"group\")::text), lower((name)::text)", name: "index_categories_on_group_and_name_unique", unique: true
     t.index ["name"], name: "index_categories_on_name"
   end
 

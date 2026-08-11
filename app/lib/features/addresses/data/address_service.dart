@@ -7,11 +7,19 @@ class AddressService {
 
   final HttpService _http;
 
-  Future<PagedResult<Address>> findAll({int page = 0, int size = 10, String? name}) async {
+  Future<PagedResult<Address>> findAll({
+    int page = 0,
+    int size = 10,
+    String? name,
+    String? kind,
+    bool? active = true,
+  }) async {
     final query = {
       'page': '$page',
       'size': '$size',
       if (name != null && name.isNotEmpty) 'name': name,
+      if (kind != null && kind.isNotEmpty) 'kind': kind,
+      'active': active == null ? 'all' : '$active',
     };
     final data = await _http.get('/addresses', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Address.fromJson);

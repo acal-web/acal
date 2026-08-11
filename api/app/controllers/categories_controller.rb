@@ -1,9 +1,11 @@
 class CategoriesController < ApplicationController
   before_action :set_category, only: %i[ show update destroy ]
+  before_action :set_category_unscoped, only: %i[ restore ]
 
   # GET /categories
   def index
-    render json: paginate(Category.filter_by_name(params[:name]))
+    categories = active_scope.filter_by_name(params[:name])
+    render json: paginate(categories)
   end
 
   # GET /categories/1
@@ -13,13 +15,13 @@ class CategoriesController < ApplicationController
 
   # POST /categories
   def create
-    @category = Category.create!(name:, description:, group:, has_water_meter:, water_price:, membership_price:, legacy_id:)
+    @category = Category.create!(**form.to_h)
     render json: @category, status: :created, location: @category
   end
 
   # PATCH/PUT /categories/1
   def update
-    @category.update!(name:, description:, group:, has_water_meter:, water_price:, membership_price:, legacy_id:)
+    @category.update!(**form.to_h)
     render json: @category
   end
 
@@ -28,40 +30,34 @@ class CategoriesController < ApplicationController
     @category.soft_delete!
   end
 
+  # PATCH /categories/1/restore
+  def restore
+    @category.restore!
+    render json: @category
+  end
+
   private
+    # "true" (default) → active only, "false" → soft deleted only, "all" → both.
+    def active_scope
+      case params[:active]
+      when "false" then Category.deleted
+      when "all" then Category.unscoped
+      else Category
+      end
+    end
+
     def set_category
       @category = Category.find(params.expect(:id))
     end
 
-    def category_params
-      params.expect(category: [ :name, :description, :group, :has_water_meter, :water_price, :membership_price, :legacy_id ])
+    def set_category_unscoped
+      @category = Category.unscoped.find(params.expect(:id))
     end
 
-    def name
-      category_params[:name]
-    end
-
-    def description
-      category_params[:description]
-    end
-
-    def group
-      category_params[:group]
-    end
-
-    def has_water_meter
-      category_params.fetch(:has_water_meter, false)
-    end
-
-    def water_price
-      category_params[:water_price]
-    end
-
-    def membership_price
-      category_params[:membership_price]
-    end
-
-    def legacy_id
-      category_params[:legacy_id]
+    def form
+      params_hash = params.expect(
+        category: [ :name, :description, :group, :has_water_meter, :water_price, :membership_price, :legacy_id ]
+      ).to_h.symbolize_keys
+      CategoryForm.new(**params_hash)
     end
 end

@@ -1,9 +1,11 @@
 class AddressesController < ApplicationController
   before_action :set_address, only: %i[ show update destroy ]
+  before_action :set_address_unscoped, only: %i[ restore ]
 
   # GET /addresses
   def index
-    render json: paginate(Address.filter_by_name(params[:name]))
+    addresses = active_scope.filter_by_name(params[:name]).filter_by_kind(params[:kind])
+    render json: paginate(addresses)
   end
 
   # GET /addresses/1
@@ -28,9 +30,28 @@ class AddressesController < ApplicationController
     @address.soft_delete!
   end
 
+  # PATCH /addresses/1/restore
+  def restore
+    @address.restore!
+    render json: @address
+  end
+
   private
+    # "true" (default) → active only, "false" → soft deleted only, "all" → both.
+    def active_scope
+      case params[:active]
+      when "false" then Address.deleted
+      when "all" then Address.unscoped
+      else Address
+      end
+    end
+
     def set_address
       @address = Address.find(params.expect(:id))
+    end
+
+    def set_address_unscoped
+      @address = Address.unscoped.find(params.expect(:id))
     end
 
     def form

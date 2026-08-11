@@ -1,5 +1,3 @@
-# Groups an address's editable attributes and normalizes them on the way in
-# (e.g. stripping the name), so the controller doesn't have to.
 class AddressForm
   attr_reader :kind, :name, :legacy_id
 

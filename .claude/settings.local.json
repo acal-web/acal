@@ -64,7 +64,14 @@
       "Read(//proc/sys/kernel/**)",
       "Bash(bin/rails runner ' *)",
       "Bash(bin/rails spec:requests spec/requests/addresses_spec.rb)",
-      "Bash(bin/rails runner *)"
+      "Bash(bin/rails runner *)",
+      "Bash(bin/rails db:drop db:create db:migrate)",
+      "Bash(bin/rails db:migrate:status)",
+      "Bash(bundle install *)",
+      "Bash(RAILS_ENV=production bin/rails db:migrate:status)",
+      "Bash(xargs -I{} sh -c 'echo ---{}---; cat {}')",
+      "Bash(grep -o \"INSERT INTO.\\\\{0,80\\\\}\" \"/workspace/.legacy /acal_categoriasocio.sql\")",
+      "Bash(xxd)"
     ]
   }
 }

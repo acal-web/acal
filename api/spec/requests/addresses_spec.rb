@@ -199,16 +199,17 @@ RSpec.describe "Addresses", type: :request do
           )
         end
 
-        it "allows recreating a soft-deleted address with the same kind and name" do
+        it "rejects recreating a soft-deleted address with the same kind and name" do
           post "/addresses", params: valid_params
           id = response.parsed_body["id"]
           delete "/addresses/#{id}"
 
           expect {
             post "/addresses", params: valid_params
-          }.to change(Address, :count).by(1)
+          }.not_to change(Address, :count)
 
-          expect(response).to have_http_status(:created)
+          expect(response).to have_http_status(:unprocessable_content)
+          expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
         end
       end
     end

@@ -2,12 +2,12 @@ import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
+import 'package:acalapp/features/addresses/widget/address_filter_bar.dart';
 import 'package:acalapp/features/addresses/widget/modal%20/delete_address.dart';
 import 'package:acalapp/features/addresses/widget/modal%20/open_address.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/add_button.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
-import 'package:acalapp/shared/widgets/table/name_filter_bar.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
@@ -25,6 +25,8 @@ class _AddressesPageState extends State<AddressesPage> {
   int _page = 0;
   int _pageSize = 10;
   String? _filterName;
+  String? _filterKind;
+  bool? _filterActive = true;
 
   @override
   void initState() {
@@ -32,8 +34,13 @@ class _AddressesPageState extends State<AddressesPage> {
     _future = _fetch();
   }
 
-  Future<PagedResult<Address>> _fetch() =>
-      _service.findAll(page: _page, size: _pageSize, name: _filterName);
+  Future<PagedResult<Address>> _fetch() => _service.findAll(
+    page: _page,
+    size: _pageSize,
+    name: _filterName,
+    kind: _filterKind,
+    active: _filterActive,
+  );
 
   void _load() => setState(() {
     _future = _fetch();
@@ -50,8 +57,10 @@ class _AddressesPageState extends State<AddressesPage> {
     _future = _fetch();
   });
 
-  void _search({String? name}) => setState(() {
+  void _search({String? name, String? kind, required bool? active}) => setState(() {
     _filterName = name;
+    _filterKind = kind;
+    _filterActive = active;
     _page = 0;
     _future = _fetch();
   });
@@ -63,6 +72,7 @@ class _AddressesPageState extends State<AddressesPage> {
   Future<void> _delete(Address address) async {
     if (await deleteAddress(context, _service, address)) _load();
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -77,7 +87,7 @@ class _AddressesPageState extends State<AddressesPage> {
           children: [
             const PageHeader(subtitle: 'Gerencie os endereços cadastrados.'),
             const Divider(),
-            NameFilterBar(label: 'Logradouro:', onSearch: _search),
+            AddressFilterBar(onSearch: _search),
             const SizedBox(height: 8),
             Expanded(
               child: PagedListView<Address>(

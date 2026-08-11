@@ -2,13 +2,13 @@ import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
+import 'package:acalapp/features/categories/widget/category_filter_bar.dart';
 import 'package:acalapp/features/categories/widget/modal/delete_category.dart';
 import 'package:acalapp/features/categories/widget/modal/open_category.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/add_button.dart';
 import 'package:acalapp/shared/widgets/table/data_table_card.dart';
-import 'package:acalapp/shared/widgets/table/name_filter_bar.dart';
 import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
@@ -26,6 +26,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   int _page = 0;
   int _pageSize = 10;
   String? _filterName;
+  bool? _filterActive = true;
 
   @override
   void initState() {
@@ -34,7 +35,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   Future<PagedResult<Category>> _fetch() =>
-      _service.findAll(page: _page, size: _pageSize, name: _filterName);
+      _service.findAll(page: _page, size: _pageSize, name: _filterName, active: _filterActive);
 
   void _load() => setState(() {
     _future = _fetch();
@@ -51,8 +52,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
     _future = _fetch();
   });
 
-  void _search({String? name}) => setState(() {
+  void _search({String? name, required bool? active}) => setState(() {
     _filterName = name;
+    _filterActive = active;
     _page = 0;
     _future = _fetch();
   });
@@ -78,7 +80,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
           children: [
             const PageHeader(subtitle: 'Gerencie as categorias de sócios cadastradas.'),
             const Divider(),
-            NameFilterBar(label: 'Categoria:', onSearch: _search),
+            CategoryFilterBar(onSearch: _search),
             const SizedBox(height: 8),
             Expanded(
               child: PagedListView<Category>(
@@ -125,51 +127,58 @@ class _CategoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: category.active ? null : cs.onSurfaceVariant,
+    );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        spacing: columnSpacing,
-        children: [
-          Expanded(
-            flex: 5,
-            child: Text(category.fullName, style: theme.textTheme.bodyMedium),
-          ),
-          SizedBox(
-            width: 100,
-            child: Text(
-              category.hasWaterMeter ? "Sim" : "Não",
-              style: theme.textTheme.bodyMedium,
+    return ColoredBox(
+      color: category.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            Expanded(
+              flex: 5,
+              child: Text(category.fullName, style: style),
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              formatBRL(category.waterPrice),
-              style: theme.textTheme.bodyMedium,
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              formatBRL(category.membershipPrice),
-              style: theme.textTheme.bodyMedium,
-            ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              formatBRL(category.waterPrice + category.membershipPrice),
-              style: theme.textTheme.bodyMedium?.copyWith(
-                fontWeight: FontWeight.w600,
+            SizedBox(
+              width: 100,
+              child: Text(
+                category.hasWaterMeter ? "Sim" : "Não",
+                style: style,
               ),
             ),
-          ),
-          SizedBox(
-            width: 88,
-            child: RowActions(onEdit: onEdit, onDelete: onDelete),
-          ),
-        ],
+            Expanded(
+              flex: 2,
+              child: Text(
+                formatBRL(category.waterPrice),
+                style: style,
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                formatBRL(category.membershipPrice),
+                style: style,
+              ),
+            ),
+            Expanded(
+              flex: 2,
+              child: Text(
+                formatBRL(category.waterPrice + category.membershipPrice),
+                style: style?.copyWith(
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+            SizedBox(
+              width: 88,
+              child: RowActions(onEdit: onEdit, onDelete: onDelete),
+            ),
+          ],
+        ),
       ),
     );
   }

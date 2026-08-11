@@ -7,11 +7,17 @@ class CategoryService {
 
   final HttpService _http;
 
-  Future<PagedResult<Category>> findAll({int page = 0, int size = 10, String? name}) async {
+  Future<PagedResult<Category>> findAll({
+    int page = 0,
+    int size = 10,
+    String? name,
+    bool? active = true,
+  }) async {
     final query = {
       'page': '$page',
       'size': '$size',
       if (name != null && name.isNotEmpty) 'name': name,
+      'active': active == null ? 'all' : '$active',
     };
     final data = await _http.get('/categories', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Category.fromJson);

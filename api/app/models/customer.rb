@@ -19,9 +19,6 @@ class Customer < ApplicationRecord
   }
 
   private
-    # Checked against every customer, active or soft deleted, so a duplicate
-    # document points people at the conflicting record either way — the
-    # message just differs depending on whether it can be reactivated.
     def validate_document_uniqueness
       return if document.blank?
 

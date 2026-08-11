@@ -40,4 +40,9 @@ class CustomerService {
   }
 
   Future<void> delete(String id) => _http.delete('/customers/$id');
+
+  Future<Customer> restore(String id) async {
+    final data = await _http.patch('/customers/$id/restore', {});
+    return Customer.fromJson(data as Map<String, dynamic>);
+  }
 }

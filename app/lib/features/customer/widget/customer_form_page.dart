@@ -4,8 +4,9 @@ import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
+import 'package:acalapp/shared/widgets/document_form_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
-import 'package:flutter/material.dart' show Icons, Divider;
+import 'package:flutter/material.dart' show Divider;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
@@ -45,7 +46,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     _nameController = TextEditingController(text: customer?.name ?? '');
     _documentController = TextEditingController(text: maskDocument(documentDigits, _documentKind));
     _membershipNumberController = TextEditingController(text: customer?.membershipNumber?.toString() ?? '');
-    _voter = customer?.voter ?? false;
+    _voter = customer?.voter ?? true;
   }
 
   void _toggleDocumentKind() {
@@ -70,17 +71,6 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     super.dispose();
   }
 
-  String? _validateDocument(String? v) {
-    final digits = v?.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
-    if (digits.isEmpty) return 'Obrigatório';
-    if (digits.length != _documentKind.maxDigits) {
-      return _documentKind == DocumentKind.cpf ? 'CPF deve ter 11 dígitos' : 'CNPJ deve ter 14 dígitos';
-    }
-    if (!isValidDocument(digits, _documentKind)) {
-      return _documentKind == DocumentKind.cpf ? 'CPF inválido' : 'CNPJ inválido';
-    }
-    return null;
-  }
 
   String? _validateMembershipNumber(String? v) {
     if (v == null || v.trim().isEmpty) return null;
@@ -150,23 +140,10 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
           ),
           
           const SizedBox(height: 12),
-          FTextFormField(
-            control: FTextFieldControl.managed(controller: _documentController),
-            label: Text(_documentKind == DocumentKind.cpf ? 'Documento (CPF)' : 'Documento (CNPJ)'),
-            hint: _documentKind == DocumentKind.cpf ? '000.000.000-00' : '00.000.000/0000-00',
-            keyboardType: TextInputType.number,
-            inputFormatters: [DocumentInputFormatter(_documentKind)],
-            prefixBuilder: (context, style, variants) => FButton(
-              variant: FButtonVariant.ghost,
-              size: FButtonSizeVariant.sm,
-              mainAxisSize: MainAxisSize.min,
-              semanticsTooltip: _documentKind == DocumentKind.cpf
-                  ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
-                  : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
-              onPress: _toggleDocumentKind,
-              child: Icon(_documentKind == DocumentKind.cpf ? Icons.person : Icons.business, size: 18),
-            ),
-            validator: _validateDocument,
+          DocumentFormField(
+            controller: _documentController,
+            documentKind: _documentKind,
+            onToggleKind: _toggleDocumentKind,
           ),
           const SizedBox(height: 12),
           FTextFormField(
