@@ -1,5 +1,4 @@
 import 'package:acalapp/core/config/layout_config.dart';
-import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/quality/data/quality_analysis_service.dart';
 import 'package:acalapp/features/quality/domain/quality_analysis.dart';
 import 'package:acalapp/features/quality/widget/modal/delete_quality_analysis.dart';
@@ -9,10 +8,10 @@ import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/period_filter_button.dart';
 import 'package:acalapp/shared/widgets/table/add_button.dart';
 import 'package:acalapp/shared/widgets/table/collapsible_filter_panel.dart';
-import 'package:acalapp/shared/widgets/table/data_table_card.dart';
-import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
+
+const columnSpacing = 12.0;
 
 class QualityPage extends StatefulWidget {
   const QualityPage({super.key});
@@ -23,51 +22,91 @@ class QualityPage extends StatefulWidget {
 
 class _QualityPageState extends State<QualityPage> {
   final _service = QualityAnalysisService();
-  late Future<PagedResult<QualityAnalysis>> _future;
-  int _page = 0;
-  int _pageSize = 10;
+  final _scrollController = ScrollController();
+  final List<QualityAnalysis> _allAnalyses = [];
+
+  int _currentPage = 0;
+  final int _pageSize = 25;
+  int _totalCount = 0;
+  bool _isLoading = false;
+  bool _hasMorePages = true;
   MonthYear? _period;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _future = _fetch();
+    _scrollController.addListener(_onScroll);
+    _loadFirstPage();
   }
 
-  Future<PagedResult<QualityAnalysis>> _fetch() => _service.findAll(
-    page: _page,
-    size: _pageSize,
-    year: _period?.year,
-    month: _period?.month,
-  );
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-  void _load() => setState(() {
-    _future = _fetch();
-  });
+  Future<void> _loadFirstPage() async {
+    _allAnalyses.clear();
+    _currentPage = 0;
+    _hasMorePages = true;
+    _errorMessage = null;
+    await _loadNextPage();
+  }
 
-  void _goToPage(int page) => setState(() {
-    _page = page;
-    _future = _fetch();
-  });
+  Future<void> _loadNextPage() async {
+    if (_isLoading || !_hasMorePages) return;
 
-  void _changePageSize(int size) => setState(() {
-    _pageSize = size;
-    _page = 0;
-    _future = _fetch();
-  });
+    setState(() => _isLoading = true);
 
-  void _changePeriod(MonthYear? period) => setState(() {
+    try {
+      final result = await _service.findAll(
+        page: _currentPage,
+        size: _pageSize,
+        year: _period?.year,
+        month: _period?.month,
+        sort: 'reference_date',
+        sortAscending: false,
+      );
+
+      setState(() {
+        _allAnalyses.addAll(result.data);
+        _totalCount = result.pagination.totalElements;
+        _hasMorePages = result.pagination.nextPage != null;
+        _currentPage++;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Erro ao carregar análises';
+      });
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 500) {
+      _loadNextPage();
+    }
+  }
+
+  void _changePeriod(MonthYear? period) async {
     _period = period;
-    _page = 0;
-    _future = _fetch();
-  });
+    await _loadFirstPage();
+  }
 
   Future<void> _openForm({QualityAnalysis? analysis}) async {
-    if (await openQualityAnalysis(context, analysis: analysis)) _load();
+    if (await openQualityAnalysis(context, analysis: analysis)) {
+      await _loadFirstPage();
+    }
   }
 
   Future<void> _delete(QualityAnalysis analysis) async {
-    if (await deleteQualityAnalysis(context, _service, analysis)) _load();
+    if (await deleteQualityAnalysis(context, _service, analysis)) {
+      await _loadFirstPage();
+    }
   }
 
   @override
@@ -99,31 +138,131 @@ class _QualityPageState extends State<QualityPage> {
             ),
             const SizedBox(height: 8),
             Expanded(
-              child: PagedListView<QualityAnalysis>(
-                future: _future,
-                columns: [
-                  const DataTableColumn('Referência', flex: 2),
-                  const DataTableColumn('Parâmetro', flex: 3),
-                  const DataTableColumn('Exigido', flex: 2),
-                  const DataTableColumn('Analisado', flex: 2),
-                  const DataTableColumn('Conformidade', flex: 2),
-                  DataTableColumn('Ações', width: 88, headerWidget: AddButton(onPress: _openForm)),
-                ],
-                emptyMessage: 'Nenhuma análise cadastrada.',
-                errorMessage: 'Erro ao carregar análises',
-                onRetry: _load,
-                onPageChanged: _goToPage,
-                pageSize: _pageSize,
-                onPageSizeChanged: _changePageSize,
-                rowBuilder: (context, analysis) => _QualityAnalysisRow(
-                  analysis: analysis,
-                  onEdit: () => _openForm(analysis: analysis),
-                  onDelete: () => _delete(analysis),
+              child: _errorMessage != null
+                  ? _buildErrorView()
+                  : _allAnalyses.isEmpty && !_isLoading
+                      ? const Center(child: Text('Nenhuma análise cadastrada.'))
+                      : _buildTableWithInfiniteScroll(),
+            ),
+            if (_allAnalyses.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Mostrando ${_allAnalyses.length} de $_totalCount registros',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(_errorMessage!),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadFirstPage,
+            child: const Text('Tentar novamente'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableWithInfiniteScroll() {
+    return Column(
+      children: [
+        _TableHeader(onAddPress: () => _openForm()),
+        const Divider(height: 1),
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            itemCount: _allAnalyses.length + (_isLoading ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == _allAnalyses.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final analysis = _allAnalyses[index];
+              final isEven = index.isEven;
+
+              return Column(
+                children: [
+                  Container(
+                    color: isEven
+                        ? Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerLowest
+                        : Colors.transparent,
+                    child: _QualityAnalysisRow(
+                      analysis: analysis,
+                      onEdit: () => _openForm(analysis: analysis),
+                      onDelete: () => _delete(analysis),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TableHeader extends StatelessWidget {
+  final VoidCallback onAddPress;
+
+  const _TableHeader({required this.onAddPress});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final headerStyle = theme.textTheme.titleSmall?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        spacing: columnSpacing,
+        children: [
+          SizedBox(
+            width: 100,
+            child: Text('Referência', style: headerStyle),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text('Parâmetro', style: headerStyle),
+          ),
+          SizedBox(
+            width: 80,
+            child: Text('Exigido', style: headerStyle),
+          ),
+          SizedBox(
+            width: 80,
+            child: Text('Analisado', style: headerStyle),
+          ),
+          SizedBox(
+            width: 80,
+            child: Text('Conformidade', style: headerStyle),
+          ),
+          SizedBox(
+            width: 88,
+            child: Center(
+              child: AddButton(onPress: onAddPress),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -143,49 +282,64 @@ class _QualityAnalysisRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: cs.onSurface,
+    );
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        spacing: columnSpacing,
-        children: [
-          Expanded(
-            flex: 2,
-            child: Text(
-              formatMonthReference(analysis.referenceDate),
-              style: theme.textTheme.bodyMedium,
+    return ColoredBox(
+      color: Colors.transparent,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            SizedBox(
+              width: 100,
+              child: Text(
+                formatMonthReference(analysis.referenceDate),
+                style: style,
+              ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(analysis.paramName, style: theme.textTheme.bodyMedium),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${analysis.required}',
-              style: theme.textTheme.bodyMedium,
+            Expanded(
+              flex: 2,
+              child: Text(
+                analysis.paramName,
+                style: style,
+              ),
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${analysis.analyzed}',
-              style: theme.textTheme.bodyMedium,
+            SizedBox(
+              width: 80,
+              child: Text(
+                '${analysis.required}',
+                style: style,
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          Expanded(
-            flex: 2,
-            child: Text(
-              '${analysis.compliant}',
-              style: theme.textTheme.bodyMedium,
+            SizedBox(
+              width: 80,
+              child: Text(
+                '${analysis.analyzed}',
+                style: style,
+                textAlign: TextAlign.center,
+              ),
             ),
-          ),
-          SizedBox(
-            width: 88,
-            child: RowActions(onEdit: onEdit, onDelete: onDelete),
-          ),
-        ],
+            SizedBox(
+              width: 80,
+              child: Text(
+                '${analysis.compliant}',
+                style: style,
+                textAlign: TextAlign.center,
+              ),
+            ),
+            SizedBox(
+              width: 88,
+              child: Center(
+                child: RowActions(onEdit: onEdit, onDelete: onDelete),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

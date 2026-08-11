@@ -12,12 +12,16 @@ class QualityAnalysisService {
     int size = 10,
     int? year,
     int? month,
+    String? sort,
+    bool sortAscending = true,
   }) async {
-    final query = {
+    final query = <String, String>{
       'page': '$page',
       'size': '$size',
       if (year != null) 'year': '$year',
       if (month != null) 'month': '$month',
+      if (sort != null) 'sort': sort,
+      if (sort != null) 'direction': sortAscending ? 'asc' : 'desc',
     };
     final data = await _http.get('/quality_analyses', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, QualityAnalysis.fromJson);

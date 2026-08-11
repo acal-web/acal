@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_11_193245) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -92,10 +92,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_000001) do
     t.integer "compliant", null: false
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
+    t.integer "legacy_id"
     t.string "param_name", null: false
     t.date "reference_date", null: false
     t.integer "required", null: false
     t.datetime "updated_at", null: false
+    t.index ["legacy_id"], name: "index_quality_analyses_on_legacy_id", unique: true
     t.index ["reference_date", "param_name"], name: "index_quality_analyses_on_reference_date_and_param_name_unique", unique: true, where: "(deleted_at IS NULL)"
   end
 
