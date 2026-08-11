@@ -13,6 +13,4 @@ class Address < ApplicationRecord
   scope :filter_by_kind, ->(kind) {
     where(kind: kind) if kind.present?
   }
-
-
 end
