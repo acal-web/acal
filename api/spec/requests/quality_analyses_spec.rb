@@ -76,6 +76,7 @@ RSpec.describe "QualityAnalyses", type: :request do
           "required" => 1,
           "analyzed" => 1,
           "compliant" => 1,
+          "legacy_id" => nil,
           "created_at" => analysis.created_at.as_json,
           "updated_at" => analysis.updated_at.as_json,
           "deleted_at" => nil
@@ -148,6 +149,7 @@ RSpec.describe "QualityAnalyses", type: :request do
           "required" => 2,
           "analyzed" => 2,
           "compliant" => 1,
+          "legacy_id" => nil,
           "created_at" => analysis.created_at.as_json,
           "updated_at" => analysis.updated_at.as_json,
           "deleted_at" => nil
