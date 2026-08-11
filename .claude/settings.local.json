@@ -71,7 +71,9 @@
       "Bash(RAILS_ENV=production bin/rails db:migrate:status)",
       "Bash(xargs -I{} sh -c 'echo ---{}---; cat {}')",
       "Bash(grep -o \"INSERT INTO.\\\\{0,80\\\\}\" \"/workspace/.legacy /acal_categoriasocio.sql\")",
-      "Bash(xxd)"
+      "Bash(xxd)",
+      "Bash(rails runner *)",
+      "Bash(CATEGORIA_SQL_PATH=\"../.legacy /acal_categoriasocio.sql\" TAXA_SQL_PATH=\"../.legacy /acal_taxa.sql\" bin/rails legacy_import:categories)"
     ]
   }
 }

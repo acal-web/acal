@@ -1,5 +1,4 @@
 import 'package:acalapp/core/config/layout_config.dart';
-import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/customer/widget/customer_filter_bar.dart';
@@ -9,10 +8,10 @@ import 'package:acalapp/shared/widgets/bool_text.dart';
 import 'package:acalapp/shared/widgets/document_text.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/add_button.dart';
-import 'package:acalapp/shared/widgets/table/data_table_card.dart';
-import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/table/row_actions.dart';
 import 'package:flutter/material.dart';
+
+const columnSpacing = 12.0;
 
 class CustomersPage extends StatefulWidget {
   const CustomersPage({super.key});
@@ -23,73 +22,102 @@ class CustomersPage extends StatefulWidget {
 
 class _CustomersPageState extends State<CustomersPage> {
   final _service = CustomerService();
-  late Future<PagedResult<Customer>> _future;
-  int _page = 0;
-  int _pageSize = 10;
+  final _scrollController = ScrollController();
+  final List<Customer> _allCustomers = [];
+
+  int _currentPage = 0;
+  final int _pageSize = 25;
+  int _totalCount = 0;
+  bool _isLoading = false;
+  bool _hasMorePages = true;
   String? _filterName;
   String? _filterDocument;
   bool? _filterActive = true;
-  String? _sortColumn;
-  bool _sortAscending = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
-    _future = _fetch();
+    _scrollController.addListener(_onScroll);
+    _loadFirstPage();
   }
 
-  Future<PagedResult<Customer>> _fetch() => _service.findAll(
-    page: _page,
-    size: _pageSize,
-    name: _filterName,
-    document: _filterDocument,
-    active: _filterActive,
-    sort: _sortColumn,
-    sortAscending: _sortAscending,
-  );
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-  void _load() => setState(() {
-    _future = _fetch();
-  });
+  Future<void> _loadFirstPage() async {
+    _allCustomers.clear();
+    _currentPage = 0;
+    _hasMorePages = true;
+    _errorMessage = null;
+    await _loadNextPage();
+  }
 
-  void _goToPage(int page) => setState(() {
-    _page = page;
-    _future = _fetch();
-  });
+  Future<void> _loadNextPage() async {
+    if (_isLoading || !_hasMorePages) return;
 
-  void _changePageSize(int size) => setState(() {
-    _pageSize = size;
-    _page = 0;
-    _future = _fetch();
-  });
+    setState(() => _isLoading = true);
 
-  void _search({String? name, String? document, required bool? active}) => setState(() {
+    try {
+      final result = await _service.findAll(
+        page: _currentPage,
+        size: _pageSize,
+        name: _filterName,
+        document: _filterDocument,
+        active: _filterActive,
+        sort: 'name',
+        sortAscending: true,
+      );
+
+      setState(() {
+        _allCustomers.addAll(result.data);
+        _totalCount = result.pagination.totalElements;
+        _hasMorePages = result.pagination.nextPage != null;
+        _currentPage++;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Erro ao carregar sócios';
+      });
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 500) {
+      _loadNextPage();
+    }
+  }
+
+  void _search({String? name, String? document, required bool? active}) async {
     _filterName = name;
     _filterDocument = document;
     _filterActive = active;
-    _page = 0;
-    _future = _fetch();
-  });
-
-  void _sort(String sortKey) => setState(() {
-    _sortAscending = _sortColumn == sortKey ? !_sortAscending : true;
-    _sortColumn = sortKey;
-    _page = 0;
-    _future = _fetch();
-  });
+    await _loadFirstPage();
+  }
 
   Future<void> _openForm({Customer? customer}) async {
-    if (await openCustomer(context, customer: customer)) _load();
+    if (await openCustomer(context, customer: customer)) {
+      await _loadFirstPage();
+    }
   }
 
   Future<void> _delete(Customer customer) async {
-    if (await deleteCustomer(context, _service, customer)) _load();
+    if (await deleteCustomer(context, _service, customer)) {
+      await _loadFirstPage();
+    }
   }
 
   Future<void> _reactivate(Customer customer) async {
     try {
       await _service.restore(customer.id!);
-      _load();
+      await _loadFirstPage();
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -101,69 +129,142 @@ class _CustomersPageState extends State<CustomersPage> {
 
   @override
   Widget build(BuildContext context) {
-    final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
-    final padding = LayoutConfig.pagePadding(narrow);
+    final narrow =
+        MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
 
     return Scaffold(
       body: Padding(
-        padding: padding,
+        padding: LayoutConfig.pagePadding(narrow),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            PageHeader(
-              subtitle: 'Sócios.',
-            ),
+            const PageHeader(subtitle: 'Gerencie os sócios cadastrados.'),
             const Divider(),
             CustomerFilterBar(onSearch: _search),
             const SizedBox(height: 8),
             Expanded(
-              child: PagedListView<Customer>(
-                future: _future,
-                columns: [
-                  const DataTableColumn(
-                    'Nome',
-                    flex: 6,
-                    sortable: true,
-                    sortKey: 'name',
-                  ),
-                  const DataTableColumn(
-                    'Documento',
-                    flex: 2,
-                    sortable: true,
-                    sortKey: 'document',
-                  ),
-                  const DataTableColumn(
-                    'Nº Sócio',
-                    width: 90,
-                    sortable: true,
-                    sortKey: 'membership_number',
-                  ),
-                  const DataTableColumn(
-                    'Votante',
-                    width: 90,
-                    sortable: true,
-                    sortKey: 'voter',
-                  ),
-                  DataTableColumn('Ações', width: 140, headerWidget: AddButton(onPress: _openForm)),
-                ],
-                errorMessage: 'Erro ao carregar sócios',
-                onRetry: _load,
-                onPageChanged: _goToPage,
-                pageSize: _pageSize,
-                onPageSizeChanged: _changePageSize,
-                sortColumn: _sortColumn,
-                sortAscending: _sortAscending,
-                onSort: _sort,
-                rowBuilder: (context, customer) => _CustomerRow(
-                  customer: customer,
-                  onEdit: () => _openForm(customer: customer),
-                  onDelete: () => _delete(customer),
-                  onReactivate: () => _reactivate(customer),
+              child: _errorMessage != null
+                  ? _buildErrorView()
+                  : _allCustomers.isEmpty && !_isLoading
+                      ? const Center(child: Text('Nenhum sócio cadastrado.'))
+                      : _buildTableWithInfiniteScroll(),
+            ),
+            if (_allCustomers.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Mostrando ${_allCustomers.length} de $_totalCount registros',
+                  style: Theme.of(context).textTheme.bodySmall,
                 ),
               ),
-            ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildErrorView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(_errorMessage!),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadFirstPage,
+            child: const Text('Tentar novamente'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableWithInfiniteScroll() {
+    return Column(
+      children: [
+        _TableHeader(onAddPress: () => _openForm()),
+        const Divider(height: 1),
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            itemCount: _allCustomers.length + (_isLoading ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == _allCustomers.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final customer = _allCustomers[index];
+              final isEven = index.isEven;
+
+              return Column(
+                children: [
+                  Container(
+                    color: isEven
+                        ? Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerLowest
+                        : Colors.transparent,
+                    child: _CustomerRow(
+                      customer: customer,
+                      onEdit: () => _openForm(customer: customer),
+                      onDelete: () => _delete(customer),
+                      onReactivate: () => _reactivate(customer),
+                    ),
+                  ),
+                  const Divider(height: 1),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _TableHeader extends StatelessWidget {
+  final VoidCallback onAddPress;
+
+  const _TableHeader({required this.onAddPress});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final headerStyle = theme.textTheme.titleSmall?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        spacing: columnSpacing,
+        children: [
+          Expanded(
+            flex: 6,
+            child: Text('Nome', style: headerStyle),
+          ),
+          Expanded(
+            flex: 2,
+            child: Text('Documento', style: headerStyle),
+          ),
+          SizedBox(
+            width: 90,
+            child: Text('Nº Sócio', style: headerStyle),
+          ),
+          SizedBox(
+            width: 90,
+            child: Text('Votante', style: headerStyle),
+          ),
+          SizedBox(
+            width: 140,
+            child: Center(
+              child: AddButton(onPress: onAddPress),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -186,18 +287,16 @@ class _CustomerRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    // Dims the customer's data (but not the row actions) so an inactive
-    // sócio visibly reads as out of use, on top of the soft red row tint.
     final style = theme.textTheme.bodyMedium?.copyWith(
       color: customer.active ? null : cs.onSurfaceVariant,
     );
 
     return ColoredBox(
-      // Low alpha so the table's zebra striping still shows through.
       color: customer.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(
+          spacing: columnSpacing,
           children: [
             Expanded(
               flex: 6,
