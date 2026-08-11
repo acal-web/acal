@@ -13,7 +13,7 @@ const _category = Category(id: 'cat1', name: 'Padrão', group: 'efetivo', hasWat
 
 class _FakeCategoryService extends CategoryService {
   @override
-  Future<PagedResult<Category>> findAll({int page = 0, int size = 10, String? name}) async {
+  Future<PagedResult<Category>> findAll({int page = 0, int size = 10, String? name, bool? active = true}) async {
     return const PagedResult(data: [_category], pagination: _pagination);
   }
 }

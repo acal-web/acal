@@ -42,7 +42,7 @@ class _FakeAddressService extends AddressService {
   final List<Address> items;
 
   @override
-  Future<PagedResult<Address>> findAll({int page = 0, int size = 10, String? name}) async {
+  Future<PagedResult<Address>> findAll({int page = 0, int size = 10, String? name, String? kind, bool? active = true}) async {
     final filtered =
         (name == null || name.isEmpty) ? items : items.where((a) => a.name.toLowerCase().contains(name.toLowerCase())).toList();
     return PagedResult(data: filtered, pagination: _pagination);
@@ -54,7 +54,7 @@ class _FakeCategoryService extends CategoryService {
   final List<Category> items;
 
   @override
-  Future<PagedResult<Category>> findAll({int page = 0, int size = 10, String? name}) async {
+  Future<PagedResult<Category>> findAll({int page = 0, int size = 10, String? name, bool? active = true}) async {
     final filtered =
         (name == null || name.isEmpty) ? items : items.where((c) => c.name.toLowerCase().contains(name.toLowerCase())).toList();
     return PagedResult(data: filtered, pagination: _pagination);
