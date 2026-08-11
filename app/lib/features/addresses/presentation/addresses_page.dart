@@ -223,24 +223,27 @@ class _TableHeader extends StatelessWidget {
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-      child: Row(
-        spacing: columnSpacing,
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text('Tipo', style: headerStyle),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text('Nome', style: headerStyle),
-          ),
-          SizedBox(
-            width: 88,
-            child: Center(
-              child: AddButton(onPress: onAddPress),
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            SizedBox(
+              width: 120,
+              child: Text('Tipo', style: headerStyle),
             ),
-          ),
-        ],
+            Expanded(
+              flex: 3,
+              child: Text('Nome', style: headerStyle),
+            ),
+            SizedBox(
+              width: 88,
+              child: Center(
+                child: AddButton(onPress: onAddPress),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -269,30 +272,33 @@ class _AddressRow extends StatelessWidget {
       color: address.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-        child: Row(
-          spacing: columnSpacing,
-          children: [
-            SizedBox(
-              width: 120,
-              child: Text(
-                address.kind,
-                style: style,
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            spacing: columnSpacing,
+            children: [
+              SizedBox(
+                width: 120,
+                child: Text(
+                  address.kind,
+                  style: style,
+                ),
               ),
-            ),
-            Expanded(
-              flex: 3,
-              child: Text(
-                address.name,
-                style: style,
+              Expanded(
+                flex: 3,
+                child: Text(
+                  address.name,
+                  style: style,
+                ),
               ),
-            ),
-            SizedBox(
-              width: 88,
-              child: Center(
-                child: RowActions(onEdit: onEdit, onDelete: onDelete),
+              SizedBox(
+                width: 88,
+                child: Center(
+                  child: RowActions(onEdit: onEdit, onDelete: onDelete),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
