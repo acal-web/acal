@@ -44,4 +44,26 @@ namespace :legacy_import do
       end
     end
   end
+
+  desc "Importa endereços legados a partir de dumps MySQL"
+  task addresses: :environment do
+    endereco_path = ENV.fetch("ENDERECO_SQL_PATH") { abort "ENDERECO_SQL_PATH é obrigatório" }
+
+    puts "Iniciando importação de endereços..."
+    puts "  Endereços: #{endereco_path}"
+    puts
+
+    result = LegacyImport::AddressImporter.call(endereco_path:)
+
+    puts "Importação concluída!"
+    puts "  Importados: #{result.imported}"
+    puts "  Pulados (já existentes): #{result.skipped_duplicates}"
+
+    if result.skipped_invalid.any?
+      puts "  Pulados (inválidos):"
+      result.skipped_invalid.each do |entry|
+        puts "    legacy_id=#{entry[:legacy_id]}: #{entry[:reason]}"
+      end
+    end
+  end
 end
