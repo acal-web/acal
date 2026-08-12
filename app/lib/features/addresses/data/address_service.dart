@@ -37,4 +37,6 @@ class AddressService {
   }
 
   Future<void> delete(String id) => _http.delete('/addresses/$id');
+
+  Future<void> restore(String id) => _http.patch('/addresses/$id/restore', {});
 }

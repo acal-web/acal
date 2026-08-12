@@ -37,4 +37,6 @@ class CategoryService {
   }
 
   Future<void> delete(String id) => _http.delete('/categories/$id');
+
+  Future<void> restore(String id) => _http.patch('/categories/$id/restore', {});
 }

@@ -1,6 +1,6 @@
 class CustomersController < ApplicationController
   before_action :set_customer, only: %i[ show update destroy ]
-  before_action :set_customer_unscoped, only: %i[ restore ]
+  before_action :set_deleted_customer, only: %i[ restore ]
 
   SORTABLE_COLUMNS = %w[ name document membership_number voter ].freeze
 
@@ -58,8 +58,8 @@ class CustomersController < ApplicationController
       @customer = Customer.find(params.expect(:id))
     end
 
-    def set_customer_unscoped
-      @customer = Customer.unscoped.find(params.expect(:id))
+    def set_deleted_customer
+      @customer = Customer.deleted.find(params.expect(:id))
     end
 
     def form

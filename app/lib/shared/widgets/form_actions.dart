@@ -12,6 +12,7 @@ class FormActions extends StatelessWidget {
     required this.saving,
     this.saveLabel = 'Salvar',
     this.saveIcon = Icons.save_outlined,
+    this.readOnly = false,
   });
 
   final VoidCallback onCancel;
@@ -19,6 +20,7 @@ class FormActions extends StatelessWidget {
   final bool saving;
   final String saveLabel;
   final IconData saveIcon;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -26,25 +28,27 @@ class FormActions extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         FButton(variant: FButtonVariant.ghost, onPress: onCancel, child: const Text('Cancelar')),
-        const SizedBox(width: 8),
-        FButton(
-          onPress: saving ? null : onSave,
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              if (saving)
-                const Padding(
-                  padding: EdgeInsets.only(right: 8),
-                  child: FCircularProgress(size: FCircularProgressSizeVariant.xs),
-                )
-              else ...[
-                Icon(saveIcon, size: 18),
-                const SizedBox(width: 8),
+        if (!readOnly) ...[
+          const SizedBox(width: 8),
+          FButton(
+            onPress: saving ? null : onSave,
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (saving)
+                  const Padding(
+                    padding: EdgeInsets.only(right: 8),
+                    child: FCircularProgress(size: FCircularProgressSizeVariant.xs),
+                  )
+                else ...[
+                  Icon(saveIcon, size: 18),
+                  const SizedBox(width: 8),
+                ],
+                Text(saveLabel),
               ],
-              Text(saveLabel),
-            ],
+            ),
           ),
-        ),
+        ],
       ],
     );
   }

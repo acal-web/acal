@@ -17,6 +17,7 @@ class AppFormDialog extends StatelessWidget {
     this.maxWidth = 480,
     this.saveLabel = 'Salvar',
     this.saveIcon = Icons.save_outlined,
+    this.readOnly = false,
   });
 
   final GlobalKey<FormState> formKey;
@@ -27,6 +28,7 @@ class AppFormDialog extends StatelessWidget {
   final double maxWidth;
   final String saveLabel;
   final IconData saveIcon;
+  final bool readOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -54,6 +56,7 @@ class AppFormDialog extends StatelessWidget {
                   saving: saving,
                   saveLabel: saveLabel,
                   saveIcon: saveIcon,
+                  readOnly: readOnly,
                 ),
               ],
             ),

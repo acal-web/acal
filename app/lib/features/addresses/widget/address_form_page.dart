@@ -9,8 +9,9 @@ import 'package:forui/forui.dart';
 
 class AddressFormPage extends StatefulWidget {
   final Address? address;
+  final bool readOnly;
 
-  const AddressFormPage({super.key, this.address});
+  const AddressFormPage({super.key, this.address, this.readOnly = false});
 
   @override
   State<AddressFormPage> createState() => _AddressFormPageState();
@@ -25,7 +26,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
   bool get _isEditing => widget.address != null;
   String get _toastMessage => _isEditing ? 'Endereço atualizado com sucesso.' : 'Endereço criado com sucesso.';
-  String get _title => _isEditing ? 'Editar Endereço' : 'Novo Endereço';
+  String get _title => widget.readOnly ? 'Visualizar Endereço' : (_isEditing ? 'Editar Endereço' : 'Novo Endereço');
 
   @override
   void initState() {
@@ -81,10 +82,12 @@ class _AddressFormPageState extends State<AddressFormPage> {
       title: _title,
       onSave: _save,
       saving: _saving,
+      readOnly: widget.readOnly,
       fields: FTextFormField(
         control: FTextFieldControl.managed(controller: _nameController),
         label: const Text('Endereço'),
         hint: 'Digite o logradouro com tipo (ex: Rua das Flores)',
+        readOnly: widget.readOnly,
         validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
       ),
     );

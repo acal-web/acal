@@ -102,8 +102,8 @@ class _CustomersPageState extends State<CustomersPage> {
     await _loadFirstPage();
   }
 
-  Future<void> _openForm({Customer? customer}) async {
-    if (await openCustomer(context, customer: customer)) {
+  Future<void> _openForm({Customer? customer, bool readOnly = false}) async {
+    if (await openCustomer(context, customer: customer, readOnly: readOnly)) {
       await _loadFirstPage();
     }
   }
@@ -206,6 +206,7 @@ class _CustomersPageState extends State<CustomersPage> {
                     onEdit: () => _openForm(customer: customer),
                     onDelete: () => _delete(customer),
                     onReactivate: () => _reactivate(customer),
+                    onView: () => _openForm(customer: customer, readOnly: true),
                     isEven: isEven,
                   ),
                   const Divider(height: 1),
@@ -270,6 +271,7 @@ class _CustomerRow extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.onReactivate,
+    this.onView,
     this.isEven = false,
   });
 
@@ -277,6 +279,7 @@ class _CustomerRow extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback? onReactivate;
+  final VoidCallback? onView;
   final bool isEven;
 
   @override
@@ -326,6 +329,7 @@ class _CustomerRow extends StatelessWidget {
                   onDelete: onDelete,
                   active: customer.active,
                   onReactivate: onReactivate,
+                  onView: onView,
                 ),
               ),
             ),

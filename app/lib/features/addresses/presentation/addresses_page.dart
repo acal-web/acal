@@ -97,8 +97,8 @@ class _AddressesPageState extends State<AddressesPage> {
     await _loadFirstPage();
   }
 
-  Future<void> _openForm({Address? address}) async {
-    if (await openAddress(context, address: address)) {
+  Future<void> _openForm({Address? address, bool readOnly = false}) async {
+    if (await openAddress(context, address: address, readOnly: readOnly)) {
       await _loadFirstPage();
     }
   }
@@ -106,6 +106,19 @@ class _AddressesPageState extends State<AddressesPage> {
   Future<void> _delete(Address address) async {
     if (await deleteAddress(context, _service, address)) {
       await _loadFirstPage();
+    }
+  }
+
+  Future<void> _reactivate(Address address) async {
+    try {
+      await _service.restore(address.id!);
+      await _loadFirstPage();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao reativar endereço')),
+        );
+      }
     }
   }
 
@@ -187,6 +200,8 @@ class _AddressesPageState extends State<AddressesPage> {
                     address: address,
                     onEdit: () => _openForm(address: address),
                     onDelete: () => _delete(address),
+                    onView: () => _openForm(address: address, readOnly: true),
+                    onReactivate: () => _reactivate(address),
                     isEven: isEven,
                   ),
                   const Divider(height: 1),
@@ -237,12 +252,16 @@ class _AddressRow extends StatelessWidget {
     required this.address,
     required this.onEdit,
     required this.onDelete,
+    this.onView,
+    this.onReactivate,
     this.isEven = false,
   });
 
   final Address address;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onView;
+  final VoidCallback? onReactivate;
   final bool isEven;
 
   @override
@@ -274,7 +293,13 @@ class _AddressRow extends StatelessWidget {
             SizedBox(
               width: 88,
               child: Center(
-                child: RowActions(onEdit: onEdit, onDelete: onDelete),
+                child: RowActions(
+                  onEdit: onEdit,
+                  onDelete: onDelete,
+                  active: address.active,
+                  onView: onView,
+                  onReactivate: onReactivate,
+                ),
               ),
             ),
           ],

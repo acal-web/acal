@@ -98,8 +98,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
     await _loadFirstPage();
   }
 
-  Future<void> _openForm({Category? category}) async {
-    if (await openCategory(context, category: category)) {
+  Future<void> _openForm({Category? category, bool readOnly = false}) async {
+    if (await openCategory(context, category: category, readOnly: readOnly)) {
       await _loadFirstPage();
     }
   }
@@ -107,6 +107,19 @@ class _CategoriesPageState extends State<CategoriesPage> {
   Future<void> _delete(Category category) async {
     if (await deleteCategory(context, _service, category)) {
       await _loadFirstPage();
+    }
+  }
+
+  Future<void> _reactivate(Category category) async {
+    try {
+      await _service.restore(category.id!);
+      await _loadFirstPage();
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao reativar categoria')),
+        );
+      }
     }
   }
 
@@ -188,6 +201,8 @@ class _CategoriesPageState extends State<CategoriesPage> {
                     category: category,
                     onEdit: () => _openForm(category: category),
                     onDelete: () => _delete(category),
+                    onView: () => _openForm(category: category, readOnly: true),
+                    onReactivate: () => _reactivate(category),
                     isEven: isEven,
                   ),
                   const Divider(height: 1),
@@ -206,12 +221,16 @@ class _CategoryRow extends StatelessWidget {
     required this.category,
     required this.onEdit,
     required this.onDelete,
+    this.onView,
+    this.onReactivate,
     this.isEven = false,
   });
 
   final Category category;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final VoidCallback? onView;
+  final VoidCallback? onReactivate;
   final bool isEven;
 
   @override
@@ -269,7 +288,13 @@ class _CategoryRow extends StatelessWidget {
             ),
             SizedBox(
               width: 88,
-              child: RowActions(onEdit: onEdit, onDelete: onDelete),
+              child: RowActions(
+                onEdit: onEdit,
+                onDelete: onDelete,
+                active: category.active,
+                onView: onView,
+                onReactivate: onReactivate,
+              ),
             ),
           ],
         ),

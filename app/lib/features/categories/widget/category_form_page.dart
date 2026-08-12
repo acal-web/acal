@@ -10,8 +10,9 @@ import 'package:forui/forui.dart';
 
 class CategoryFormPage extends StatefulWidget {
   final Category? category;
+  final bool readOnly;
 
-  const CategoryFormPage({super.key, this.category});
+  const CategoryFormPage({super.key, this.category, this.readOnly = false});
 
   @override
   State<CategoryFormPage> createState() => _CategoryFormPageState();
@@ -31,7 +32,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
 
   bool get _isEditing => widget.category != null;
   String get _toastMessage => _isEditing ? 'Categoria atualizada com sucesso.' : 'Categoria criada com sucesso.';
-  String get _title => _isEditing ? 'Editar Categoria' : 'Nova Categoria';
+  String get _title => widget.readOnly ? 'Visualizar Categoria' : (_isEditing ? 'Editar Categoria' : 'Nova Categoria');
 
   @override
   void initState() {
@@ -99,6 +100,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
       title: _title,
       onSave: _save,
       saving: _saving,
+      readOnly: widget.readOnly,
       fields: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -106,6 +108,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
             control: FTextFieldControl.managed(controller: _nameController),
             label: const Text('Nome'),
             hint: 'Digite o nome da categoria',
+            readOnly: widget.readOnly,
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 12),
@@ -114,6 +117,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
             maxLines: 2,
             label: const Text('Descrição'),
             hint: 'Digite a descrição',
+            readOnly: widget.readOnly,
           ),
           const SizedBox(height: 12),
           FSelect<String>(
@@ -121,6 +125,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
             control: FSelectControl.managed(initial: _group, onChange: (v) {}),
             label: const Text('Grupo'),
             onSaved: (v) => _group = v!,
+            enabled: !widget.readOnly,
             validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
           ),
           const SizedBox(height: 12),
@@ -134,6 +139,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [CurrencyInputFormatter()],
                     label: const Text('Valor da Água'),
+                    readOnly: widget.readOnly,
                     validator: _validatePrice,
                   ),
                 ),
@@ -147,6 +153,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                     keyboardType: TextInputType.number,
                     inputFormatters: [CurrencyInputFormatter()],
                     label: const Text('Valor Societário'),
+                    readOnly: widget.readOnly,
                     validator: _validatePrice,
                   ),
                 ),
@@ -156,7 +163,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
           const SizedBox(height: 12),
           FCheckbox(
             value: _hasWaterMeter,
-            onChange: (v) => setState(() => _hasWaterMeter = v),
+            onChange: widget.readOnly ? null : (v) => setState(() => _hasWaterMeter = v),
             label: const Text('Possui hidrômetro'),
           ),
         ],

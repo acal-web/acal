@@ -13,8 +13,9 @@ import 'package:forui/forui.dart';
 
 class CustomerFormPage extends StatefulWidget {
   final Customer? customer;
+  final bool readOnly;
 
-  const CustomerFormPage({super.key, this.customer});
+  const CustomerFormPage({super.key, this.customer, this.readOnly = false});
 
   @override
   State<CustomerFormPage> createState() => _CustomerFormPageState();
@@ -33,7 +34,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
 
   bool get _isEditing => widget.customer != null;
   String get _toastMessage => _isEditing ? 'Sócio atualizado com sucesso.' : 'Sócio criado com sucesso.';
-  String get _title => _isEditing ? 'Editar Sócio' : 'Novo Sócio';
+  String get _title => widget.readOnly ? 'Visualizar Sócio' : (_isEditing ? 'Editar Sócio' : 'Novo Sócio');
 
   @override
   void initState() {
@@ -128,6 +129,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
       title: _title,
       onSave: _save,
       saving: _saving,
+      readOnly: widget.readOnly,
       fields: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -136,14 +138,15 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
             control: FTextFieldControl.managed(controller: _nameController),
             label: const Text('Nome'),
             hint: 'Digite o nome do sócio',
+            readOnly: widget.readOnly,
             validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
           ),
-          
+
           const SizedBox(height: 12),
           DocumentFormField(
             controller: _documentController,
             documentKind: _documentKind,
-            onToggleKind: _toggleDocumentKind,
+            onToggleKind: widget.readOnly ? () {} : _toggleDocumentKind,
           ),
           const SizedBox(height: 12),
           FTextFormField(
@@ -151,12 +154,13 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
             label: const Text('Número de Sócio (opcional)'),
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            readOnly: widget.readOnly,
             validator: _validateMembershipNumber,
           ),
           const SizedBox(height: 12),
           FCheckbox(
             value: _voter,
-            onChange: (v) => setState(() => _voter = v),
+            onChange: widget.readOnly ? null : (v) => setState(() => _voter = v),
             label: const Text('É votante'),
           ),
           const Divider(),
