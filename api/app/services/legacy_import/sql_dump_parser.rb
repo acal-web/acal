@@ -19,14 +19,13 @@ module LegacyImport
 
     def parse
       # Find all CREATE TABLE ... blocks and their corresponding INSERT statements
-      create_table_pattern = /CREATE\s+TABLE\s+`(\w+)`\s*\((.*?)\)\s*(?:;|\n)/m
-      insert_pattern = /INSERT\s+INTO\s+`(\w+)`\s+VALUES\s+(.*?);/m
-
-      @content.scan(create_table_pattern) do |table_name, column_defs|
+      # Use a custom scanner that balances parentheses to handle types like varchar(255) correctly
+      create_table_entries.each do |table_name, column_defs|
         columns = extract_columns(column_defs)
         @tables[table_name] = Table.new(table_name, columns, [])
       end
 
+      insert_pattern = /INSERT\s+INTO\s+`(\w+)`\s+VALUES\s+(.*?);/m
       @content.scan(insert_pattern) do |table_name, values_block|
         next unless @tables[table_name]
 
@@ -35,6 +34,47 @@ module LegacyImport
       end
 
       @tables
+    end
+
+    private
+
+    def create_table_entries
+      entries = {}
+      @content.scan(/CREATE\s+TABLE\s+`(\w+)`\s*\(/m) do |match|
+        table_name = match[0]
+        start_pos = Regexp.last_match.begin(0)
+
+        # Find the start of the column definitions (after the opening paren)
+        paren_start = @content.index("(", start_pos)
+        # Find the matching closing paren by counting
+        paren_count = 1
+        pos = paren_start + 1
+        while pos < @content.length && paren_count > 0
+          char = @content[pos]
+          case char
+          when "("
+            paren_count += 1
+          when ")"
+            paren_count -= 1
+          end
+          pos += 1
+        end
+
+        # Extract everything between the parens
+        column_defs = @content[paren_start + 1...pos - 1]
+        entries[table_name] = column_defs
+      end
+      entries
+    end
+
+    def create_table_entries_old
+      # Keep the old implementation as fallback
+      entries = {}
+      create_table_pattern = /CREATE\s+TABLE\s+`(\w+)`\s*\((.*?)\)\s*(?:;|\n)/m
+      @content.scan(create_table_pattern) do |table_name, column_defs|
+        entries[table_name] = column_defs
+      end
+      entries
     end
 
     private
@@ -49,6 +89,10 @@ module LegacyImport
         constraint_names.add(match[0])
       end
       column_defs.scan(/KEY\s+`([^`]+)`\s*\(/) do |match|
+        constraint_names.add(match[0])
+      end
+      # Also exclude table names from REFERENCES clauses
+      column_defs.scan(/REFERENCES\s+`([^`]+)`/) do |match|
         constraint_names.add(match[0])
       end
 
@@ -121,7 +165,11 @@ module LegacyImport
 
       if value_str.start_with?("'") && value_str.end_with?("'")
         unescaped = value_str[1..-2]
-        unescaped.gsub("\\\\", "\x00").gsub("\\'", "'").gsub("\x00", "\\")
+        # Handle escape sequences: \\, \', \xHH (hex byte)
+        unescaped.gsub("\\\\", "\x00")
+                 .gsub("\\'", "'")
+                 .gsub(/\\x([0-9a-fA-F]{2})/) { |_| Integer($1, 16).chr }
+                 .gsub("\x00", "\\")
       else
         value_str
       end

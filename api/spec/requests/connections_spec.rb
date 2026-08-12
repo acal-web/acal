@@ -396,17 +396,31 @@ RSpec.describe "Connections", type: :request do
         expect(response.parsed_body).to eq("category" => [ "must exist" ])
       end
 
-      it "rejects a new active connection when the address already has an active connection" do
+      it "allows a new active connection on the same address when the number differs" do
         post "/connections", params: valid_params
 
         new_customer = create(:customer, name: "Ciclano")
 
         expect {
           post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 2 } }
+        }.to change(Connection, :count).by(1)
+
+        expect(response).to have_http_status(:created)
+      end
+
+      it "rejects a new active connection when the address already has an active connection with the same number and letter" do
+        post "/connections", params: valid_params
+
+        new_customer = create(:customer, name: "Ciclano")
+
+        expect {
+          post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 1 } }
         }.not_to change(Connection, :count)
 
         expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("address_id" => [ "already has an active connection" ])
+        # Database unique index constraint is hit, resulting in a RecordNotUnique error
+        expect(response.parsed_body["code"]).to eq(1001)
+        expect(response.parsed_body["message"]).to include("already exists")
       end
 
       it "rejects a new active connection when the customer is already efetivo in another active connection" do
@@ -485,7 +499,7 @@ RSpec.describe "Connections", type: :request do
     end
 
     context "when it fails" do
-      it "rejects reactivating a connection when the address already has another active connection" do
+      it "allows reactivating a connection when the address has another active connection with a different number" do
         post "/connections", params: valid_params
         first_id = response.parsed_body["id"]
         patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: false) }
@@ -493,10 +507,11 @@ RSpec.describe "Connections", type: :request do
         new_customer = create(:customer, name: "Ciclano")
         post "/connections", params: { connection: { customer_id: new_customer.id, address_id: address.id, category_id: category.id, number: 2 } }
 
-        patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: true) }
+        expect {
+          patch "/connections/#{first_id}", params: { connection: valid_params[:connection].merge(active: true) }
+        }.to change { Connection.find(first_id).active }.from(false).to(true)
 
-        expect(response).to have_http_status(:unprocessable_content)
-        expect(response.parsed_body).to eq("address_id" => [ "already has an active connection" ])
+        expect(response).to have_http_status(:ok)
       end
 
       it "rejects reactivating a connection when the customer is already efetivo in another active connection" do

@@ -52,9 +52,11 @@ class Connection < ApplicationRecord
   def address_not_already_active
     return unless address_id
 
-    conflicting = Connection.where(address_id: address_id, active: true)
+    # Only one active connection per (address, number, letter) combination
+    letter_value = letter.presence || ""
+    conflicting = Connection.where(address_id: address_id, number: number, letter: letter_value, active: true)
     conflicting = conflicting.where.not(id: id) if persisted?
-    errors.add(:address_id, "already has an active connection") if conflicting.exists?
+    errors.add(:address_id, "already has an active connection for this address number") if conflicting.exists?
   end
 
   def customer_not_already_efetivo

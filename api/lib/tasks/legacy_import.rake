@@ -93,4 +93,26 @@ namespace :legacy_import do
       end
     end
   end
+
+  desc "Importa ligações (connections) legadas a partir de dumps MySQL"
+  task connections: :environment do
+    ligacao_path = ENV.fetch("ENDERECOPESSOA_SQL_PATH") { abort "ENDERECOPESSOA_SQL_PATH é obrigatório" }
+
+    puts "Iniciando importação de ligações..."
+    puts "  Endereço-Pessoa: #{ligacao_path}"
+    puts
+
+    result = LegacyImport::ConnectionImporter.call(ligacao_path:)
+
+    puts "Importação concluída!"
+    puts "  Importadas: #{result.imported}"
+    puts "  Puladas (já existentes): #{result.skipped_duplicates}"
+
+    if result.skipped_invalid.any?
+      puts "  Puladas (inválidas):"
+      result.skipped_invalid.each do |entry|
+        puts "    legacy_id=#{entry[:legacy_id]}: #{entry[:reason]}"
+      end
+    end
+  end
 end

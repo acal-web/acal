@@ -77,12 +77,21 @@ RSpec.describe Connections::CreateService do
     expect(connection).to be_persisted
   end
 
-  it "raises when the address already has an active connection" do
-    create(:connection, customer: customer, address: address, category: category)
+  it "allows multiple active connections on the same address when number differs" do
+    create(:connection, customer: customer, address: address, category: category, number: 1)
+    other_customer = create(:customer)
+
+    connection = described_class.call(customer_id: other_customer.id, address_id: address.id, category_id: category.id, number: 2)
+
+    expect(connection).to be_persisted
+  end
+
+  it "raises when the address already has an active connection with the same number and letter" do
+    create(:connection, customer: customer, address: address, category: category, number: 1, letter: "A")
     other_customer = create(:customer)
 
     expect {
-      described_class.call(customer_id: other_customer.id, address_id: address.id, category_id: category.id, number: 2)
+      described_class.call(customer_id: other_customer.id, address_id: address.id, category_id: category.id, number: 1, letter: "A")
     }.to raise_error(ActiveRecord::RecordInvalid)
   end
 
