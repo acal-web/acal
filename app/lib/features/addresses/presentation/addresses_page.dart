@@ -253,10 +253,10 @@ class _AddressRow extends StatelessWidget {
       color: address.active ? null : cs.onSurfaceVariant,
     );
 
-    // Combina cor zebrada com cor de inativo
-    Color backgroundColor = address.active
-        ? (isEven ? cs.surfaceContainerLowest : Colors.transparent)
-        : cs.error.withValues(alpha: 0.08);
+    final backgroundColor = isEven
+        ? cs.surfaceContainer.withValues(alpha: 0.2)
+        : cs.surfaceContainer.withValues(alpha: 0.4)
+        ;
 
     return ColoredBox(
       color: backgroundColor,

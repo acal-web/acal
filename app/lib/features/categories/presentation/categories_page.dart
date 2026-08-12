@@ -222,10 +222,9 @@ class _CategoryRow extends StatelessWidget {
       color: category.active ? null : cs.onSurfaceVariant,
     );
 
-    // Combina cor zebrada com cor de inativo
-    Color backgroundColor = category.active
-        ? (isEven ? cs.surfaceContainerLowest : Colors.transparent)
-        : cs.error.withValues(alpha: 0.08);
+    final backgroundColor = isEven
+        ? cs.surfaceContainer.withValues(alpha: 0.2)
+        : cs.surfaceContainer.withValues(alpha: 0.4);
 
     return ColoredBox(
       color: backgroundColor,
