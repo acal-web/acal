@@ -39,6 +39,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   Category? _category;
   bool? _active;
   bool _expanded = false;
+  int _filterKey = 0;
 
   @override
   void initState() {
@@ -66,6 +67,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
       _addressNameController.clear();
       _category = null;
       _active = null;
+      _filterKey++;
     });
     widget.onSearch((customerId: null, addressName: null, categoryId: null, active: null));
   }
@@ -77,6 +79,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
         final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
         final customerField = CustomerSelectField(
+          key: ValueKey(_filterKey),
           customerService: _customerService,
           initialValue: _customer,
           active: null,
