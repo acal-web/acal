@@ -322,13 +322,16 @@ class _ConnectionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final backgroundColor = isEven
-        ? theme.colorScheme.surfaceContainerLowest
-        : Colors.transparent;
+    final backgroundColor = connection.active
+        ? (isEven
+            ? theme.colorScheme.surfaceContainer.withValues(alpha: 0.2) : theme.colorScheme.surfaceContainer.withValues(alpha: 0.4))
+        : (isEven
+            ? theme.colorScheme.errorContainer.withValues(alpha: 0.2) : theme.colorScheme.errorContainer.withValues(alpha: 0.4));
     final bodyMedium = theme.textTheme.bodyMedium;
     final bodySmall = theme.textTheme.bodySmall;
     final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
     final primary = theme.colorScheme.primary;
+    final textColor = connection.active ? null : onSurfaceVariant;
 
     return ColoredBox(
       color: backgroundColor,
@@ -344,7 +347,7 @@ class _ConnectionRow extends StatelessWidget {
                 children: [
                   Text(
                     connection.customer?.name ?? '—',
-                    style: bodyMedium,
+                    style: bodyMedium?.copyWith(color: textColor),
                   ),
                   if (connection.customer != null)
                     DocumentText(
@@ -358,14 +361,14 @@ class _ConnectionRow extends StatelessWidget {
               flex: 4,
               child: Text(
                 connection.fullLocation,
-                style: bodyMedium,
+                style: bodyMedium?.copyWith(color: textColor),
               ),
             ),
             Expanded(
               flex: 2,
               child: Text(
                 connection.category?.name ?? '—',
-                style: bodyMedium,
+                style: bodyMedium?.copyWith(color: textColor),
               ),
             ),
             SizedBox(
