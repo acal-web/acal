@@ -94,10 +94,10 @@ Se os arquivos estão em `/workspace/api/.legacy/`:
 ```bash
 cd /workspace/api
 
-# Setup
+# 1. Setup do banco
 bundle exec rails db:drop db:create db:migrate
 
-# Importar (use o caminho absoluto completo)
+# 2. Importar na ordem (use o caminho absoluto completo)
 CATEGORIA_SQL_PATH=/workspace/api/.legacy/acal_categoriasocio.sql \
 TAXA_SQL_PATH=/workspace/api/.legacy/acal_taxa.sql \
 bundle exec rails legacy_import:categories
@@ -114,35 +114,6 @@ bundle exec rails legacy_import:quality_analyses
 
 ENDERECOPESSOA_SQL_PATH=/workspace/api/.legacy/acal_enderecopessoa.sql \
 bundle exec rails legacy_import:connections
-```
-
-**Ou um script Bash automático:**
-
-```bash
-#!/bin/bash
-cd /workspace/api
-BASE_PATH="/workspace/api/.legacy"
-
-bundle exec rails db:drop db:create db:migrate
-
-CATEGORIA_SQL_PATH="$BASE_PATH/acal_categoriasocio.sql" \
-TAXA_SQL_PATH="$BASE_PATH/acal_taxa.sql" \
-bundle exec rails legacy_import:categories
-
-PESSOA_SQL_PATH="$BASE_PATH/acal_pessoa.sql" \
-bundle exec rails legacy_import:customers
-
-ENDERECO_SQL_PATH="$BASE_PATH/acal_endereco.sql" \
-bundle exec rails legacy_import:addresses
-
-TIPO_PARAMETRO_SQL_PATH="$BASE_PATH/acal_tipo_parametro.sql" \
-PARAMETRO_COLETA_SQL_PATH="$BASE_PATH/acal_parametro_coleta.sql" \
-bundle exec rails legacy_import:quality_analyses
-
-ENDERECOPESSOA_SQL_PATH="$BASE_PATH/acal_enderecopessoa.sql" \
-bundle exec rails legacy_import:connections
-
-echo "✅ Importação completa!"
 ```
 
 ## Verificar Importação
