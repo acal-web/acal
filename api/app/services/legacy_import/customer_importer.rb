@@ -36,13 +36,13 @@ module LegacyImport
 
         membership_number = row["numeroMatricula"]&.to_i
 
-        customer = Customer.create!(
+        customer = Customer.new(
           name:,
           document:,
           membership_number:,
           legacy_id:,
-          validate: false,
         )
+        customer.save!(validate: false)
         imported << customer
       rescue ActiveRecord::RecordNotUnique => e
         skipped_invalid << { legacy_id:, reason: e.message }

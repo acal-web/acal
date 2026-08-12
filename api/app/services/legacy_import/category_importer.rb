@@ -31,7 +31,7 @@ module LegacyImport
 
         has_water_meter = row["nome"].to_s.downcase.include?("hidrômetro") || row["nome"].to_s.downcase.include?("hidrometro")
 
-        form = CategoryForm.new(
+        category = Category.new(
           name: row["nome"],
           description: row["descricao"],
           group:,
@@ -40,8 +40,9 @@ module LegacyImport
           water_price: (taxa["valor"] || "0").to_d,
           legacy_id:,
         )
-        imported << Category.create!(**form.to_h)
-      rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+        category.save!(validate: false)
+        imported << category
+      rescue ActiveRecord::RecordNotUnique => e
         skipped_invalid << { legacy_id:, reason: e.message }
       end
 
