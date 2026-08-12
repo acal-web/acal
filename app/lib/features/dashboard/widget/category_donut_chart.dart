@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:acalapp/features/categories/domain/category.dart';
 import 'package:acalapp/features/dashboard/domain/dashboard_summary.dart';
 import 'package:flutter/material.dart';
@@ -88,11 +90,13 @@ class _DonutPainter extends StatelessWidget {
     final colors = [cs.primary, cs.secondary, cs.outline];
     final total = membersByCategory.fold<int>(0, (sum, c) => sum + c.count);
 
-    return CustomPaint(
-      painter: _DonutChartPainter(
-        membersByCategory: membersByCategory,
-        colors: colors,
-        total: total,
+    return SizedBox.expand(
+      child: CustomPaint(
+        painter: _DonutChartPainter(
+          membersByCategory: membersByCategory,
+          colors: colors,
+          total: total,
+        ),
       ),
     );
   }
@@ -111,18 +115,18 @@ class _DonutChartPainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (total == 0) return;
+    if (total == 0 || size.isEmpty) return;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2.5;
+    final radius = math.min(size.width, size.height) / 2.5;
     final innerRadius = radius * 0.5;
 
-    var startAngle = -90.0 * (3.14159 / 180);
+    var startAngle = -90.0 * (math.pi / 180);
 
     for (var i = 0; i < membersByCategory.length; i++) {
       final item = membersByCategory[i];
       final fraction = item.count / total;
-      final sweepAngle = fraction * 2 * 3.14159;
+      final sweepAngle = fraction * 2 * math.pi;
       final paint = Paint()
         ..color = colors[i % colors.length]
         ..style = PaintingStyle.stroke
