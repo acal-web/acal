@@ -135,10 +135,14 @@
       "Bash(curl -s http://localhost:8080)",
       "Bash(pkill -9 -f \"flutter run\")",
       "Bash(cp /tmp/claude-1001/-workspace/6ed60ba8-d676-4bcb-aeaf-d7195cfcf46a/scratchpad/failing_connections.csv \"/workspace/.legacy /failing_connections.csv\")",
-      "Bash(git commit -m 'fix: remove legacy files with invalid path containing spaces *)"
+      "Bash(git commit -m 'fix: remove legacy files with invalid path containing spaces *)",
+      "Bash(mv \"/workspace/app/lib/features/addresses/widget/modal \" \"/workspace/app/lib/features/addresses/widget/modal\" && ls -la /workspace/app/lib/features/addresses/widget/modal/)",
+      "Bash(git commit -m 'fix: rename modal directory to remove trailing space *)",
+      "Bash(git commit -m 'fix: update import paths for modal directory *)"
     ],
     "additionalDirectories": [
-      "/workspace/.legacy "
+      "/workspace/.legacy ",
+      "/workspace/app/lib/features/addresses/widget"
     ]
   }
 }
