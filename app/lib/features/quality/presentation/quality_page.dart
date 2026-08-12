@@ -196,17 +196,11 @@ class _QualityPageState extends State<QualityPage> {
 
               return Column(
                 children: [
-                  Container(
-                    color: isEven
-                        ? Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLowest
-                        : Colors.transparent,
-                    child: _QualityAnalysisRow(
-                      analysis: analysis,
-                      onEdit: () => _openForm(analysis: analysis),
-                      onDelete: () => _delete(analysis),
-                    ),
+                  _QualityAnalysisRow(
+                    analysis: analysis,
+                    onEdit: () => _openForm(analysis: analysis),
+                    onDelete: () => _delete(analysis),
+                    isEven: isEven,
                   ),
                   const Divider(height: 1),
                 ],
@@ -273,11 +267,13 @@ class _QualityAnalysisRow extends StatelessWidget {
     required this.analysis,
     required this.onEdit,
     required this.onDelete,
+    this.isEven = false,
   });
 
   final QualityAnalysis analysis;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool isEven;
 
   @override
   Widget build(BuildContext context) {
@@ -288,7 +284,7 @@ class _QualityAnalysisRow extends StatelessWidget {
     );
 
     return ColoredBox(
-      color: Colors.transparent,
+      color: isEven ? cs.surfaceContainerLowest : Colors.transparent,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(

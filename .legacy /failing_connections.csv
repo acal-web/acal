@@ -1,0 +1,155 @@
+ID Conexão,ID Cliente,Número do Imóvel,ID Endereço,ID Categoria,Data Matrícula,Inativo,Motivo da Falha
+1483,1260,249,43,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1484,1261,566,32,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1485,1262,457,10,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1486,1263,1064,42,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1487,1264,1005,42,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1488,1265,1746,36,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1489,1266,1663,36,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1490,1267,1156,29,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1491,1268,5001,11,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1492,1269,2196,3,18,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1493,1270,1060,42,27,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1495,1272,964,26,18,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1496,1273,2100,3,1,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1497,1274,684,44,1,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1498,1275,1297,29,1,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1611,1371,433,10,1,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+1996,1651,2289-A,12,27,,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+2495,2000,00,34,18,2000-01-01,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+2507,2011,753-C,34,27,,"""\\0""",CNPJ com 15 dígitos (esperado 14)
+431,413,261,40,1,2000-01-01,"""\\0""",CNPJ com checksum inválido
+905,828,10 -A,35,30,2000-01-01,"""\\0""",CNPJ com checksum inválido
+3006,2339,798,34,5,,"""\\0""",CNPJ com checksum inválido
+2,2,1367,1,2,2000-01-01,"""\\0""",CPF com checksum inválido
+33,33,87 inativo,5,2,2000-01-01,"""\u0001""",CPF com checksum inválido
+52,52,216,7,1,2000-01-01,"""\\0""",CPF com checksum inválido
+67,67,366,10,2,2000-01-01,"""\\0""",CPF com checksum inválido
+102,102,1233falecida,16,2,2000-01-01,"""\u0001""",CPF com checksum inválido
+159,159,1247,29,2,2000-01-01,"""\\0""",CPF com checksum inválido
+315,312,03-A,35,1,2000-01-01,"""\\0""",CPF com checksum inválido
+329,324,192,7,2,2000-01-01,"""\\0""",CPF com checksum inválido
+337,332,245,43,1,2000-01-01,"""\\0""",CPF com checksum inválido
+349,343,1394,1,2,2000-01-01,"""\\0""",CPF com checksum inválido
+524,488,908,26,1,2000-01-01,"""\\0""",CPF com checksum inválido
+589,548,523-inativo,33,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+633,583,1465,36,1,2000-01-01,"""\\0""",CPF com checksum inválido
+653,600,1660,36,1,2000-01-01,"""\\0""",CPF com checksum inválido
+780,715,151,7,1,2000-01-01,"""\\0""",CPF com checksum inválido
+825,755,2235-inativo,12,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+831,761,2251/inativo,12,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+847,774,1012,42,1,2000-01-01,"""\\0""",CPF com checksum inválido
+866,792,2028,4,1,2000-01-01,"""\\0""",CPF com checksum inválido
+867,792,2025,4,1,2000-01-01,"""\\0""",CPF com checksum inválido
+868,792,2024,4,1,2000-01-01,"""\\0""",CPF com checksum inválido
+875,799,590,21,1,2000-01-01,"""\\0""",CPF com checksum inválido
+881,805,2240,12,1,2000-01-01,"""\\0""",CPF com checksum inválido
+892,816,629-inativa,32,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+900,823,1871-inativo,12,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+906,829,12-A Inativo,35,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+930,850,546-inativo,33,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+939,857,1356,1,1,2000-01-01,"""\\0""",CPF com checksum inválido
+962,879,2207,3,5,2000-01-01,"""\\0""",CPF com checksum inválido
+967,884,2006-inativo,4,5,2000-01-01,"""\u0001""",CPF com checksum inválido
+979,896,71,5,1,2000-01-01,"""\\0""",CPF com checksum inválido
+995,912,124-inativo,5,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+996,913,125,5,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1008,925,178,7,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1013,929,207,7,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1049,965,361,10,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1071,987,1852,12,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1096,1008,319,10,30,2000-01-01,"""\\0""",CPF com checksum inválido
+1098,1010,390,11,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1102,1013,1133transferencia,11,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1122,1032,2220,12,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1145,1053,1585 inativo,19,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1163,1069,1202-INATIVO,18,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1171,1076,1741,22,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1180,1085,1093,23,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1185,1089,809,26,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1196,1100,941-inativo,26,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1214,1114,1176,29,5,2000-01-01,"""\\0""",CPF com checksum inválido
+1232,1132,820-INATIVO,31,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1297,1193,1023,42,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1304,1198,33-F -inativo,48,4,2000-01-01,"""\u0001""",CPF com checksum inválido
+1441,1241,689 - inativo,44,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1459,332,912,26,10,2000-01-01,"""\\0""",CPF com checksum inválido
+1466,1085,37F,47,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1470,1249,2211,3,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1472,1251,179,7,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1494,1271,33-A,35,18,2000-01-01,"""\\0""",CPF com checksum inválido
+1529,879,2095 inativo,3,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1538,1309,2214-inativo,3,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1582,1344,0001,34,3,2000-01-01,"""\u0001""",CPF com checksum inválido
+1583,1345,0002,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1584,1346,003,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1586,1348,0005,34,3,2000-01-01,"""\u0001""",CPF com checksum inválido
+1587,1349,006,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1588,1350,007,39,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1589,1351,008,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1590,1352,009,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1591,1353,010,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1593,1355,012,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1595,1357,0016,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1596,1358,0017,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1597,1359,0018,34,3,2000-01-01,"""\\0""",CPF com checksum inválido
+1599,1361,713,39,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1636,1390,235-inativo,7,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1638,1392,1773,20,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1666,1415,32-A,35,1,2000-01-01,"""\\0""",CPF com checksum inválido
+1690,52,20,8,2,2000-01-01,"""\\0""",CPF com checksum inválido
+1693,913,42F-inativa,52,4,2000-01-01,"""\u0001""",CPF com checksum inválido
+1694,1309,1968-Inativa,3,1,2000-01-01,"""\u0001""",CPF com checksum inválido
+1713,792,2051,4,1,2013-10-28,"""\\0""",CPF com checksum inválido
+1758,1481,583-inativo,32,1,2015-08-01,"""\u0001""",CPF com checksum inválido
+1785,1501,1939,87,1,,"""\\0""",CPF com checksum inválido
+1819,1526,634 inativo,32,5,2015-04-01,"""\u0001""",CPF com checksum inválido
+1839,1539,54-U,57,1,2015-05-26,"""\u0001""",CPF com checksum inválido
+1858,1553,1456 inativo,36,1,2022-12-15,"""\u0001""",CPF com checksum inválido
+1919,1597,1394A-inativo,1,1,2015-12-02,"""\u0001""",CPF com checksum inválido
+1920,879,1968 inativo,3,1,2015-12-08,"""\u0001""",CPF com checksum inválido
+1926,816,2346A,41,5,2015-12-18,"""\\0""",CPF com checksum inválido
+1937,1609,195,7,1,,"""\\0""",CPF com checksum inválido
+1960,1526,1089-inativo,17,1,2016-05-02,"""\u0001""",CPF com checksum inválido
+2079,1702,1902-DESLIGADA,12,4,2017-12-25,"""\u0001""",CPF com checksum inválido
+2086,1198,405,10,1,2018-01-08,"""\u0001""",CPF com checksum inválido
+2122,1732,1974,4,5,2018-06-11,"""\\0""",CPF com checksum inválido
+2151,1754,13-LPHF,85,5,2018-09-25,"""\\0""",CPF com checksum inválido
+2173,1769,19-LPHF,71,5,2018-11-12,"""\\0""",CPF com checksum inválido
+2251,1828,52,8,1,2019-07-01,"""\\0""",CPF com checksum inválido
+2254,1828,323,10,30,2019-07-25,"""\\0""",CPF com checksum inválido
+2334,1887,90-LPHF,84,5,,"""\\0""",CPF com checksum inválido
+2408,1940,124-LPHF,84,5,,"""\\0""",CPF com checksum inválido
+2430,1132,60-LPHF,74,5,2020-12-07,"""\\0""",CPF com checksum inválido
+2469,1981,663 - inativo,32,1,2026-05-14,"""\u0001""",CPF com checksum inválido
+2488,1994,2256 INATIVO,12,5,2021-06-23,"""\u0001""",CPF com checksum inválido
+2489,1995,582-A,32,5,2021-07-05,"""\\0""",CPF com checksum inválido
+2514,1053,158-LPHF,91,5,2021-09-01,"""\\0""",CPF com checksum inválido
+2569,2054,2026,4,5,2022-02-08,"""\\0""",CPF com checksum inválido
+2573,1053,175 LPHF,84,5,2022-02-21,"""\\0""",CPF com checksum inválido
+2598,2070,2332,41,5,2022-05-16,"""\\0""",CPF com checksum inválido
+2620,2078,186 LPHF,84,5,2022-07-19,"""\\0""",CPF com checksum inválido
+2630,2083,2046,4,5,2022-08-11,"""\\0""",CPF com checksum inválido
+2636,2089,193 LPHF,74,5,2025-03-18,"""\\0""",CPF com checksum inválido
+2664,2111,203 LPHF,74,5,,"""\\0""",CPF com checksum inválido
+2686,2125,51,8,1,2023-01-19,"""\\0""",CPF com checksum inválido
+2719,2151,213 LPHF,74,5,,"""\\0""",CPF com checksum inválido
+2720,2152,214 LPHF,77,5,,"""\\0""",CPF com checksum inválido
+2747,2172,00037,32,15,,"""\\0""",CPF com checksum inválido
+2752,2174,448inativo,10,5,2025-05-15,"""\u0001""",CPF com checksum inválido
+2769,2186,787inativo,34,5,2023-09-12,"""\u0001""",CPF com checksum inválido
+2770,1132,1623,19,1,2023-09-13,"""\\0""",CPF com checksum inválido
+2790,1349,cadastro errado,5,11,2023-11-21,"""\u0001""",CPF com checksum inválido
+2799,1940,879r,67,5,2023-12-19,"""\\0""",CPF com checksum inválido
+2845,2234,615,21,1,,"""\\0""",CPF com checksum inválido
+2852,2241,882,26,5,,"""\\0""",CPF com checksum inválido
+2865,2251,965,42,5,,"""\\0""",CPF com checksum inválido
+2880,2259,2320A,41,5,,"""\\0""",CPF com checksum inválido
+2904,2275,1169,30,5,,"""\\0""",CPF com checksum inválido
+2968,2319,2375 A,41,5,,"""\\0""",CPF com checksum inválido
+2983,2327,258 LPHF,71,5,,"""\\0""",CPF com checksum inválido
+3002,2336,00048,26,15,,"""\\0""",CPF com checksum inválido
+3008,2340,34 LAN inativo,52,30,2026-01-05,"""\u0001""",CPF com checksum inválido
+3066,2379,1341,1,1,,"""\\0""",CPF com checksum inválido
+3071,1053,169 LPHF,74,5,2026-04-22,"""\\0""",CPF com checksum inválido
+1594,1356,0013,34,3,2000-01-01,"""\u0001""",CPF e CNPJ vazios

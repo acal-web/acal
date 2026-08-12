@@ -65,6 +65,12 @@ class Connection {
   static String _formatDate(DateTime date) =>
       '${date.year.toString().padLeft(4, '0')}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
 
+  String get fullLocation {
+    final addressPart = address?.name ?? '—';
+    final numberPart = letter != null ? '$number $letter' : '$number';
+    return '$addressPart, $numberPart';
+  }
+
   Connection copyWith({
     String? id,
     String? customerId,

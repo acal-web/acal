@@ -184,17 +184,11 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
               return Column(
                 children: [
-                  Container(
-                    color: isEven
-                        ? Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLowest
-                        : Colors.transparent,
-                    child: _CategoryRow(
-                      category: category,
-                      onEdit: () => _openForm(category: category),
-                      onDelete: () => _delete(category),
-                    ),
+                  _CategoryRow(
+                    category: category,
+                    onEdit: () => _openForm(category: category),
+                    onDelete: () => _delete(category),
+                    isEven: isEven,
                   ),
                   const Divider(height: 1),
                 ],
@@ -212,11 +206,13 @@ class _CategoryRow extends StatelessWidget {
     required this.category,
     required this.onEdit,
     required this.onDelete,
+    this.isEven = false,
   });
 
   final Category category;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool isEven;
 
   @override
   Widget build(BuildContext context) {
@@ -226,8 +222,13 @@ class _CategoryRow extends StatelessWidget {
       color: category.active ? null : cs.onSurfaceVariant,
     );
 
+    // Combina cor zebrada com cor de inativo
+    Color backgroundColor = category.active
+        ? (isEven ? cs.surfaceContainerLowest : Colors.transparent)
+        : cs.error.withValues(alpha: 0.08);
+
     return ColoredBox(
-      color: category.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
+      color: backgroundColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(

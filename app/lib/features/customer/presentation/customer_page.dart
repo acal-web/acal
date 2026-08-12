@@ -201,18 +201,12 @@ class _CustomersPageState extends State<CustomersPage> {
 
               return Column(
                 children: [
-                  Container(
-                    color: isEven
-                        ? Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLowest
-                        : Colors.transparent,
-                    child: _CustomerRow(
-                      customer: customer,
-                      onEdit: () => _openForm(customer: customer),
-                      onDelete: () => _delete(customer),
-                      onReactivate: () => _reactivate(customer),
-                    ),
+                  _CustomerRow(
+                    customer: customer,
+                    onEdit: () => _openForm(customer: customer),
+                    onDelete: () => _delete(customer),
+                    onReactivate: () => _reactivate(customer),
+                    isEven: isEven,
                   ),
                   const Divider(height: 1),
                 ],
@@ -276,12 +270,14 @@ class _CustomerRow extends StatelessWidget {
     required this.onEdit,
     required this.onDelete,
     this.onReactivate,
+    this.isEven = false,
   });
 
   final Customer customer;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final VoidCallback? onReactivate;
+  final bool isEven;
 
   @override
   Widget build(BuildContext context) {
@@ -291,8 +287,13 @@ class _CustomerRow extends StatelessWidget {
       color: customer.active ? null : cs.onSurfaceVariant,
     );
 
+    // Combina cor zebrada com cor de inativo
+    Color backgroundColor = customer.active
+        ? (isEven ? cs.surfaceContainerLowest : Colors.transparent)
+        : cs.error.withValues(alpha: 0.08);
+
     return ColoredBox(
-      color: customer.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
+      color: backgroundColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(

@@ -15,6 +15,8 @@ class ConnectionService {
     String? addressName,
     String? categoryId,
     bool? active,
+    String? sortBy,
+    String? sortDirection,
   }) async {
     final query = {
       'page': '$page',
@@ -24,6 +26,8 @@ class ConnectionService {
       if (addressName != null && addressName.isNotEmpty) 'address_name': addressName,
       if (categoryId != null && categoryId.isNotEmpty) 'category_id': categoryId,
       if (active != null) 'active': '$active',
+      if (sortBy != null && sortBy.isNotEmpty) 'sort_by': sortBy,
+      if (sortDirection != null && sortDirection.isNotEmpty) 'sort_direction': sortDirection,
     };
     final data = await _http.get('/connections', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Connection.fromJson);

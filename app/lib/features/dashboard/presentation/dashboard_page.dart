@@ -181,7 +181,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final cs = theme.colorScheme;
 
     return Card(
-      elevation: 1,
+      elevation: 2,
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -294,7 +294,7 @@ class _DashboardPageState extends State<DashboardPage> {
     final theme = Theme.of(context);
 
     return Card(
-      elevation: 1,
+      elevation: 2,
       color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

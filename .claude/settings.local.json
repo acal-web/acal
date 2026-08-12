@@ -132,7 +132,9 @@
       "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx|sql\\)$\")",
       "Bash(git -C /workspace log --oneline -5)",
       "Bash(git -C /workspace show d0ece04 --stat)",
-      "Bash(curl -s http://localhost:8080)"
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(pkill -9 -f \"flutter run\")",
+      "Bash(cp /tmp/claude-1001/-workspace/6ed60ba8-d676-4bcb-aeaf-d7195cfcf46a/scratchpad/failing_connections.csv \"/workspace/.legacy /failing_connections.csv\")"
     ],
     "additionalDirectories": [
       "/workspace/.legacy "

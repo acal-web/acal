@@ -183,17 +183,11 @@ class _AddressesPageState extends State<AddressesPage> {
 
               return Column(
                 children: [
-                  Container(
-                    color: isEven
-                        ? Theme.of(context)
-                            .colorScheme
-                            .surfaceContainerLowest
-                        : Colors.transparent,
-                    child: _AddressRow(
-                      address: address,
-                      onEdit: () => _openForm(address: address),
-                      onDelete: () => _delete(address),
-                    ),
+                  _AddressRow(
+                    address: address,
+                    onEdit: () => _openForm(address: address),
+                    onDelete: () => _delete(address),
+                    isEven: isEven,
                   ),
                   const Divider(height: 1),
                 ],
@@ -243,11 +237,13 @@ class _AddressRow extends StatelessWidget {
     required this.address,
     required this.onEdit,
     required this.onDelete,
+    this.isEven = false,
   });
 
   final Address address;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool isEven;
 
   @override
   Widget build(BuildContext context) {
@@ -257,8 +253,13 @@ class _AddressRow extends StatelessWidget {
       color: address.active ? null : cs.onSurfaceVariant,
     );
 
+    // Combina cor zebrada com cor de inativo
+    Color backgroundColor = address.active
+        ? (isEven ? cs.surfaceContainerLowest : Colors.transparent)
+        : cs.error.withValues(alpha: 0.08);
+
     return ColoredBox(
-      color: address.active ? Colors.transparent : cs.error.withValues(alpha: 0.08),
+      color: backgroundColor,
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         child: Row(

@@ -47,6 +47,30 @@ class Connection < ApplicationRecord
     joins(:category).merge(Category.all).where(categories: { has_water_meter: ActiveModel::Type::Boolean.new.cast(has_water_meter) }) unless has_water_meter.nil? || has_water_meter == ""
   }
 
+  scope :sort_by_field, ->(field, direction = "asc") {
+    direction = direction.to_s.downcase
+    direction = "asc" unless %w[asc desc].include?(direction)
+
+    case field
+    when "address_name"
+      joins(:address).order("addresses.name #{direction}, connections.number asc")
+    when "number"
+      joins(:address).order("connections.number #{direction}, addresses.name asc")
+    when "customer_name"
+      joins(:customer, :address).order("customers.name #{direction}, addresses.name asc, connections.number asc")
+    when "category_name"
+      joins(:category, :address).order("categories.name #{direction}, addresses.name asc, connections.number asc")
+    else
+      joins(:customer, :address).order("customers.name asc, addresses.name asc, connections.number asc")
+    end
+  }
+
+  def full_location
+    address_part = address&.name || "—"
+    number_part = letter.present? ? "#{number} #{letter}" : number.to_s
+    "#{address_part}, #{number_part}"
+  end
+
   private
 
   def address_not_already_active
