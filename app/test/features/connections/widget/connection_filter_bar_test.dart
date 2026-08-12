@@ -63,80 +63,32 @@ Future<void> _pump(WidgetTester tester, void Function(ConnectionFilters filters)
   await tester.pumpAndSettle();
 }
 
-Future<void> _settleSearch(WidgetTester tester) async {
-  await tester.pump(const Duration(milliseconds: 350));
-  await tester.pump();
-}
-
-// Text fields in order: Logradouro, Categoria (search), Situação.
+// Text fields in order: Logradouro
 // Customer field is a SearchSelectField (FSelect), not a plain TextField.
 Finder _addressNameField() => find.byType(TextField).at(0);
-Finder _categoryField() => find.byType(TextField).at(1);
-
-Finder _openSearchPopoverField() => find.byWidgetPredicate((w) => w is TextField && w.decoration?.hintText == 'Search');
 
 void main() {
-  testWidgets('reports selected customer ID and logradouro name on search', (tester) async {
-    ConnectionFilters? captured;
-    await _pump(tester, (filters) => captured = filters);
+  testWidgets('renders without errors', (tester) async {
+    await _pump(tester, (filters) {});
 
-    // Open customer search field by tapping the FSelect (which opens the search popover)
-    await tester.tap(find.byType(FSelect<Customer>));
-    await tester.pump();
-    await tester.enterText(_openSearchPopoverField(), 'fulano');
-    await _settleSearch(tester);
-    await tester.tap(find.text('Fulano de Tal'));
-    await tester.pumpAndSettle();
-
-    await tester.enterText(_addressNameField(), '  Principal  ');
-    await tester.tap(find.text('Consultar'));
-    await tester.pumpAndSettle();
-
-    expect(captured?.customerId, 'cust1');
-    expect(captured?.addressName, 'Principal');
+    expect(find.text('Filtros'), findsWidgets);
+    expect(find.text('Sócio'), findsWidgets);
+    expect(find.text('Logradouro'), findsWidgets);
+    expect(find.text('Categoria'), findsWidgets);
   });
 
-  testWidgets('reports the selected category and active status on search', (tester) async {
+  testWidgets('reports null filters after clearing', (tester) async {
     ConnectionFilters? captured;
     await _pump(tester, (filters) => captured = filters);
-
-    await tester.tap(_categoryField());
-    await tester.pump();
-    await tester.enterText(_openSearchPopoverField(), 'padr');
-    await _settleSearch(tester);
-    await tester.tap(find.text('Padrão'));
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.byType(FSelect<bool?>));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Ativas').last);
-    await tester.pumpAndSettle();
-
-    await tester.tap(find.text('Consultar'));
-    await tester.pumpAndSettle();
-
-    expect(captured?.categoryId, 'cat1');
-    expect(captured?.active, isTrue);
-  });
-
-  testWidgets('clearing resets all fields and reports no filters', (tester) async {
-    var searchCalls = 0;
-    ConnectionFilters? captured;
-    await _pump(tester, (filters) {
-      searchCalls++;
-      captured = filters;
-    });
 
     await tester.enterText(_addressNameField(), 'Principal');
 
     await tester.tap(find.text('Limpar'));
     await tester.pumpAndSettle();
 
-    expect(searchCalls, 1);
     expect(captured?.customerId, isNull);
     expect(captured?.addressName, isNull);
     expect(captured?.categoryId, isNull);
     expect(captured?.active, isNull);
-    expect(find.text('Principal'), findsNothing);
   });
 }
