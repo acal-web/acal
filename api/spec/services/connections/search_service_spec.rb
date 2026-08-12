@@ -42,4 +42,13 @@ RSpec.describe Connections::SearchService do
     expect(described_class.call(active: false)).not_to include(active_connection)
     expect(described_class.call(active: true)).to contain_exactly(active_connection)
   end
+
+  it "filters by customer_id" do
+    match = create(:connection, customer: customer, address: address, category: category)
+    create(:connection, customer: create(:customer), address: create(:address), category: category)
+
+    result = described_class.call(customer_id: customer.id)
+
+    expect(result).to contain_exactly(match)
+  end
 end

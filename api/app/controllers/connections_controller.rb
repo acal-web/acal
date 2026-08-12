@@ -6,6 +6,7 @@ class ConnectionsController < ApplicationController
   # GET /connections
   def index
     connections = Connections::SearchService.call(
+      customer_id: params[:customer_id],
       customer_name: params[:customer_name],
       customer_document: params[:customer_document],
       address_name: params[:address_name],

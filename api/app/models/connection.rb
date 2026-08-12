@@ -27,6 +27,10 @@ class Connection < ApplicationRecord
     joins(:customer).merge(Customer.all).where("customers.document ILIKE :q", q: "%#{sanitize_sql_like(digits)}%") if digits.present?
   }
 
+  scope :filter_by_customer_id, ->(customer_id) {
+    where(customer_id: customer_id) if customer_id.present?
+  }
+
   scope :filter_by_address_name, ->(name) {
     joins(:address).merge(Address.all).where("addresses.name ILIKE :q", q: "%#{sanitize_sql_like(name)}%") if name.present?
   }

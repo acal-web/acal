@@ -130,6 +130,16 @@ RSpec.describe "Connections", type: :request do
         expect(response.parsed_body["content"].map { |c| c["customer_id"] }).to eq([ customer.id ])
       end
 
+      it "filters by customer_id" do
+        create(:connection, customer: customer, address: address, category: category)
+        other = create(:customer, name: "Ciclano")
+        create(:connection, customer: other, address: create(:address), category: category)
+
+        get "/connections", params: { customer_id: customer.id }
+
+        expect(response.parsed_body["content"].map { |c| c["customer_id"] }).to eq([ customer.id ])
+      end
+
       it "filters by address name" do
         create(:connection, customer: customer, address: address, category: category)
         create(:connection, customer: create(:customer), address: create(:address, name: "Second Avenue"), category: category)
