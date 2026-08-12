@@ -118,28 +118,49 @@ class _DonutChartPainter extends CustomPainter {
     if (total == 0 || size.isEmpty) return;
 
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = math.min(size.width, size.height) / 2.5;
-    final innerRadius = radius * 0.5;
+    final outerRadius = math.min(size.width, size.height) / 2.8;
+    final innerRadius = outerRadius * 0.6;
 
-    var startAngle = -90.0 * (math.pi / 180);
+    var startAngle = -math.pi / 2;
 
     for (var i = 0; i < membersByCategory.length; i++) {
       final item = membersByCategory[i];
       final fraction = item.count / total;
       final sweepAngle = fraction * 2 * math.pi;
-      final paint = Paint()
-        ..color = colors[i % colors.length]
-        ..style = PaintingStyle.stroke
-        ..strokeWidth = radius - innerRadius;
 
-      canvas.drawArc(
-        Rect.fromCircle(center: center, radius: (radius + innerRadius) / 2),
+      final path = Path();
+
+      // Outer arc
+      path.arcTo(
+        Rect.fromCircle(center: center, radius: outerRadius),
         startAngle,
         sweepAngle,
         false,
-        paint,
       );
 
+      // Line to inner circle
+      final endAngle = startAngle + sweepAngle;
+      final innerEnd = Offset(
+        center.dx + innerRadius * math.cos(endAngle),
+        center.dy + innerRadius * math.sin(endAngle),
+      );
+      path.lineTo(innerEnd.dx, innerEnd.dy);
+
+      // Inner arc (reverse)
+      path.arcTo(
+        Rect.fromCircle(center: center, radius: innerRadius),
+        endAngle,
+        -sweepAngle,
+        false,
+      );
+
+      path.close();
+
+      final paint = Paint()
+        ..color = colors[i % colors.length]
+        ..style = PaintingStyle.fill;
+
+      canvas.drawPath(path, paint);
       startAngle += sweepAngle;
     }
   }
