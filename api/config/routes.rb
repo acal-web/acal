@@ -31,6 +31,12 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :dashboard, only: [] do
+    collection do
+      get :summary
+    end
+  end
+
   # Test-only reset endpoint for the Maestro E2E suite — the block below is
   # never evaluated outside RAILS_ENV=test, so the route doesn't exist in
   # dev/production.

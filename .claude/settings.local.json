@@ -121,7 +121,11 @@
       "Bash(git -C /workspace/api status)",
       "Bash(RAILS_ENV=production rails db:migrate:status)",
       "Bash(git add *)",
-      "Bash(RAILS_ENV=production ENDERECOPESSOA_SQL_PATH=\"../.legacy /acal_enderecopessoa.sql\" bundle exec rails legacy_import:connections)"
+      "Bash(RAILS_ENV=production ENDERECOPESSOA_SQL_PATH=\"../.legacy /acal_enderecopessoa.sql\" bundle exec rails legacy_import:connections)",
+      "Bash(xargs -I{} echo {})",
+      "Bash(ruby -c app/services/dashboard/summary_service.rb)",
+      "Bash(ruby -c app/controllers/dashboard_controller.rb)",
+      "Bash(curl -s http://localhost:3000/dashboard/summary)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy "
