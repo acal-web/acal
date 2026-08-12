@@ -2,10 +2,12 @@ class AddressesController < ApplicationController
   before_action :set_address, only: %i[ show update destroy ]
   before_action :set_address_unscoped, only: %i[ restore ]
 
+  SORTABLE_COLUMNS = %w[ name ].freeze
+
   # GET /addresses
   def index
     addresses = active_scope.filter_by_name(params[:name])
-    render json: paginate(addresses)
+    render json: paginate(sort(addresses))
   end
 
   # GET /addresses/1
@@ -44,6 +46,12 @@ class AddressesController < ApplicationController
       when "all" then Address.unscoped
       else Address
       end
+    end
+
+    def sort(collection)
+      return collection unless SORTABLE_COLUMNS.include?(params[:sort])
+
+      collection.order(params[:sort] => params[:direction] == "desc" ? :desc : :asc)
     end
 
     def set_address

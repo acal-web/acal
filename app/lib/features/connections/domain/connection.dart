@@ -12,6 +12,7 @@ class Connection {
   final bool active;
   final DateTime? membershipDate;
   final bool exclusivelyMember;
+  final int? legacyId;
   final Customer? customer;
   final Address? address;
   final Category? category;
@@ -26,6 +27,7 @@ class Connection {
     this.active = true,
     this.membershipDate,
     this.exclusivelyMember = false,
+    this.legacyId,
     this.customer,
     this.address,
     this.category,
@@ -41,6 +43,7 @@ class Connection {
         active: json['active'] as bool,
         membershipDate: json['membership_date'] != null ? DateTime.parse(json['membership_date'] as String) : null,
         exclusivelyMember: json['exclusively_member'] as bool,
+        legacyId: json['legacy_id'] as int?,
         customer: json['customer'] != null ? Customer.fromJson(json['customer'] as Map<String, dynamic>) : null,
         address: json['address'] != null ? Address.fromJson(json['address'] as Map<String, dynamic>) : null,
         category: json['category'] != null ? Category.fromJson(json['category'] as Map<String, dynamic>) : null,
@@ -56,6 +59,7 @@ class Connection {
         'active': active,
         'membership_date': membershipDate == null ? null : _formatDate(membershipDate!),
         'exclusively_member': exclusivelyMember,
+        if (legacyId != null) 'legacy_id': legacyId,
       };
 
   static String _formatDate(DateTime date) =>
@@ -71,6 +75,7 @@ class Connection {
     bool? active,
     DateTime? membershipDate,
     bool? exclusivelyMember,
+    int? legacyId,
     Customer? customer,
     Address? address,
     Category? category,
@@ -85,6 +90,7 @@ class Connection {
         active: active ?? this.active,
         membershipDate: membershipDate ?? this.membershipDate,
         exclusivelyMember: exclusivelyMember ?? this.exclusivelyMember,
+        legacyId: legacyId ?? this.legacyId,
         customer: customer ?? this.customer,
         address: address ?? this.address,
         category: category ?? this.category,

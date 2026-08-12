@@ -53,8 +53,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_233951) do
     t.integer "number", null: false
     t.datetime "updated_at", null: false
     t.index "address_id, number, COALESCE(letter, ''::character varying)", name: "index_connections_on_address_id_number_letter_unique", unique: true, where: "(deleted_at IS NULL)"
+    t.index "address_id, number, COALESCE(letter, ''::character varying), active", name: "index_connections_on_address_number_letter_active_unique", unique: true, where: "((active = true) AND (deleted_at IS NULL))"
     t.index ["address_id"], name: "index_connections_on_address_id"
-    t.index ["address_id"], name: "index_connections_on_address_id_active_unique", unique: true, where: "((active = true) AND (deleted_at IS NULL))"
     t.index ["category_id"], name: "index_connections_on_category_id"
     t.index ["customer_id"], name: "index_connections_on_customer_id"
   end
