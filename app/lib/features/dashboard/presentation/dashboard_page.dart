@@ -182,7 +182,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Card(
       elevation: 1,
-      color: cs.surface,
+      color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -292,11 +292,10 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Widget _buildQuickActions(BuildContext context) {
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
 
     return Card(
       elevation: 1,
-      color: cs.surface,
+      color: Colors.white,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
