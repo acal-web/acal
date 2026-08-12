@@ -1,7 +1,6 @@
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/dashboard/data/dashboard_service.dart';
 import 'package:acalapp/features/dashboard/domain/dashboard_summary.dart';
-import 'package:acalapp/features/dashboard/widget/category_donut_chart.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/widgets/async_error_view.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
@@ -73,8 +72,6 @@ class _DashboardPageState extends State<DashboardPage> {
                             children: [
                               _buildRecentTransactions(context, data),
                               const SizedBox(height: 24),
-                              _buildMembersByCategory(context, data),
-                              const SizedBox(height: 24),
                               _buildQuickActions(context),
                             ],
                           )
@@ -89,13 +86,7 @@ class _DashboardPageState extends State<DashboardPage> {
                               const SizedBox(width: 24),
                               Expanded(
                                 flex: 1,
-                                child: Column(
-                                  children: [
-                                    _buildMembersByCategory(context, data),
-                                    const SizedBox(height: 24),
-                                    _buildQuickActions(context),
-                                  ],
-                                ),
+                                child: _buildQuickActions(context),
                               ),
                             ],
                           ),
@@ -191,6 +182,7 @@ class _DashboardPageState extends State<DashboardPage> {
 
     return Card(
       elevation: 1,
+      color: cs.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -298,38 +290,13 @@ class _DashboardPageState extends State<DashboardPage> {
     );
   }
 
-  Widget _buildMembersByCategory(BuildContext context, DashboardSummary data) {
-    final theme = Theme.of(context);
-
-    return Card(
-      elevation: 1,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Sócios por Categoria',
-              style: theme.textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            const SizedBox(height: 16),
-            SizedBox(
-              height: 220,
-              child: CategoryDonutChart(membersByCategory: data.membersByCategory),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Widget _buildQuickActions(BuildContext context) {
     final theme = Theme.of(context);
+    final cs = theme.colorScheme;
 
     return Card(
       elevation: 1,
+      color: cs.surface,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
