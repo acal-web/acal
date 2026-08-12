@@ -66,27 +66,40 @@ class _CustomerSelectFieldState extends State<CustomerSelectField> {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      alignment: Alignment.centerRight,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SearchSelectField<Customer>(
-          label: widget.label,
-          hintText: widget.hintText,
-          initialValue: _selected,
-          search: _search,
-          labelBuilder: (c) => c.name,
-          subtitleBuilder: (c) => c.document,
-          onSelected: _handleSelected,
-          validator: widget.validator,
-        ),
-        if (_selected != null)
-          Positioned(
-            right: 12,
-            child: GestureDetector(
-              onTap: _handleClear,
-              child: Icon(Icons.clear, size: 20, color: Theme.of(context).colorScheme.outline),
+        Stack(
+          alignment: Alignment.centerRight,
+          children: [
+            SearchSelectField<Customer>(
+              label: widget.label,
+              hintText: widget.hintText,
+              initialValue: _selected,
+              search: _search,
+              labelBuilder: (c) => c.name,
+              subtitleBuilder: (c) => c.document,
+              onSelected: _handleSelected,
+              validator: widget.validator,
             ),
-          ),
+            if (_selected != null)
+              Positioned(
+                right: 16,
+                top: 48,
+                child: GestureDetector(
+                  onTap: _handleClear,
+                  child: Padding(
+                    padding: const EdgeInsets.all(8),
+                    child: Icon(
+                      Icons.clear,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.outline,
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        ),
       ],
     );
   }
