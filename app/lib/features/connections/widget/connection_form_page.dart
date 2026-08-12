@@ -10,8 +10,8 @@ import 'package:acalapp/features/connections/data/connection_service.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
+import 'package:acalapp/features/customer/widget/customer_select_field.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
-import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -167,13 +167,9 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
       fields: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SearchSelectField<Customer>(
-            label: 'Sócio',
-            hintText: 'Buscar sócio por nome',
+          CustomerSelectField(
+            customerService: _customerService,
             initialValue: _selectedCustomer,
-            search: (query) => _customerService.findAll(name: query, size: 10).then((r) => r.data),
-            labelBuilder: (c) => c.name,
-            subtitleBuilder: (c) => c.document,
             onSelected: (c) => setState(() => _selectedCustomer = c),
             validator: (c) => c == null ? 'Obrigatório' : null,
           ),

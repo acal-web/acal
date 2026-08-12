@@ -1,23 +1,31 @@
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
+import 'package:acalapp/features/customer/data/customer_service.dart';
+import 'package:acalapp/features/customer/domain/customer.dart';
+import 'package:acalapp/features/customer/widget/customer_select_field.dart';
 import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
 typedef ConnectionFilters = ({
-  String? customerName,
-  String? customerDocument,
+  String? customerId,
   String? addressName,
   String? categoryId,
   bool? active,
 });
 
 class ConnectionFilterBar extends StatefulWidget {
-  const ConnectionFilterBar({super.key, required this.onSearch, this.categoryService});
+  const ConnectionFilterBar({
+    super.key,
+    required this.onSearch,
+    this.categoryService,
+    this.customerService,
+  });
 
   final void Function(ConnectionFilters filters) onSearch;
   final CategoryService? categoryService;
+  final CustomerService? customerService;
 
   @override
   State<ConnectionFilterBar> createState() => _ConnectionFilterBarState();
@@ -25,9 +33,9 @@ class ConnectionFilterBar extends StatefulWidget {
 
 class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   late final CategoryService _categoryService;
-  final _customerNameController = TextEditingController();
-  final _customerDocumentController = TextEditingController();
+  late final CustomerService _customerService;
   final _addressNameController = TextEditingController();
+  Customer? _customer;
   Category? _category;
   bool? _active;
   bool _expanded = false;
@@ -36,19 +44,17 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   void initState() {
     super.initState();
     _categoryService = widget.categoryService ?? CategoryService();
+    _customerService = widget.customerService ?? CustomerService();
   }
 
   @override
   void dispose() {
-    _customerNameController.dispose();
-    _customerDocumentController.dispose();
     _addressNameController.dispose();
     super.dispose();
   }
 
   void _search() => widget.onSearch((
-        customerName: _customerNameController.text.trim(),
-        customerDocument: _customerDocumentController.text.replaceAll(RegExp(r'[^0-9]'), ''),
+        customerId: _customer?.id,
         addressName: _addressNameController.text.trim(),
         categoryId: _category?.id,
         active: _active,
@@ -56,13 +62,12 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
 
   void _clear() {
     setState(() {
-      _customerNameController.clear();
-      _customerDocumentController.clear();
+      _customer = null;
       _addressNameController.clear();
       _category = null;
       _active = null;
     });
-    widget.onSearch((customerName: null, customerDocument: null, addressName: null, categoryId: null, active: null));
+    widget.onSearch((customerId: null, addressName: null, categoryId: null, active: null));
   }
 
   @override
@@ -71,19 +76,11 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
       builder: (context, constraints) {
         final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
-        final customerNameField = FTextField(
-          control: FTextFieldControl.managed(controller: _customerNameController),
-          label: const Text('Sócio'),
-          hint: 'Buscar por nome',
-          onSubmit: (_) => _search(),
-        );
-
-        final customerDocumentField = FTextField(
-          control: FTextFieldControl.managed(controller: _customerDocumentController),
-          keyboardType: TextInputType.number,
-          label: const Text('Documento'),
-          hint: 'CPF ou CNPJ',
-          onSubmit: (_) => _search(),
+        final customerField = CustomerSelectField(
+          customerService: _customerService,
+          initialValue: _customer,
+          active: null,
+          onSelected: (c) => setState(() => _customer = c),
         );
 
         final addressNameField = FTextField(
@@ -158,9 +155,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
             ? Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  customerNameField,
-                  const SizedBox(height: 8),
-                  customerDocumentField,
+                  customerField,
                   const SizedBox(height: 8),
                   addressNameField,
                   const SizedBox(height: 8),
@@ -183,9 +178,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Expanded(child: customerNameField),
-                      const SizedBox(width: 8),
-                      Expanded(child: customerDocumentField),
+                      Expanded(child: customerField),
                       const SizedBox(width: 8),
                       Expanded(child: addressNameField),
                     ],

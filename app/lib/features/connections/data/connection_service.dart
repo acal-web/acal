@@ -10,6 +10,7 @@ class ConnectionService {
   Future<PagedResult<Connection>> findAll({
     int page = 0,
     int size = 10,
+    String? customerId,
     String? customerName,
     String? customerDocument,
     String? addressName,
@@ -21,6 +22,7 @@ class ConnectionService {
     final query = {
       'page': '$page',
       'size': '$size',
+      if (customerId != null && customerId.isNotEmpty) 'customer_id': customerId,
       if (customerName != null && customerName.isNotEmpty) 'customer_name': customerName,
       if (customerDocument != null && customerDocument.isNotEmpty) 'customer_document': customerDocument,
       if (addressName != null && addressName.isNotEmpty) 'address_name': addressName,

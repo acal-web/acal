@@ -29,8 +29,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   int _totalCount = 0;
   bool _isLoading = false;
   bool _hasMorePages = true;
-  String? _filterCustomerName;
-  String? _filterCustomerDocument;
+  String? _filterCustomerId;
   String? _filterAddressName;
   String? _filterCategoryId;
   bool? _filterActive;
@@ -68,8 +67,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
       final result = await _service.findAll(
         page: _currentPage,
         size: _pageSize,
-        customerName: _filterCustomerName,
-        customerDocument: _filterCustomerDocument,
+        customerId: _filterCustomerId,
         addressName: _filterAddressName,
         categoryId: _filterCategoryId,
         active: _filterActive,
@@ -101,8 +99,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   }
 
   void _search(ConnectionFilters filters) async {
-    _filterCustomerName = filters.customerName;
-    _filterCustomerDocument = filters.customerDocument;
+    _filterCustomerId = filters.customerId;
     _filterAddressName = filters.addressName;
     _filterCategoryId = filters.categoryId;
     _filterActive = filters.active;
