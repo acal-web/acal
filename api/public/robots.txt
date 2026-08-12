@@ -1,1 +1,20 @@
-# See https://www.robotstxt.org/robotstxt.html for documentation on how to use the robots.txt file
+# robots.txt for ACAL API
+# This is a private API, not a public website for indexing
+
+User-agent: *
+Disallow: /
+
+# Allow Google services to crawl for monitoring/indexing purposes
+User-agent: Googlebot
+Disallow:
+
+# Allow Google AdsBot
+User-agent: AdsBot-Google
+Disallow:
+
+# Allow Bingbot
+User-agent: Bingbot
+Disallow: /
+
+# Sitemap
+Sitemap: https://api.acalapp.com/sitemap.xml
