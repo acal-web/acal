@@ -4,7 +4,7 @@ class AddressesController < ApplicationController
 
   # GET /addresses
   def index
-    addresses = active_scope.filter_by_name(params[:name]).filter_by_kind(params[:kind])
+    addresses = active_scope.filter_by_name(params[:name])
     render json: paginate(addresses)
   end
 
@@ -55,6 +55,6 @@ class AddressesController < ApplicationController
     end
 
     def form
-      AddressForm.new(**params.expect(address: [ :name, :kind, :legacy_id ]).to_h.symbolize_keys)
+      AddressForm.new(**params.expect(address: [ :name, :legacy_id ]).to_h.symbolize_keys)
     end
 end

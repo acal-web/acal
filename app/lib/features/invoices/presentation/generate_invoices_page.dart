@@ -253,7 +253,7 @@ class _FilterBar extends StatelessWidget {
     final addressField = FSelect<String?>(
       items: {
         'Todos': null,
-        for (final address in addresses) address.fullAddress: address.id,
+        for (final address in addresses) address.name: address.id,
       },
       control: FSelectControl.managed(initial: addressId, onChange: loadingAddresses ? null : onAddressChanged),
       label: const Text('Logradouro'),

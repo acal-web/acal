@@ -7,7 +7,7 @@ Future<bool> deleteConnection(BuildContext context, ConnectionService service, C
   final confirmed = await showDeleteConfirmDialog(
     context: context,
     title: 'Excluir ligação',
-    message: 'Deseja excluir a ligação de "${connection.customer?.name}" em "${connection.address?.fullAddress}"?',
+    message: 'Deseja excluir a ligação de "${connection.customer?.name}" em "${connection.address?.name}"?',
   );
   if (!confirmed) return false;
   await service.delete(connection.id!);

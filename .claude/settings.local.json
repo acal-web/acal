@@ -73,7 +73,9 @@
       "Bash(grep -o \"INSERT INTO.\\\\{0,80\\\\}\" \"/workspace/.legacy /acal_categoriasocio.sql\")",
       "Bash(xxd)",
       "Bash(rails runner *)",
-      "Bash(CATEGORIA_SQL_PATH=\"../.legacy /acal_categoriasocio.sql\" TAXA_SQL_PATH=\"../.legacy /acal_taxa.sql\" bin/rails legacy_import:categories)"
+      "Bash(CATEGORIA_SQL_PATH=\"../.legacy /acal_categoriasocio.sql\" TAXA_SQL_PATH=\"../.legacy /acal_taxa.sql\" bin/rails legacy_import:categories)",
+      "Bash(awk '/create_table \"addresses\"/,/^  end/' db/schema.rb)",
+      "Bash(bin/rails generate *)"
     ]
   }
 }

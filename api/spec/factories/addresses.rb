@@ -1,6 +1,5 @@
 FactoryBot.define do
   factory :address do
-    kind { "home" }
-    sequence(:name) { |n| "Street #{n}" }
+    sequence(:name) { |n| "Home Street #{n}" }
   end
 end

@@ -26,7 +26,7 @@ class _CustomersPageState extends State<CustomersPage> {
   final List<Customer> _allCustomers = [];
 
   int _currentPage = 0;
-  final int _pageSize = 25;
+  final int _pageSize = 100;
   int _totalCount = 0;
   bool _isLoading = false;
   bool _hasMorePages = true;

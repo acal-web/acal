@@ -15,23 +15,20 @@ describe LegacyImport::AddressImporter do
       expect(result.skipped_duplicates).to eq(0)
       expect(result.skipped_invalid.length).to eq(0)
 
-      # Check first address
+      # Check first address (tipo + nome merged)
       address1 = Address.find_by(legacy_id: 1)
       expect(address1).to be_present
-      expect(address1.kind).to eq("Rua")
-      expect(address1.name).to eq("Alegria")
+      expect(address1.name).to eq("Rua Alegria")
 
       # Check second address
       address2 = Address.find_by(legacy_id: 2)
       expect(address2).to be_present
-      expect(address2.kind).to eq("Travessa")
-      expect(address2.name).to eq("Alegria")
+      expect(address2.name).to eq("Travessa Alegria")
 
       # Check third address
       address3 = Address.find_by(legacy_id: 3)
       expect(address3).to be_present
-      expect(address3.kind).to eq("Rua")
-      expect(address3.name).to eq("ACM")
+      expect(address3.name).to eq("Rua ACM")
     end
 
     it "is idempotent on re-runs" do

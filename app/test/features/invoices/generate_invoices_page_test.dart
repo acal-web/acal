@@ -46,7 +46,7 @@ class _FakeInvoiceService extends InvoiceService {
 
 class _FakeAddressService extends AddressService {
   @override
-  Future<PagedResult<Address>> findAll({int page = 0, int size = 10, String? name, String? kind, bool? active = true, String? sort, bool sortAscending = true}) async =>
+  Future<PagedResult<Address>> findAll({int page = 0, int size = 10, String? name, bool? active = true, String? sort, bool sortAscending = true}) async =>
       const PagedResult(data: [], pagination: _pagination);
 }
 

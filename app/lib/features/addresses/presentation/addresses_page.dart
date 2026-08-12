@@ -29,7 +29,6 @@ class _AddressesPageState extends State<AddressesPage> {
   bool _isLoading = false;
   bool _hasMorePages = true;
   String? _filterName;
-  String? _filterKind;
   bool? _filterActive = true;
   String? _errorMessage;
 
@@ -64,9 +63,8 @@ class _AddressesPageState extends State<AddressesPage> {
         page: _currentPage,
         size: _pageSize,
         name: _filterName,
-        kind: _filterKind,
         active: _filterActive,
-        sort: 'kind,name',
+        sort: 'name',
         sortAscending: true,
       );
 
@@ -93,9 +91,8 @@ class _AddressesPageState extends State<AddressesPage> {
     }
   }
 
-  void _search({String? name, String? kind, required bool? active}) async {
+  void _search({String? name, required bool? active}) async {
     _filterName = name;
-    _filterKind = kind;
     _filterActive = active;
     await _loadFirstPage();
   }
@@ -226,12 +223,7 @@ class _TableHeader extends StatelessWidget {
       child: Row(
         spacing: columnSpacing,
         children: [
-          SizedBox(
-            width: 120,
-            child: Text('Tipo', style: headerStyle),
-          ),
           Expanded(
-            flex: 3,
             child: Text('Nome', style: headerStyle),
           ),
           SizedBox(
@@ -272,15 +264,7 @@ class _AddressRow extends StatelessWidget {
         child: Row(
           spacing: columnSpacing,
           children: [
-            SizedBox(
-              width: 120,
-              child: Text(
-                address.kind,
-                style: style,
-              ),
-            ),
             Expanded(
-              flex: 3,
               child: Text(
                 address.name,
                 style: style,

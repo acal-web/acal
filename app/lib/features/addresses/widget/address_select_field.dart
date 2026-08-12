@@ -5,7 +5,7 @@ import 'package:forui/forui.dart';
 
 /// A preloaded combobox for picking an [Address] — it loads the full
 /// address list once and lets the user pick from it (no search-as-you-type),
-/// grouped by [Address.kind] and sorted alphabetically within each kind.
+/// sorted alphabetically by name.
 class AddressSelectField extends StatefulWidget {
   const AddressSelectField({
     super.key,
@@ -35,41 +35,30 @@ class _AddressSelectFieldState extends State<AddressSelectField> {
     _future = widget.addressService.findAll(size: 500).then((r) => r.data);
   }
 
-  List<FSelectItemMixin> _sections(List<Address> addresses) {
-    final sorted = [...addresses]..sort((a, b) {
-        final byKind = kinds.indexOf(a.kind).compareTo(kinds.indexOf(b.kind));
-        return byKind != 0 ? byKind : a.name.toLowerCase().compareTo(b.name.toLowerCase());
-      });
-
-    final byKind = <String, List<Address>>{};
-    for (final address in sorted) {
-      byKind.putIfAbsent(address.kind, () => []).add(address);
-    }
-
-    return [
-      for (final entry in byKind.entries)
-        FSelectSection<Address>(
-          label: Text(entry.key),
-          items: {for (final address in entry.value) address.name: address},
-        ),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<List<Address>>(
       future: _future,
       builder: (context, snapshot) {
         final loading = snapshot.connectionState != ConnectionState.done;
+        final addresses = snapshot.data ?? [];
+        final sorted = [...addresses]..sort((a, b) => a.name.toLowerCase().compareTo(b.name.toLowerCase()));
 
         return FSelect<Address>.rich(
-          format: (a) => a.fullAddress,
+          format: (a) => a.name,
           control: FSelectControl.managed(initial: widget.initialValue, onChange: widget.onSelected),
           label: Text(widget.label),
           hint: loading ? 'Carregando...' : 'Selecione o logradouro',
           enabled: !loading,
           validator: widget.validator ?? (_) => null,
-          children: loading ? const [] : _sections(snapshot.data!),
+          children: loading
+              ? const []
+              : [
+                  FSelectSection<Address>(
+                    label: const Text('Endereços'),
+                    items: {for (final address in sorted) address.name: address},
+                  ),
+                ],
         );
       },
     );

@@ -7,7 +7,7 @@ Future<bool> deleteAddress(BuildContext context, AddressService service, Address
   final confirmed = await showDeleteConfirmDialog(
     context: context,
     title: 'Excluir logradouro',
-    message: 'Deseja excluir "${address.fullAddress}"?',
+    message: 'Deseja excluir "${address.name}"?',
   );
   if (!confirmed) return false;
   await service.delete(address.id!);

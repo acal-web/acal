@@ -25,7 +25,7 @@ final _connection = Connection(
   number: 12,
   letter: 'A',
   customer: const Customer(id: 'cust-1', name: 'Fulano de Tal', document: '12345678900', voter: false),
-  address: const Address(id: 'addr-1', kind: 'Avenida', name: 'Fernando Daltro'),
+  address: const Address(id: 'addr-1', name: 'Avenida Fernando Daltro'),
   category: const Category(
     id: 'cat-1',
     name: 'Residente',

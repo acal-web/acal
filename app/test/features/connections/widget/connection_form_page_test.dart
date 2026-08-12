@@ -42,7 +42,7 @@ class _FakeAddressService extends AddressService {
   final List<Address> items;
 
   @override
-  Future<PagedResult<Address>> findAll({int page = 0, int size = 10, String? name, String? kind, bool? active = true, String? sort, bool sortAscending = true}) async {
+  Future<PagedResult<Address>> findAll({int page = 0, int size = 10, String? name, bool? active = true, String? sort, bool sortAscending = true}) async {
     final filtered =
         (name == null || name.isEmpty) ? items : items.where((a) => a.name.toLowerCase().contains(name.toLowerCase())).toList();
     return PagedResult(data: filtered, pagination: _pagination);
@@ -70,7 +70,7 @@ class _FakeConnectionService extends ConnectionService {
 }
 
 const _customer = Customer(id: 'cust1', name: 'Fulano de Tal', document: '12345678909', voter: true);
-const _address = Address(id: 'addr1', kind: 'Rua', name: 'Principal');
+const _address = Address(id: 'addr1', name: 'Rua Principal');
 const _category = Category(id: 'cat1', name: 'Padrão', group: 'efetivo', hasWaterMeter: true, waterPrice: 12.5, membershipPrice: 30);
 
 Future<void> _pump(WidgetTester tester, {ConnectionService? connectionService}) async {
@@ -130,7 +130,7 @@ Future<void> _fillAllFields(WidgetTester tester) async {
 
   await tester.tap(_addressField());
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Principal').last);
+  await tester.tap(find.text('Rua Principal').last);
   await tester.pumpAndSettle();
 
   await tester.enterText(_numberField(), '12');

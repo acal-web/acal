@@ -1,7 +1,7 @@
 require "rails_helper"
 
 RSpec.describe "Addresses", type: :request do
-  let(:valid_params) { { address: { kind: "home", name: "Main Street" } } }
+  let(:valid_params) { { address: { name: "Rua Main Street" } } }
 
   describe "Listing & Filtering" do
     describe "GET /addresses" do
@@ -51,12 +51,12 @@ RSpec.describe "Addresses", type: :request do
 
       context "filtering" do
         it "filters by name" do
-          create(:address, name: "Main Street")
-          create(:address, name: "Second Avenue")
+          create(:address, name: "Rua Main Street")
+          create(:address, name: "Avenida Second Avenue")
 
           get "/addresses", params: { name: "main" }
 
-          expect(response.parsed_body["content"].map { |a| a["name"] }).to eq([ "Main Street" ])
+          expect(response.parsed_body["content"].map { |a| a["name"] }).to eq([ "Rua Main Street" ])
         end
       end
 
@@ -87,8 +87,7 @@ RSpec.describe "Addresses", type: :request do
           expect(response).to have_http_status(:ok)
           expect(response.parsed_body).to eq(
             "id" => address.id,
-            "kind" => "home",
-            "name" => "Main Street",
+            "name" => "Rua Main Street",
             "created_at" => address.created_at.as_json,
             "updated_at" => address.updated_at.as_json,
             "deleted_at" => nil,
@@ -130,8 +129,7 @@ RSpec.describe "Addresses", type: :request do
           expect(response).to have_http_status(:created)
           expect(response.parsed_body).to eq(
             "id" => address.id,
-            "kind" => "home",
-            "name" => "Main Street",
+            "name" => "Rua Main Street",
             "created_at" => address.created_at.as_json,
             "updated_at" => address.updated_at.as_json,
             "deleted_at" => nil,
@@ -150,23 +148,16 @@ RSpec.describe "Addresses", type: :request do
         end
 
         it "strips leading and trailing whitespace from the name" do
-          post "/addresses", params: { address: valid_params[:address].merge(name: "  Main Street  ") }
+          post "/addresses", params: { address: valid_params[:address].merge(name: "  Rua Main Street  ") }
 
           expect(response).to have_http_status(:created)
-          expect(response.parsed_body["name"]).to eq("Main Street")
+          expect(response.parsed_body["name"]).to eq("Rua Main Street")
         end
       end
 
       context "validation errors" do
-        it "rejects a request without a kind" do
-          post "/addresses", params: { address: valid_params[:address].except(:kind) }
-
-          expect(response).to have_http_status(:unprocessable_content)
-          expect(response.parsed_body).to eq("kind" => [ "can't be blank" ])
-        end
-
         it "rejects a request without a name" do
-          post "/addresses", params: { address: valid_params[:address].except(:name) }
+          post "/addresses", params: { address: { name: "" } }
 
           expect(response).to have_http_status(:unprocessable_content)
           expect(response.parsed_body).to eq("name" => [ "can't be blank", "is too short (minimum is 3 characters)" ])
@@ -189,7 +180,7 @@ RSpec.describe "Addresses", type: :request do
           post "/addresses", params: valid_params
 
           expect {
-            post "/addresses", params: { address: { kind: "HOME", name: "MAIN STREET" } }
+            post "/addresses", params: { address: { name: "RUA MAIN STREET" } }
           }.not_to change(Address, :count)
 
           expect(response).to have_http_status(:unprocessable_content)
@@ -199,7 +190,7 @@ RSpec.describe "Addresses", type: :request do
           )
         end
 
-        it "rejects recreating a soft-deleted address with the same kind and name" do
+        it "rejects recreating a soft-deleted address with the same name" do
           post "/addresses", params: valid_params
           id = response.parsed_body["id"]
           delete "/addresses/#{id}"
@@ -222,14 +213,13 @@ RSpec.describe "Addresses", type: :request do
           post "/addresses", params: valid_params
           id = response.parsed_body["id"]
 
-          patch "/addresses/#{id}", params: { address: { kind: "work", name: "Second Street" } }
+          patch "/addresses/#{id}", params: { address: { name: "Avenida Second Street" } }
 
           address = Address.find(id)
           expect(response).to have_http_status(:ok)
           expect(response.parsed_body).to eq(
             "id" => address.id,
-            "kind" => "work",
-            "name" => "Second Street",
+            "name" => "Avenida Second Street",
             "created_at" => address.created_at.as_json,
             "updated_at" => address.updated_at.as_json,
             "deleted_at" => nil,
@@ -239,21 +229,11 @@ RSpec.describe "Addresses", type: :request do
       end
 
       context "validation errors" do
-        it "rejects a request without a kind" do
-          post "/addresses", params: valid_params
-          id = response.parsed_body["id"]
-
-          patch "/addresses/#{id}", params: { address: valid_params[:address].except(:kind) }
-
-          expect(response).to have_http_status(:unprocessable_content)
-          expect(response.parsed_body).to eq("kind" => [ "can't be blank" ])
-        end
-
         it "rejects a request without a name" do
           post "/addresses", params: valid_params
           id = response.parsed_body["id"]
 
-          patch "/addresses/#{id}", params: { address: valid_params[:address].except(:name) }
+          patch "/addresses/#{id}", params: { address: { name: nil } }
 
           expect(response).to have_http_status(:unprocessable_content)
           expect(response.parsed_body).to eq("name" => [ "can't be blank", "is too short (minimum is 3 characters)" ])
@@ -263,10 +243,10 @@ RSpec.describe "Addresses", type: :request do
       context "uniqueness constraints" do
         it "rejects updating to a duplicate address" do
           post "/addresses", params: valid_params
-          post "/addresses", params: { address: { kind: "work", name: "Other Street" } }
+          post "/addresses", params: { address: { name: "Avenida Other Street" } }
           id = response.parsed_body["id"]
 
-          patch "/addresses/#{id}", params: { address: { kind: "home", name: "Main Street" } }
+          patch "/addresses/#{id}", params: { address: { name: "Rua Main Street" } }
 
           expect(response).to have_http_status(:unprocessable_content)
           expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
@@ -274,10 +254,10 @@ RSpec.describe "Addresses", type: :request do
 
         it "rejects updating to a duplicate address with different case" do
           post "/addresses", params: valid_params
-          post "/addresses", params: { address: { kind: "work", name: "Other Street" } }
+          post "/addresses", params: { address: { name: "Avenida Other Street" } }
           id = response.parsed_body["id"]
 
-          patch "/addresses/#{id}", params: { address: { kind: "HOME", name: "MAIN STREET" } }
+          patch "/addresses/#{id}", params: { address: { name: "RUA MAIN STREET" } }
 
           expect(response).to have_http_status(:unprocessable_content)
           expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")

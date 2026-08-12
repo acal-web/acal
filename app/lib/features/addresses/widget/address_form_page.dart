@@ -20,7 +20,6 @@ class _AddressFormPageState extends State<AddressFormPage> {
   final _formKey = GlobalKey<FormState>();
   final _service = AddressService();
 
-  late String _kind;
   late final TextEditingController _nameController;
   bool _saving = false;
 
@@ -28,17 +27,15 @@ class _AddressFormPageState extends State<AddressFormPage> {
   String get _toastMessage => _isEditing ? 'Endereço atualizado com sucesso.' : 'Endereço criado com sucesso.';
   String get _title => _isEditing ? 'Editar Endereço' : 'Novo Endereço';
 
-
   @override
   void initState() {
     super.initState();
 
-    final (kind, name) = switch (widget.address) {
-      Address(:final kind, :final name) => (kind, name),
-      null => (kinds.first, ''),
+    final name = switch (widget.address) {
+      Address(:final name) => name,
+      null => '',
     };
 
-    _kind = kind;
     _nameController = TextEditingController(text: name);
   }
 
@@ -56,7 +53,6 @@ class _AddressFormPageState extends State<AddressFormPage> {
     try {
       final address = Address(
         id: widget.address?.id,
-        kind: _kind,
         name: _nameController.text.trim(),
       );
       if (_isEditing) {
@@ -85,44 +81,11 @@ class _AddressFormPageState extends State<AddressFormPage> {
       title: _title,
       onSave: _save,
       saving: _saving,
-      fields: LayoutBuilder(
-        builder: (context, constraints) {
-          final kindField = FSelect<String>(
-            items: {for (final t in kinds) t: t},
-            control: FSelectControl.managed(initial: _kind, onChange: (v) {}),
-            label: const Text('Tipo'),
-            onSaved: (v) => _kind = v!,
-            validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
-          );
-          final nameField = FTextFormField(
-            control: FTextFieldControl.managed(controller: _nameController),
-            label: const Text('Nome'),
-            hint: 'Digite o logradouro',
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
-          );
-
-          // Below this width the two fields no longer fit comfortably side
-          // by side inside the dialog's padding, so they stack instead.
-          if (constraints.maxWidth < 360) {
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                kindField,
-                const SizedBox(height: 12),
-                nameField,
-              ],
-            );
-          }
-
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Expanded(child: kindField),
-              const SizedBox(width: 12),
-              Expanded(flex: 2, child: nameField),
-            ],
-          );
-        },
+      fields: FTextFormField(
+        control: FTextFieldControl.managed(controller: _nameController),
+        label: const Text('Endereço'),
+        hint: 'Digite o logradouro com tipo (ex: Rua das Flores)',
+        validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
       ),
     );
   }

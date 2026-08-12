@@ -168,7 +168,7 @@ class _ConnectionRow extends StatelessWidget {
           Expanded(
             flex: 3,
             child: Text(
-              connection.address?.fullAddress ?? '—',
+              connection.address?.name ?? '—',
               style: theme.textTheme.bodyMedium,
             ),
           ),

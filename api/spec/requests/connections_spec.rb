@@ -18,7 +18,6 @@ RSpec.describe "Connections", type: :request do
   def address_json(address)
     {
       "id" => address.id,
-      "kind" => address.kind,
       "name" => address.name,
       "legacy_id" => address.legacy_id,
       "created_at" => address.created_at.as_json,

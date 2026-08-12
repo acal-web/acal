@@ -240,7 +240,7 @@ class _InvoiceRowState extends State<_InvoiceRow> {
             child: Text(
               connection == null
                   ? '—'
-                  : '${connection.address?.fullAddress ?? '—'}, ${connection.number}${connection.letter ?? ''}',
+                  : '${connection.address?.name ?? '—'}, ${connection.number}${connection.letter ?? ''}',
               style: theme.textTheme.bodyMedium,
             ),
           ),

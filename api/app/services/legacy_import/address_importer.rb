@@ -22,11 +22,15 @@ module LegacyImport
         next (skipped_duplicates << legacy_id) if Address.exists?(legacy_id:)
 
         kind = (row["tipo"] || "").strip
-        name = (row["nome"] || "").strip
+        nome = (row["nome"] || "").strip
 
-        if kind.blank?
-          skipped_invalid << { legacy_id:, reason: "Tipo de via vazio" }
-          next
+        # Merge kind and name: "Rua" + "das Flores" -> "Rua das Flores"
+        name = if kind.present? && nome.present?
+                 "#{kind} #{nome}"
+        elsif kind.present?
+                 kind
+        elsif nome.present?
+                 nome
         end
 
         if name.blank?
@@ -35,7 +39,6 @@ module LegacyImport
         end
 
         form = AddressForm.new(
-          kind:,
           name:,
           legacy_id:,
         )
@@ -44,7 +47,7 @@ module LegacyImport
       rescue ActiveRecord::RecordInvalid => e
         skipped_invalid << { legacy_id:, reason: e.message }
       rescue ActiveRecord::RecordNotUnique => e
-        skipped_invalid << { legacy_id:, reason: "Endereço duplicado: #{kind} #{name} já existe" }
+        skipped_invalid << { legacy_id:, reason: "Endereço duplicado: #{name} já existe" }
       end
 
       Result.new(imported: imported.size, skipped_duplicates: skipped_duplicates.size, skipped_invalid:)

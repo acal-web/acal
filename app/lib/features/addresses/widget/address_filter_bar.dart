@@ -2,8 +2,6 @@ import 'package:acalapp/core/config/layout_config.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-const _kinds = ['Avenida', 'Fazenda', 'Praça', 'Rua', 'Travessa'];
-
 enum _ActiveFilter {
   active,
   inactive,
@@ -19,7 +17,7 @@ enum _ActiveFilter {
 class AddressFilterBar extends StatefulWidget {
   const AddressFilterBar({super.key, required this.onSearch});
 
-  final void Function({String? name, String? kind, required bool? active}) onSearch;
+  final void Function({String? name, required bool? active}) onSearch;
 
   @override
   State<AddressFilterBar> createState() => _AddressFilterBarState();
@@ -27,7 +25,6 @@ class AddressFilterBar extends StatefulWidget {
 
 class _AddressFilterBarState extends State<AddressFilterBar> {
   final _nameController = TextEditingController();
-  String? _selectedKind;
   _ActiveFilter _active = _ActiveFilter.active;
   bool _expanded = false;
 
@@ -39,14 +36,12 @@ class _AddressFilterBarState extends State<AddressFilterBar> {
 
   void _search() => widget.onSearch(
         name: _nameController.text.trim(),
-        kind: _selectedKind,
         active: _active.value,
       );
 
   void _clear() {
     setState(() {
       _nameController.clear();
-      _selectedKind = null;
       _active = _ActiveFilter.active;
     });
     widget.onSearch(active: true);
@@ -63,17 +58,6 @@ class _AddressFilterBarState extends State<AddressFilterBar> {
           label: const Text('Logradouro:'),
           hint: 'Buscar por nome:',
           onSubmit: (_) => _search(),
-        );
-
-        final kindField = FSelect<String>(
-          items: {
-            for (final kind in _kinds) kind: kind,
-          },
-          control: FSelectControl.managed(
-            initial: _selectedKind,
-            onChange: (v) => setState(() => _selectedKind = v),
-          ),
-          label: const Text('Tipo'),
         );
 
         final activeField = FSelect<_ActiveFilter>(
@@ -141,8 +125,6 @@ class _AddressFilterBarState extends State<AddressFilterBar> {
                 children: [
                   nameField,
                   const SizedBox(height: 8),
-                  kindField,
-                  const SizedBox(height: 8),
                   activeField,
                   const SizedBox(height: 8),
                   Row(
@@ -161,8 +143,6 @@ class _AddressFilterBarState extends State<AddressFilterBar> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Expanded(flex: 6, child: nameField),
-                      const SizedBox(width: 8),
-                      Expanded(flex: 2, child: kindField),
                       const SizedBox(width: 8),
                       Expanded(flex: 2, child: activeField),
                     ],

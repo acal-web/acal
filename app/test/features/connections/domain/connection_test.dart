@@ -23,8 +23,7 @@ void main() {
         },
         'address': {
           'id': 'addr1',
-          'kind': 'Rua',
-          'name': 'Principal',
+          'name': 'Rua Principal',
         },
         'category': {
           'id': 'cat1',
@@ -47,7 +46,7 @@ void main() {
       expect(connection.letter, 'A');
       expect(connection.active, isTrue);
       expect(connection.customer?.name, 'Fulano de Tal');
-      expect(connection.address?.fullAddress, 'Rua Principal');
+      expect(connection.address?.name, 'Rua Principal');
       expect(connection.category?.name, 'Padrão');
       expect(connection.membershipDate, DateTime(2024, 3, 15));
       expect(connection.exclusivelyMember, isTrue);

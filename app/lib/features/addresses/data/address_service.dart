@@ -11,7 +11,6 @@ class AddressService {
     int page = 0,
     int size = 10,
     String? name,
-    String? kind,
     bool? active = true,
     String? sort,
     bool sortAscending = true,
@@ -21,7 +20,6 @@ class AddressService {
       'size': '$size',
       'active': active == null ? 'all' : '$active',
       if (name?.isNotEmpty ?? false) 'name': name!,
-      if (kind?.isNotEmpty ?? false) 'kind': kind!,
       if (sort case final s?) ...<String, String>{'sort': s, 'direction': sortAscending ? 'asc' : 'desc'},
     };
     final data = await _http.get('/addresses', query: query) as Map<String, dynamic>;
