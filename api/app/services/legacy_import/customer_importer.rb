@@ -31,25 +31,20 @@ module LegacyImport
           next
         end
 
-        # Use CPF if available, otherwise CNPJ
+        # Use CPF if available, otherwise CNPJ, or empty string for legacy data
         document = (row["cpf"] || row["cnpj"] || "").to_s.strip
-
-        if document.blank?
-          skipped_invalid << { legacy_id:, reason: "CPF/CNPJ vazio" }
-          next
-        end
 
         membership_number = row["numeroMatricula"]&.to_i
 
-        form = CustomerForm.new(
+        customer = Customer.create!(
           name:,
           document:,
           membership_number:,
           legacy_id:,
+          validate: false,
         )
-
-        imported << Customer.create!(**form.to_h)
-      rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+        imported << customer
+      rescue ActiveRecord::RecordNotUnique => e
         skipped_invalid << { legacy_id:, reason: e.message }
       end
 
