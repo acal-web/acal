@@ -125,7 +125,14 @@
       "Bash(xargs -I{} echo {})",
       "Bash(ruby -c app/services/dashboard/summary_service.rb)",
       "Bash(ruby -c app/controllers/dashboard_controller.rb)",
-      "Bash(curl -s http://localhost:3000/dashboard/summary)"
+      "Bash(curl -s http://localhost:3000/dashboard/summary)",
+      "Bash(netstat -tlnp)",
+      "Bash(flutter build *)",
+      "Bash(pkill -f flutter)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js|jsx|sql\\)$\")",
+      "Bash(git -C /workspace log --oneline -5)",
+      "Bash(git -C /workspace show d0ece04 --stat)",
+      "Bash(curl -s http://localhost:8080)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy "

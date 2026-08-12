@@ -94,7 +94,6 @@ class _DonutPainter extends StatelessWidget {
         colors: colors,
         total: total,
       ),
-      size: Size.infinite,
     );
   }
 }
