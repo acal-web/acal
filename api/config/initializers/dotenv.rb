@@ -1,4 +1,4 @@
-require "dotenv"
-
-# Load .env in all environments
-Dotenv.load(".env", ".env.local")
+if Rails.env.development? || Rails.env.test?
+  require "dotenv"
+  Dotenv.load(".env", ".env.local")
+end
