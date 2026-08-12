@@ -24,8 +24,7 @@ module LegacyImport
         legacy_id = row["id"].to_i
         next (skipped_duplicates << legacy_id) if Category.exists?(legacy_id:)
 
-        group = GROUP_MAP[row["group_id"]]
-        next (skipped_invalid << { legacy_id:, reason: "group_id não mapeado: #{row['group_id'].inspect}" }) if group.nil?
+        group = GROUP_MAP[row["group_id"]] || "temporario"
 
         taxa = taxas_by_id[row["taxasId"]&.to_i]
         next (skipped_invalid << { legacy_id:, reason: "taxa não encontrada: #{row['taxasId']}" }) if taxa.nil?
