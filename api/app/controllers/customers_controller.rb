@@ -63,7 +63,7 @@ class CustomersController < ApplicationController
     end
 
     def form
-      params_hash = params.expect(customer: [ :name, :document, :membership_number, :voter, :legacy_id ]).to_h.symbolize_keys
+      params_hash = params.expect(customer: [ :name, :document, :membership_number, :voter, :legacy_id, tags: [] ]).to_h.symbolize_keys
       CustomerForm.new(**params_hash)
     end
 end

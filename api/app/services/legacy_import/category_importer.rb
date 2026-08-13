@@ -24,6 +24,12 @@ module LegacyImport
         legacy_id = row["id"].to_i
         next (skipped_duplicates << legacy_id) if Category.exists?(legacy_id:)
 
+        # Reject if group_id is NULL
+        if row["group_id"].nil?
+          skipped_invalid << { legacy_id:, reason: "group_id não pode ser nulo" }
+          next
+        end
+
         group = GROUP_MAP[row["group_id"]] || "temporario"
 
         taxa = taxas_by_id[row["taxasId"]&.to_i]
@@ -31,8 +37,9 @@ module LegacyImport
 
         has_water_meter = row["nome"].to_s.downcase.include?("hidrômetro") || row["nome"].to_s.downcase.include?("hidrometro")
 
-        category = Category.new(
-          name: row["nome"],
+        name = row["nome"]
+        category = create_with_unique_name(
+          name:,
           description: row["descricao"],
           group:,
           has_water_meter:,
@@ -40,13 +47,42 @@ module LegacyImport
           water_price: (taxa["valor"] || "0").to_d,
           legacy_id:,
         )
-        category.save!(validate: false)
         imported << category
-      rescue ActiveRecord::RecordNotUnique => e
+      rescue ActiveRecord::RecordInvalid => e
         skipped_invalid << { legacy_id:, reason: e.message }
       end
 
       Result.new(imported: imported.size, skipped_duplicates: skipped_duplicates.size, skipped_invalid:)
+    end
+
+    private
+
+    def create_with_unique_name(params)
+      original_name = params[:name]
+      attempt = 0
+      max_attempts = 100
+
+      loop do
+        begin
+          category = Category.new(**params)
+          category.save!(validate: false)
+          return category
+        rescue ActiveRecord::RecordNotUnique => e
+          # Check if it's the group+name unique constraint
+          if e.message.include?("group") && e.message.include?("name")
+            attempt += 1
+            if attempt > max_attempts
+              raise ActiveRecord::RecordInvalid.new(Category.new)
+            end
+
+            # Add numeric suffix to name
+            params = params.dup
+            params[:name] = "#{original_name} -#{attempt}"
+          else
+            raise
+          end
+        end
+      end
     end
   end
 end

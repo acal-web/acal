@@ -67,8 +67,63 @@ describe LegacyImport::CustomerImporter do
       # For now, all test data has at least one
     end
 
-    it "skips customers with invalid document" do
-      # Would test invalid CPF/CNPJ format
+    it "generates valid CPF for invalid documents and adds tags" do
+      invalid_pessoa_path = Rails.root.join("spec/fixtures/legacy/pessoa_invalid_document_sample.sql")
+
+      result = LegacyImport::CustomerImporter.call(pessoa_path: invalid_pessoa_path)
+
+      customer = Customer.find_by(legacy_id: 99)
+      expect(customer).to be_present
+      expect(customer.name).to eq("Test Invalid")
+      expect(customer.document).to match(/^\d{11}$/)  # Generated valid CPF
+      expect(customer.tags).to include("invalid document")
+      expect(customer.tags).to include("invalid data")
+    end
+
+    it "does not tag valid documents" do
+      result = LegacyImport::CustomerImporter.call(pessoa_path:)
+
+      customer1 = Customer.find_by(legacy_id: 1)
+      expect(customer1.tags).to be_empty
+    end
+
+    it "resolves duplicate documents by generating new valid CPF and tagging" do
+      duplicate_pessoa_path = Rails.root.join("spec/fixtures/legacy/pessoa_duplicate_document_sample.sql")
+
+      duplicate_sql = 'CREATE TABLE `pessoa` (
+        `id` int(11) NOT NULL,
+        `nome` varchar(255) NOT NULL,
+        `sobrenome` varchar(255) NOT NULL,
+        `cpf` varchar(255) DEFAULT NULL,
+        `cnpj` varchar(255) DEFAULT NULL,
+        `email` varchar(255) DEFAULT NULL,
+        `telefone` varchar(255) DEFAULT NULL,
+        `numeroMatricula` int(11) DEFAULT NULL,
+        `sexo` varchar(255) NOT NULL,
+        `status` bit(1) NOT NULL
+      );
+      INSERT INTO `pessoa` VALUES (100,\'Test\',\'One\',\'111.444.777-35\',NULL,\'test1@test.com\',NULL,100,\'Masculino\',1),(101,\'Test\',\'Two\',\'111.444.777-35\',NULL,\'test2@test.com\',NULL,101,\'Feminino\',1);'
+
+      File.write(duplicate_pessoa_path, duplicate_sql)
+
+      begin
+        result = LegacyImport::CustomerImporter.call(pessoa_path: duplicate_pessoa_path)
+
+        expect(result.imported).to eq(2)
+        customer1 = Customer.find_by(legacy_id: 100)
+        customer2 = Customer.find_by(legacy_id: 101)
+
+        expect(customer1).to be_present
+        expect(customer2).to be_present
+        expect(customer1.document).to eq("11144477735")
+        expect(customer2.document).not_to eq("11144477735")
+        expect(customer1.tags).to be_empty
+        expect(customer2.tags).to include("duplicate document")
+        expect(customer2.tags).to include("invalid data")
+      ensure
+        File.delete(duplicate_pessoa_path) if File.exist?(duplicate_pessoa_path)
+        Customer.where(legacy_id: [ 100, 101 ]).delete_all
+      end
     end
   end
 end

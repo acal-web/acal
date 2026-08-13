@@ -2,6 +2,7 @@ import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/customer/widget/customer_filter_bar.dart';
+import 'package:acalapp/features/customer/widget/invalid_data_badge.dart';
 import 'package:acalapp/features/customer/widget/modal/delete_customer.dart';
 import 'package:acalapp/features/customer/widget/modal/open_customer.dart';
 import 'package:acalapp/shared/widgets/bool_text.dart';
@@ -265,7 +266,7 @@ class _TableHeader extends StatelessWidget {
   }
 }
 
-class _CustomerRow extends StatelessWidget {
+class _CustomerRow extends StatefulWidget {
   const _CustomerRow({
     required this.customer,
     required this.onEdit,
@@ -283,17 +284,30 @@ class _CustomerRow extends StatelessWidget {
   final bool isEven;
 
   @override
+  State<_CustomerRow> createState() => _CustomerRowState();
+}
+
+class _CustomerRowState extends State<_CustomerRow> {
+  late Customer _customer;
+
+  @override
+  void initState() {
+    super.initState();
+    _customer = widget.customer;
+  }
+
+
+  @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final style = theme.textTheme.bodyMedium?.copyWith(
-      color: customer.active ? null : cs.onSurfaceVariant,
+      color: _customer.active ? null : cs.onSurfaceVariant,
     );
 
-    final backgroundColor = isEven
+    final backgroundColor = widget.isEven
         ? cs.surfaceContainer.withValues(alpha: 0.2)
         : cs.surfaceContainer.withValues(alpha: 0.4);
-
 
     return ColoredBox(
       color: backgroundColor,
@@ -304,32 +318,40 @@ class _CustomerRow extends StatelessWidget {
           children: [
             Expanded(
               flex: 6,
-              child: Text(customer.name, style: style),
+              child: Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: Text(_customer.name, style: style),
+                  ),
+                  InvalidDataBadge(hasInvalidData: _customer.hasInvalidData),
+                ],
+              ),
             ),
             Expanded(
               flex: 2,
-              child: DocumentText(customer.document, style: style),
+              child: DocumentText(_customer.document, style: style),
             ),
             SizedBox(
               width: 90,
               child: Text(
-                customer.membershipNumber?.toString() ?? '—',
+                _customer.membershipNumber?.toString() ?? '—',
                 style: style,
               ),
             ),
             SizedBox(
               width: 90,
-              child: BoolText(customer.voter, style: style),
+              child: BoolText(_customer.voter, style: style),
             ),
             SizedBox(
               width: 140,
               child: Center(
                 child: RowActions(
-                  onEdit: onEdit,
-                  onDelete: onDelete,
-                  active: customer.active,
-                  onReactivate: onReactivate,
-                  onView: onView,
+                  onEdit: widget.onEdit,
+                  onDelete: widget.onDelete,
+                  active: _customer.active,
+                  onReactivate: widget.onReactivate,
+                  onView: widget.onView,
                 ),
               ),
             ),

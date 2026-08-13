@@ -38,19 +38,47 @@ module LegacyImport
           next
         end
 
-        form = AddressForm.new(
-          name:,
-          legacy_id:,
-        )
-
-        imported << Address.create!(**form.to_h)
+        tags = []
+        address = create_with_unique_name(name:, legacy_id:, tags:)
+        imported << address
       rescue ActiveRecord::RecordInvalid => e
         skipped_invalid << { legacy_id:, reason: e.message }
-      rescue ActiveRecord::RecordNotUnique => e
-        skipped_invalid << { legacy_id:, reason: "Endereço duplicado: #{name} já existe" }
       end
 
       Result.new(imported: imported.size, skipped_duplicates: skipped_duplicates.size, skipped_invalid:)
+    end
+
+    private
+
+    def create_with_unique_name(name:, legacy_id:, tags:)
+      original_name = name
+      attempt = 0
+      max_attempts = 100
+
+      loop do
+        begin
+          form = AddressForm.new(
+            name:,
+            legacy_id:,
+            tags:,
+          )
+          return Address.create!(**form.to_h)
+        rescue ActiveRecord::RecordNotUnique => e
+          # Check if it's the name unique constraint
+          if e.message.include?("name")
+            attempt += 1
+            if attempt > max_attempts
+              raise ActiveRecord::RecordInvalid.new(Address.new)
+            end
+
+            # Add numeric suffix to name
+            name = "#{original_name} #{attempt}"
+            tags = [ "duplicate address" ]
+          else
+            raise
+          end
+        end
+      end
     end
   end
 end

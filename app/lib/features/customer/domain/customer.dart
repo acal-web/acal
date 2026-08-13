@@ -6,6 +6,7 @@ class Customer {
   final int? membershipNumber;
   final bool voter;
   final bool active;
+  final List<String> tags;
 
   const Customer({
     this.id,
@@ -14,16 +15,23 @@ class Customer {
     this.membershipNumber,
     required this.voter,
     this.active = true,
+    this.tags = const [],
   });
 
-  factory Customer.fromJson(Map<String, dynamic> json) => Customer(
-        id: json['id']?.toString(),
-        name: json['name'] as String,
-        document: json['document'] as String,
-        membershipNumber: json['membership_number'] as int?,
-        voter: json['voter'] as bool,
-        active: json['deleted_at'] == null,
-      );
+  bool get hasInvalidData => tags.contains('invalid data');
+
+  factory Customer.fromJson(Map<String, dynamic> json) {
+    final tags = (json['tags'] as List<dynamic>?)?.cast<String>() ?? [];
+    return Customer(
+      id: json['id']?.toString(),
+      name: json['name'] as String,
+      document: json['document'] as String,
+      membershipNumber: json['membership_number'] as int?,
+      voter: json['voter'] as bool,
+      active: json['deleted_at'] == null,
+      tags: tags,
+    );
+  }
 
   Map<String, dynamic> toJson() => {
         if (id != null) 'id': id,
@@ -31,6 +39,7 @@ class Customer {
         'document': document,
         'membership_number': membershipNumber,
         'voter': voter,
+        'tags': tags,
       };
 
   Customer copyWith({
@@ -40,6 +49,7 @@ class Customer {
     int? membershipNumber,
     bool? voter,
     bool? active,
+    List<String>? tags,
   }) =>
       Customer(
         id: id ?? this.id,
@@ -48,5 +58,6 @@ class Customer {
         membershipNumber: membershipNumber ?? this.membershipNumber,
         voter: voter ?? this.voter,
         active: active ?? this.active,
+        tags: tags ?? this.tags,
       );
 }

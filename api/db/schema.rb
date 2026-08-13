@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_11_233951) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_13_114454) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -20,6 +20,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_233951) do
     t.datetime "deleted_at"
     t.integer "legacy_id"
     t.citext "name"
+    t.jsonb "tags", default: [], null: false
     t.datetime "updated_at", null: false
     t.index ["name"], name: "index_addresses_on_name_unique", unique: true
   end
@@ -51,6 +52,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_233951) do
     t.string "letter"
     t.date "membership_date"
     t.integer "number", null: false
+    t.jsonb "tags", default: [], null: false
     t.datetime "updated_at", null: false
     t.index "address_id, number, COALESCE(letter, ''::character varying)", name: "index_connections_on_address_id_number_letter_unique", unique: true, where: "(deleted_at IS NULL)"
     t.index "address_id, number, COALESCE(letter, ''::character varying), active", name: "index_connections_on_address_number_letter_active_unique", unique: true, where: "((active = true) AND (deleted_at IS NULL))"
@@ -66,6 +68,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_11_233951) do
     t.integer "legacy_id"
     t.integer "membership_number"
     t.string "name"
+    t.jsonb "tags", default: [], null: false
     t.datetime "updated_at", null: false
     t.boolean "voter", default: false, null: false
     t.index ["document"], name: "index_customers_on_document", unique: true

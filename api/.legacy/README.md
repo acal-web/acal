@@ -4,13 +4,28 @@ Esta pasta contém documentação e arquivos relacionados à importação de dad
 
 ## Resumo Rápido
 
-Para reimportar dados legados após limpar o banco local:
+### Opção 1: Script Automático (recomendado ⭐)
+
+```bash
+cd /workspace/api/.legacy
+bash import.sh
+```
+
+O script faz tudo automaticamente:
+- ✅ Configura o banco (`db:drop db:create db:migrate`)
+- ✅ Importa na ordem correta
+- ✅ Mostra progresso a cada passo
+- ✅ Verifica contagem final de registros
+
+### Opção 2: Comandos Manuais
+
+Se preferir controle total, ou se o script tiver problemas:
 
 ```bash
 cd /workspace/api
 
 # 1. Setup do banco
-bundle exec rails db:create db:migrate
+bundle exec rails db:drop db:create db:migrate
 
 # 2. Importar na seguinte ordem (substitua $BASE_PATH pelo caminho dos arquivos):
 
@@ -35,13 +50,6 @@ bundle exec rails legacy_import:quality_analyses
 # Ligações
 ENDERECOPESSOA_SQL_PATH=$BASE_PATH/acal_enderecopessoa.sql \
 bundle exec rails legacy_import:connections
-```
-
-**Exemplo com arquivos em `/workspace/api/.legacy/`:**
-
-```bash
-BASE_PATH="/workspace/api/.legacy"
-# ... execute os comandos acima substituindo $BASE_PATH
 ```
 
 ## Arquivos Necessários

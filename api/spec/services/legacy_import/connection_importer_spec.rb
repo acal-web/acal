@@ -36,16 +36,16 @@ describe LegacyImport::ConnectionImporter do
 
       # id=1: valid (123 on address 1)
       # id=2: valid (456 on address 1 - different number, allowed)
-      # id=3: skipped (123 on address 1 - same number as id=1, conflict)
-      # id=4: skipped (no number)
+      # id=3: valid (123 on address 1 - same number as id=1, but resolved with letter suffix "-1")
+      # id=4: valid (no valid number, generates sequential) with tag "invalid number"
       # id=5: skipped (customer 99 doesn't exist)
       # id=6: skipped (address 99 doesn't exist)
       # id=7: skipped (category 99 doesn't exist)
       # id=8: valid (200 on address 1 - different number)
       # id=9: valid (123 on address 2 - different address, allowed)
-      expect(result.imported).to eq(4) # 1, 2, 8, 9
+      expect(result.imported).to eq(6) # 1, 2, 3, 4, 8, 9
       expect(result.skipped_duplicates).to eq(0)
-      expect(result.skipped_invalid.size).to eq(5) # 3, 4, 5, 6, 7
+      expect(result.skipped_invalid.size).to eq(3) # 5, 6, 7
 
       # Verify id=1: simple number, both bits false
       conn1 = Connection.find_by(legacy_id: 1)
@@ -68,19 +68,20 @@ describe LegacyImport::ConnectionImporter do
 
     it "is idempotent on re-runs" do
       result1 = LegacyImport::ConnectionImporter.call(ligacao_path:)
-      expect(result1.imported).to eq(4)
+      expect(result1.imported).to eq(6)
 
       result2 = LegacyImport::ConnectionImporter.call(ligacao_path:)
       expect(result2.imported).to eq(0)
-      expect(result2.skipped_duplicates).to eq(4)
-      expect(Connection.where.not(legacy_id: nil).count).to eq(4)
+      expect(result2.skipped_duplicates).to eq(6)
+      expect(Connection.where.not(legacy_id: nil).count).to eq(6)
     end
 
-    it "skips connections with invalid numero (no leading digits)" do
+    it "generates sequential number for invalid numero and adds tag" do
       result = LegacyImport::ConnectionImporter.call(ligacao_path:)
-      invalid = result.skipped_invalid.find { |e| e[:legacy_id] == 4 }
-      expect(invalid).to be_present
-      expect(invalid[:reason]).to match(/Número inválido/)
+      conn4 = Connection.find_by(legacy_id: 4)
+      expect(conn4).to be_present
+      expect(conn4.number).to be > 0  # Should have a sequential number
+      expect(conn4.tags).to include("invalid number")
     end
 
     it "skips connections when referenced customer doesn't exist" do
@@ -104,13 +105,18 @@ describe LegacyImport::ConnectionImporter do
       expect(invalid[:reason]).to match(/Categoria não encontrada/)
     end
 
-    it "skips connection when number+letter conflicts on the same address" do
+    it "resolves number conflicts by adding letter suffix" do
       result = LegacyImport::ConnectionImporter.call(ligacao_path:)
       # id=1 (123 on address 1) imports successfully
-      # id=3 (123 on address 1) conflicts on the same number, should be skipped
-      invalid3 = result.skipped_invalid.find { |e| e[:legacy_id] == 3 }
-      expect(invalid3).to be_present
-      expect(invalid3[:reason]).to match(/duplicate key value violates unique constraint|already has an active connection/)
+      # id=3 (123 on address 1) also imports with modified letter to avoid conflict
+      conn1 = Connection.find_by(legacy_id: 1)
+      conn3 = Connection.find_by(legacy_id: 3)
+      expect(conn1).to be_present
+      expect(conn3).to be_present
+      expect(conn1.number).to eq(123)
+      expect(conn3.number).to eq(123)
+      expect(conn1.letter).to be_nil
+      expect(conn3.letter).to match(/^-\d+$/)  # Should be something like "-1"
     end
 
     it "allows multiple active connections on the same address when number differs" do

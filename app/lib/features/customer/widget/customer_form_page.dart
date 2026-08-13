@@ -6,7 +6,7 @@ import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/document_form_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
-import 'package:flutter/material.dart' show Divider;
+import 'package:flutter/material.dart' show Chip, Divider;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:forui/forui.dart';
@@ -28,8 +28,10 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
   late final TextEditingController _nameController;
   late final TextEditingController _documentController;
   late final TextEditingController _membershipNumberController;
+  late final TextEditingController _newTagController;
   late DocumentKind _documentKind;
   late bool _voter;
+  late List<String> _tags;
   bool _saving = false;
 
   bool get _isEditing => widget.customer != null;
@@ -47,7 +49,9 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     _nameController = TextEditingController(text: customer?.name ?? '');
     _documentController = TextEditingController(text: maskDocument(documentDigits, _documentKind));
     _membershipNumberController = TextEditingController(text: customer?.membershipNumber?.toString() ?? '');
+    _newTagController = TextEditingController();
     _voter = customer?.voter ?? true;
+    _tags = List.from(customer?.tags ?? []);
   }
 
   void _toggleDocumentKind() {
@@ -69,6 +73,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     _nameController.dispose();
     _documentController.dispose();
     _membershipNumberController.dispose();
+    _newTagController.dispose();
     super.dispose();
   }
 
@@ -94,6 +99,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
             ? null
             : int.parse(_membershipNumberController.text.trim()),
         voter: _voter,
+        tags: _tags,
       );
       if (_isEditing) {
         await _service.update(customer);
@@ -163,6 +169,51 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
             onChange: widget.readOnly ? null : (v) => setState(() => _voter = v),
             label: const Text('É votante'),
           ),
+          const SizedBox(height: 16),
+          const Text('Tags', style: TextStyle(fontWeight: FontWeight.w600)),
+          const SizedBox(height: 8),
+          if (!widget.readOnly)
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: FTextFormField(
+                    control: FTextFieldControl.managed(controller: _newTagController),
+                    hint: 'Nova tag',
+                  ),
+                ),
+                FButton(
+                  onPress: () {
+                    final tag = _newTagController.text.trim();
+                    if (tag.isNotEmpty && !_tags.contains(tag)) {
+                      setState(() {
+                        _tags.add(tag);
+                        _newTagController.clear();
+                      });
+                    }
+                  },
+                  child: const Text('Adicionar'),
+                ),
+              ],
+            ),
+          const SizedBox(height: 12),
+          if (_tags.isEmpty)
+            const Text('Nenhuma tag', style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12))
+          else
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _tags.map((tag) {
+                return Chip(
+                  label: Text(tag),
+                  onDeleted: widget.readOnly
+                      ? null
+                      : () {
+                          setState(() => _tags.remove(tag));
+                        },
+                );
+              }).toList(),
+            ),
           const Divider(),
         ],
       ),

@@ -116,5 +116,30 @@ INSERT INTO `categoriasocio` VALUES (99,\'Bad\',\'\',999,2);')
         File.delete(bad_categoria_path) if File.exist?(bad_categoria_path)
       end
     end
+
+    it "resolves name conflicts by adding numeric suffix" do
+      # Create a temporary SQL file with duplicate names
+      conflict_categoria_path = Rails.root.join("spec/fixtures/legacy/conflict_categoriasocio.sql")
+      File.write(conflict_categoria_path, 'CREATE TABLE `categoriasocio` (
+        `id` int, `nome` varchar(255), `descricao` text, `taxasId` int, `group_id` bigint
+      );
+INSERT INTO `categoriasocio` VALUES (1,\'Agua\',\'Water\',5,2),(2,\'Agua\',\'Water Duplicate\',5,2);')
+
+      begin
+        result = LegacyImport::CategoryImporter.call(categoria_path: conflict_categoria_path, taxa_path:)
+
+        expect(result.imported).to eq(2)
+        cat1 = Category.find_by(legacy_id: 1)
+        cat2 = Category.find_by(legacy_id: 2)
+        expect(cat1).to be_present
+        expect(cat2).to be_present
+        expect(cat1.name).to eq("Agua")
+        expect(cat2.name).to match(/^Agua -\d+$/)  # Should be "Agua -1" or similar
+        expect(cat1.group).to eq(cat2.group)  # Same group
+      ensure
+        File.delete(conflict_categoria_path) if File.exist?(conflict_categoria_path)
+        Category.where(legacy_id: [ 1, 2 ]).delete_all
+      end
+    end
   end
 end

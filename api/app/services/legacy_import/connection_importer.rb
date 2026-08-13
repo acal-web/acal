@@ -42,15 +42,19 @@ module LegacyImport
 
         number, letter = parse_numero(row["Numero"])
         if number.nil? || number <= 0
-          skipped_invalid << { legacy_id:, reason: "Número inválido: #{row['Numero'].inspect}" }
-          next
+          number = next_available_number
+          tags = []
+          tags << "invalid number"
+        else
+          tags = []
         end
 
         active = !bit_true?(row["inativo"])
         exclusively_member = bit_true?(row["socioExclusivo"])
         membership_date = row["datamatricula"].presence || "2000-01-01"
 
-        imported << Connections::CreateService.call(
+        # Try to insert, handling duplicate letter by adding numeric suffix
+        connection = create_with_unique_letter(
           customer_id: customer.id,
           address_id: address.id,
           category_id: category.id,
@@ -59,9 +63,11 @@ module LegacyImport
           active:,
           legacy_id:,
           membership_date:,
-          exclusively_member:
+          exclusively_member:,
+          tags:,
         )
-      rescue ActiveRecord::RecordInvalid, ActiveRecord::RecordNotUnique => e
+        imported << connection
+      rescue ActiveRecord::RecordInvalid => e
         skipped_invalid << { legacy_id:, reason: e.message }
       end
 
@@ -69,6 +75,37 @@ module LegacyImport
     end
 
     private
+
+    def next_available_number
+      max_number = Connection.maximum(:number).to_i
+      max_number + 1
+    end
+
+    def create_with_unique_letter(params)
+      letter = params[:letter]
+      attempt = 0
+      max_attempts = 100
+
+      loop do
+        begin
+          return Connections::CreateService.call(**params)
+        rescue ActiveRecord::RecordNotUnique => e
+          # Check if it's the letter/number unique constraint
+          if e.message.include?("address_id") && e.message.include?("number")
+            attempt += 1
+            if attempt > max_attempts
+              raise ActiveRecord::RecordInvalid.new(Connection.new)
+            end
+
+            # Add numeric suffix to letter
+            params = params.dup
+            params[:letter] = "#{letter}-#{attempt}"
+          else
+            raise
+          end
+        end
+      end
+    end
 
     def parse_numero(raw)
       return [ nil, nil ] if raw.blank?
