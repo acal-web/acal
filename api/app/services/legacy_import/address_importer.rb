@@ -12,14 +12,21 @@ module LegacyImport
 
     def call
       enderecos = SqlDumpParser.call(@endereco_path).fetch("endereco").rows
+      existing_legacy_ids = Set.new(Address.pluck(:legacy_id))
 
-      imported = []
-      skipped_duplicates = []
+      imported = 0
+      skipped_duplicates = 0
       skipped_invalid = []
+      batch = []
+      batch_size = 1000
 
       enderecos.each do |row|
         legacy_id = row["id"].to_i
-        next (skipped_duplicates << legacy_id) if Address.exists?(legacy_id:)
+
+        if existing_legacy_ids.include?(legacy_id)
+          skipped_duplicates += 1
+          next
+        end
 
         kind = (row["tipo"] || "").strip
         nome = (row["nome"] || "").strip
@@ -38,47 +45,30 @@ module LegacyImport
           next
         end
 
-        tags = []
-        address = create_with_unique_name(name:, legacy_id:, tags:)
-        imported << address
-      rescue ActiveRecord::RecordInvalid => e
+        batch << {
+          name:,
+          legacy_id:,
+          tags: [],
+          created_at: Time.current,
+          updated_at: Time.current
+        }
+
+        if batch.size >= batch_size
+          imported += batch.size
+          Address.insert_all(batch, ignore_duplicates: true)
+          batch = []
+        end
+      rescue StandardError => e
         skipped_invalid << { legacy_id:, reason: e.message }
       end
 
-      Result.new(imported: imported.size, skipped_duplicates: skipped_duplicates.size, skipped_invalid:)
-    end
-
-    private
-
-    def create_with_unique_name(name:, legacy_id:, tags:)
-      original_name = name
-      attempt = 0
-      max_attempts = 100
-
-      loop do
-        begin
-          form = AddressForm.new(
-            name:,
-            legacy_id:,
-            tags:,
-          )
-          return Address.create!(**form.to_h)
-        rescue ActiveRecord::RecordNotUnique => e
-          # Check if it's the name unique constraint
-          if e.message.include?("name")
-            attempt += 1
-            if attempt > max_attempts
-              raise ActiveRecord::RecordInvalid.new(Address.new)
-            end
-
-            # Add numeric suffix to name
-            name = "#{original_name} #{attempt}"
-            tags = [ "duplicate address" ]
-          else
-            raise
-          end
-        end
+      # Insert remaining batch
+      if batch.any?
+        imported += batch.size
+        Address.insert_all(batch, ignore_duplicates: true)
       end
-    end
+
+      Result.new(imported:, skipped_duplicates:, skipped_invalid:)
+end
   end
 end

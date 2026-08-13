@@ -26,14 +26,21 @@ module LegacyImport
 
       # Parse parametro_coleta
       parametro_coleta_rows = SqlDumpParser.call(@parametro_coleta_path).fetch("parametro_coleta").rows
+      existing_legacy_ids = Set.new(QualityAnalysis.pluck(:legacy_id))
 
-      imported = []
-      skipped_duplicates = []
+      imported = 0
+      skipped_duplicates = 0
       skipped_invalid = []
+      batch = []
+      batch_size = 1000
 
       parametro_coleta_rows.each do |row|
         legacy_id = row["ide_parametro_coleta"].to_i
-        next (skipped_duplicates << legacy_id) if QualityAnalysis.exists?(legacy_id:)
+
+        if existing_legacy_ids.include?(legacy_id)
+          skipped_duplicates += 1
+          next
+        end
 
         tipo_id = row["ide_tipo_parametro"]&.to_i
         param_name = PARAM_TYPE_MAP[tipo_id&.to_s]
@@ -53,21 +60,33 @@ module LegacyImport
         analyzed = (row["analisado"] || "0").to_s.strip
         compliant = (row["conformidade"] || "0").to_s.strip
 
-        form = QualityAnalysisForm.new(
+        batch << {
           param_name:,
           reference_date:,
           required:,
           analyzed:,
           compliant:,
           legacy_id:,
-        )
+          created_at: Time.current,
+          updated_at: Time.current
+        }
 
-        imported << QualityAnalysis.create!(**form.to_h)
-      rescue ActiveRecord::RecordInvalid => e
+        if batch.size >= batch_size
+          imported += batch.size
+          QualityAnalysis.insert_all(batch, ignore_duplicates: true)
+          batch = []
+        end
+      rescue StandardError => e
         skipped_invalid << { legacy_id:, reason: e.message }
       end
 
-      Result.new(imported: imported.size, skipped_duplicates: skipped_duplicates.size, skipped_invalid:)
+      # Insert remaining batch
+      if batch.any?
+        imported += batch.size
+        QualityAnalysis.insert_all(batch, ignore_duplicates: true)
+      end
+
+      Result.new(imported:, skipped_duplicates:, skipped_invalid:)
     end
   end
 end

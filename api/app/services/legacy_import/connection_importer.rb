@@ -14,50 +14,60 @@ module LegacyImport
     def call
       ligacoes = SqlDumpParser.call(@ligacao_path).fetch("enderecopessoa").rows
 
-      imported = []
-      skipped_duplicates = []
+      existing_legacy_ids = Set.new(Connection.pluck(:legacy_id))
+      customer_map = Customer.pluck(:legacy_id, :id).to_h
+      address_map = Address.pluck(:legacy_id, :id).to_h
+      category_map = Category.pluck(:legacy_id, :id).to_h
+
+      imported = 0
+      skipped_duplicates = 0
       skipped_invalid = []
+      batch = []
+      batch_size = 1000
+      max_number = Connection.maximum(:number).to_i
 
       ligacoes.each do |row|
         legacy_id = row["id"].to_i
-        next (skipped_duplicates << legacy_id) if Connection.exists?(legacy_id:)
 
-        customer = Customer.find_by(legacy_id: row["idPessoa"].to_i)
-        unless customer
+        if existing_legacy_ids.include?(legacy_id)
+          skipped_duplicates += 1
+          next
+        end
+
+        customer_id = customer_map[row["idPessoa"].to_i]
+        unless customer_id
           skipped_invalid << { legacy_id:, reason: "Sócio não encontrado (idPessoa=#{row['idPessoa']})" }
           next
         end
 
-        address = Address.find_by(legacy_id: row["idEndereco"].to_i)
-        unless address
+        address_id = address_map[row["idEndereco"].to_i]
+        unless address_id
           skipped_invalid << { legacy_id:, reason: "Endereço não encontrado (idEndereco=#{row['idEndereco']})" }
           next
         end
 
-        category = Category.find_by(legacy_id: row["idCategoriaSocio"].to_i)
-        unless category
+        category_id = category_map[row["idCategoriaSocio"].to_i]
+        unless category_id
           skipped_invalid << { legacy_id:, reason: "Categoria não encontrada (idCategoriaSocio=#{row['idCategoriaSocio']})" }
           next
         end
 
         number, letter = parse_numero(row["Numero"])
+        tags = []
         if number.nil? || number <= 0
-          number = next_available_number
-          tags = []
+          max_number += 1
+          number = max_number
           tags << "invalid number"
-        else
-          tags = []
         end
 
         active = !bit_true?(row["inativo"])
         exclusively_member = bit_true?(row["socioExclusivo"])
         membership_date = row["datamatricula"].presence || "2000-01-01"
 
-        # Try to insert, handling duplicate letter by adding numeric suffix
-        connection = create_with_unique_letter(
-          customer_id: customer.id,
-          address_id: address.id,
-          category_id: category.id,
+        batch << {
+          customer_id:,
+          address_id:,
+          category_id:,
           number:,
           letter:,
           active:,
@@ -65,47 +75,29 @@ module LegacyImport
           membership_date:,
           exclusively_member:,
           tags:,
-        )
-        imported << connection
-      rescue ActiveRecord::RecordInvalid => e
+          created_at: Time.current,
+          updated_at: Time.current
+        }
+
+        if batch.size >= batch_size
+          imported += batch.size
+          Connection.insert_all(batch, ignore_duplicates: true)
+          batch = []
+        end
+      rescue StandardError => e
         skipped_invalid << { legacy_id:, reason: e.message }
       end
 
-      Result.new(imported: imported.size, skipped_duplicates: skipped_duplicates.size, skipped_invalid:)
-    end
+      # Insert remaining batch
+      if batch.any?
+        imported += batch.size
+        Connection.insert_all(batch, ignore_duplicates: true)
+      end
+
+      Result.new(imported:, skipped_duplicates:, skipped_invalid:)
+end
 
     private
-
-    def next_available_number
-      max_number = Connection.maximum(:number).to_i
-      max_number + 1
-    end
-
-    def create_with_unique_letter(params)
-      letter = params[:letter]
-      attempt = 0
-      max_attempts = 100
-
-      loop do
-        begin
-          return Connections::CreateService.call(**params)
-        rescue ActiveRecord::RecordNotUnique => e
-          # Check if it's the letter/number unique constraint
-          if e.message.include?("address_id") && e.message.include?("number")
-            attempt += 1
-            if attempt > max_attempts
-              raise ActiveRecord::RecordInvalid.new(Connection.new)
-            end
-
-            # Add numeric suffix to letter
-            params = params.dup
-            params[:letter] = "#{letter}-#{attempt}"
-          else
-            raise
-          end
-        end
-      end
-    end
 
     def parse_numero(raw)
       return [ nil, nil ] if raw.blank?
