@@ -49,6 +49,7 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
   late final TextEditingController _requiredController;
   late final TextEditingController _analyzedController;
   late final TextEditingController _compliantController;
+  late final TextEditingController _referenceController;
 
   // Creating a new period: one set of fields per parameter.
   final Map<String, _ParamControllers> _paramControllers = {
@@ -74,6 +75,13 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
     _requiredController = TextEditingController(text: analysis?.required.toString() ?? '');
     _analyzedController = TextEditingController(text: analysis?.analyzed.toString() ?? '');
     _compliantController = TextEditingController(text: analysis?.compliant.toString() ?? '');
+    _referenceController = TextEditingController(text: formatMonthReference(DateTime(_year, _month)));
+  }
+
+  @override
+  void didUpdateWidget(QualityAnalysisFormPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    _referenceController.text = formatMonthReference(DateTime(_year, _month));
   }
 
   @override
@@ -81,6 +89,7 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
     _requiredController.dispose();
     _analyzedController.dispose();
     _compliantController.dispose();
+    _referenceController.dispose();
     for (final c in _paramControllers.values) {
       c.dispose();
     }
@@ -171,9 +180,7 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
           SizedBox(
             width: 200,
             child: FTextFormField(
-              control: FTextFieldControl.managed(
-                controller: TextEditingController(text: formatMonthReference(DateTime(_year, _month))),
-              ),
+              control: FTextFieldControl.managed(controller: _referenceController),
               readOnly: true,
               label: Text(_isEditing ? 'Mês de Referência' : 'Período de Referência'),
               suffixBuilder: (context, style, variants) => const Icon(Icons.calendar_today, size: 18),

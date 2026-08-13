@@ -51,6 +51,12 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
     _addressService = widget.addressService ?? AddressService();
     _addressService.findAll(size: 500).then((result) {
       if (mounted) setState(() => _addresses = result.data);
+    }).catchError((e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Erro ao carregar endereços')),
+        );
+      }
     }).whenComplete(() {
       if (mounted) setState(() => _loadingAddresses = false);
     });
@@ -65,6 +71,10 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
     );
     future.then((candidates) {
       if (mounted) setState(() => _selected = candidates.map((c) => c.connectionId).toSet());
+    }).catchError((e) {
+      if (mounted) {
+        AppToast.error(context, 'Erro ao carregar candidatos');
+      }
     });
     return future;
   }
@@ -208,7 +218,7 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
   }
 }
 
-class _FilterBar extends StatelessWidget {
+class _FilterBar extends StatefulWidget {
   const _FilterBar({
     required this.narrow,
     required this.hasWaterMeter,
@@ -234,38 +244,65 @@ class _FilterBar extends StatelessWidget {
   final VoidCallback onSearch;
 
   @override
+  State<_FilterBar> createState() => _FilterBarState();
+}
+
+class _FilterBarState extends State<_FilterBar> {
+  late TextEditingController _referenceController;
+
+  @override
+  void initState() {
+    super.initState();
+    _referenceController = TextEditingController(text: formatMonthReference(widget.reference));
+  }
+
+  @override
+  void didUpdateWidget(_FilterBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.reference != widget.reference) {
+      _referenceController.text = formatMonthReference(widget.reference);
+    }
+  }
+
+  @override
+  void dispose() {
+    _referenceController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final waterMeterField = FSelect<bool?>(
       items: const {'Todos': null, 'Com Hidrômetro': true, 'Sem Hidrômetro': false},
-      control: FSelectControl.managed(initial: hasWaterMeter, onChange: onHasWaterMeterChanged),
+      control: FSelectControl.managed(initial: widget.hasWaterMeter, onChange: widget.onHasWaterMeterChanged),
       label: const Text('Tipo Hidrômetro'),
     );
 
     final referenceField = FTextFormField(
       key: const Key('reference-field'),
-      control: FTextFieldControl.managed(controller: TextEditingController(text: formatMonthReference(reference))),
+      control: FTextFieldControl.managed(controller: _referenceController),
       readOnly: true,
       label: const Text('Período'),
       suffixBuilder: (context, style, variants) => const Icon(Icons.calendar_today, size: 18),
-      onTap: onReferenceTap,
+      onTap: widget.onReferenceTap,
     );
 
     final addressField = FSelect<String?>(
       items: {
         'Todos': null,
-        for (final address in addresses) address.name: address.id,
+        for (final address in widget.addresses) address.name: address.id,
       },
-      control: FSelectControl.managed(initial: addressId, onChange: loadingAddresses ? null : onAddressChanged),
+      control: FSelectControl.managed(initial: widget.addressId, onChange: widget.loadingAddresses ? null : widget.onAddressChanged),
       label: const Text('Logradouro'),
-      hint: loadingAddresses ? 'Carregando...' : 'Selecione o endereço...',
-      enabled: !loadingAddresses,
+      hint: widget.loadingAddresses ? 'Carregando...' : 'Selecione o endereço...',
+      enabled: !widget.loadingAddresses,
     );
 
     final searchButton = SizedBox(
-      width: narrow ? double.infinity : null,
+      width: widget.narrow ? double.infinity : null,
       child: FButton(
         mainAxisSize: MainAxisSize.min,
-        onPress: onSearch,
+        onPress: widget.onSearch,
         child: const Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
@@ -274,7 +311,7 @@ class _FilterBar extends StatelessWidget {
       ),
     );
 
-    final fields = narrow
+    final fields = widget.narrow
         ? Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -308,7 +345,7 @@ class _FilterBar extends StatelessWidget {
     return Card(
       elevation: 1,
       child: Padding(
-        padding: LayoutConfig.pagePadding(narrow),
+        padding: LayoutConfig.pagePadding(widget.narrow),
         child: fields,
       ),
     );
@@ -409,7 +446,7 @@ class _CandidatesCard extends StatelessWidget {
   }
 }
 
-class _GenerateBar extends StatelessWidget {
+class _GenerateBar extends StatefulWidget {
   const _GenerateBar({
     required this.foundCount,
     required this.amount,
@@ -426,8 +463,37 @@ class _GenerateBar extends StatelessWidget {
   final VoidCallback onDueDateTap;
   final VoidCallback? onConfirm;
 
+  @override
+  State<_GenerateBar> createState() => _GenerateBarState();
+}
+
+class _GenerateBarState extends State<_GenerateBar> {
+  late TextEditingController _dueDateController;
+
   String _formatDate(DateTime date) =>
       '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+  @override
+  void initState() {
+    super.initState();
+    _dueDateController = TextEditingController(
+      text: widget.dueDate == null ? '' : _formatDate(widget.dueDate!),
+    );
+  }
+
+  @override
+  void didUpdateWidget(_GenerateBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.dueDate != widget.dueDate) {
+      _dueDateController.text = widget.dueDate == null ? '' : _formatDate(widget.dueDate!);
+    }
+  }
+
+  @override
+  void dispose() {
+    _dueDateController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -438,7 +504,7 @@ class _GenerateBar extends StatelessWidget {
       children: [
         const Icon(Icons.info_outline, size: 18),
         const SizedBox(width: 8),
-        Text('$foundCount encontradas, ${formatBRL(amount)}', style: Theme.of(context).textTheme.bodyMedium),
+        Text('${widget.foundCount} encontradas, ${formatBRL(widget.amount)}', style: Theme.of(context).textTheme.bodyMedium),
       ],
     );
 
@@ -446,14 +512,12 @@ class _GenerateBar extends StatelessWidget {
       width: 180,
       child: FTextFormField(
         key: const Key('due-date-field'),
-        control: FTextFieldControl.managed(
-          controller: TextEditingController(text: dueDate == null ? '' : _formatDate(dueDate!)),
-        ),
+        control: FTextFieldControl.managed(controller: _dueDateController),
         readOnly: true,
         label: const Text('Vencimento'),
         hint: '--/--/----',
         suffixBuilder: (context, style, variants) => const Icon(Icons.calendar_today, size: 18),
-        onTap: onDueDateTap,
+        onTap: widget.onDueDateTap,
       ),
     );
 
@@ -461,12 +525,12 @@ class _GenerateBar extends StatelessWidget {
       width: narrow ? double.infinity : null,
       child: FButton(
         mainAxisSize: MainAxisSize.min,
-        onPress: onConfirm,
+        onPress: widget.onConfirm,
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (generating)
+            if (widget.generating)
               const Padding(
                 padding: EdgeInsets.only(right: 8),
                 child: FCircularProgress(size: FCircularProgressSizeVariant.xs),
