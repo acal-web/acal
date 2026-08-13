@@ -33,19 +33,24 @@ class OverdueInvoice {
   final String id;
   final DateTime referenceDate;
   final DateTime dueDate;
-  final double amount;
+  final double membershipValue;
+  final double waterValue;
 
   const OverdueInvoice({
     required this.id,
     required this.referenceDate,
     required this.dueDate,
-    required this.amount,
+    required this.membershipValue,
+    required this.waterValue,
   });
+
+  double get amount => membershipValue + waterValue;
 
   factory OverdueInvoice.fromJson(Map<String, dynamic> json) => OverdueInvoice(
         id: json['id'].toString(),
         referenceDate: DateTime.parse(json['reference_date'] as String),
         dueDate: DateTime.parse(json['due_date'] as String),
-        amount: double.parse(json['amount'].toString()),
+        membershipValue: double.parse(json['membership_value'].toString()),
+        waterValue: double.parse(json['water_value'].toString()),
       );
 }

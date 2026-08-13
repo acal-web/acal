@@ -76,7 +76,7 @@ module LegacyImport
 
         if batch.size >= batch_size
           imported += batch.size
-          Customer.insert_all(batch, ignore_duplicates: true)
+          Customer.insert_all(batch)
           existing_documents.merge(batch.map { |b| b[:document] })
           batch = []
         end
@@ -87,7 +87,7 @@ module LegacyImport
       # Insert remaining batch
       if batch.any?
         imported += batch.size
-        Customer.insert_all(batch, ignore_duplicates: true)
+        Customer.insert_all(batch)
       end
 
       Result.new(imported:, skipped_duplicates:, skipped_invalid:)

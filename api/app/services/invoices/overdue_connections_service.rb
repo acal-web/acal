@@ -16,7 +16,7 @@ module Invoices
           address: { id: connection.address.id, name: connection.address.name },
           category: { id: connection.category.id, name: connection.category.name },
           invoices: connection_invoices.map { |invoice|
-            { id: invoice.id, reference_date: invoice.reference_date, due_date: invoice.due_date, amount: invoice.amount }
+            { id: invoice.id, reference_date: invoice.reference_date, due_date: invoice.due_date, membership_value: invoice.membership_value, water_value: invoice.water_value }
           },
           total_amount: connection_invoices.sum(&:amount)
         }

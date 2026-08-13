@@ -5,11 +5,13 @@ module Invoices
 
       ActiveRecord::Base.transaction do
         connections.map do |connection|
+          values = EligibleConnectionsService.value_breakdown(connection)
           Invoice.create!(
             connection_id: connection.id,
             reference_date: reference_date,
             due_date: due_date,
-            amount: EligibleConnectionsService.amount_for(connection)
+            membership_value: values[:membership_value],
+            water_value: values[:water_value]
           )
         end
       end

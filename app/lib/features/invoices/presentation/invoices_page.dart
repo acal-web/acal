@@ -6,17 +6,13 @@ import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/period_filter_button.dart';
-import 'package:acalapp/shared/widgets/table/data_table_card.dart';
-import 'package:acalapp/shared/widgets/table/paged_list_view.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 import 'package:go_router/go_router.dart';
 import 'package:printing/printing.dart';
 
-const _dueDateColumnWidth = 110.0;
-const _amountColumnWidth = 120.0;
-const _actionsColumnWidth = 88.0;
+const columnSpacing = 12.0;
 
 class InvoicesPage extends StatefulWidget {
   const InvoicesPage({super.key, this.invoiceService});
@@ -131,31 +127,150 @@ class _InvoicesPageState extends State<InvoicesPage> {
               ),
             ),
             Expanded(
-              child: PagedListView<Invoice>(
+              child: FutureBuilder<PagedResult<Invoice>>(
                 future: _future,
-                columns: const [
-                  DataTableColumn('Referência', flex: 1),
-                  DataTableColumn('Sócio', flex: 3),
-                  DataTableColumn('Ligação', flex: 3),
-                  DataTableColumn('Vencimento', width: _dueDateColumnWidth),
-                  DataTableColumn('Valor', width: _amountColumnWidth),
-                  DataTableColumn('Ações', width: _actionsColumnWidth),
-                ],
-                emptyMessage: 'Nenhuma fatura emitida.',
-                errorMessage: 'Erro ao carregar faturas',
-                onRetry: _load,
-                onPageChanged: _goToPage,
-                pageSize: _pageSize,
-                onPageSizeChanged: _changePageSize,
-                rowBuilder: (context, invoice) => _InvoiceRow(
-                  invoice: invoice,
-                  service: _service,
-                  onChanged: _load,
-                ),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text('Erro ao carregar faturas'),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: _load,
+                            child: const Text('Tentar novamente'),
+                          ),
+                        ],
+                      ),
+                    );
+                  }
+
+                  final data = snapshot.data;
+                  if (data == null || data.data.isEmpty) {
+                    return const Center(
+                      child: Text('Nenhuma fatura emitida.'),
+                    );
+                  }
+
+                  return Column(
+                    children: [
+                      _TableHeader(onPageSizeChanged: _changePageSize),
+                      const Divider(height: 1),
+                      Expanded(
+                        child: ListView.separated(
+                          itemCount: data.data.length,
+                          addRepaintBoundaries: true,
+                          addSemanticIndexes: false,
+                          separatorBuilder: (_, _) => const Divider(height: 1),
+                          itemBuilder: (context, index) {
+                            final invoice = data.data[index];
+                            final isEven = index.isEven;
+
+                            return _InvoiceRow(
+                              invoice: invoice,
+                              service: _service,
+                              onChanged: _load,
+                              isEven: isEven,
+                            );
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 8),
+              child: FutureBuilder<PagedResult<Invoice>>(
+                future: _future,
+                builder: (context, snapshot) {
+                  if (!snapshot.hasData) return const SizedBox.shrink();
+                  final data = snapshot.data!;
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'Mostrando ${data.data.length} de ${data.pagination.totalElements} registros',
+                        style: Theme.of(context).textTheme.bodySmall,
+                      ),
+                      Row(
+                        children: [
+                          IconButton(
+                            onPressed: _page > 0 ? () => _goToPage(_page - 1) : null,
+                            icon: const Icon(Icons.chevron_left),
+                            tooltip: 'Página anterior',
+                          ),
+                          Text(
+                            'Página ${_page + 1} de ${data.pagination.totalPages}',
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
+                          IconButton(
+                            onPressed: !data.pagination.last ? () => _goToPage(_page + 1) : null,
+                            icon: const Icon(Icons.chevron_right),
+                            tooltip: 'Próxima página',
+                          ),
+                        ],
+                      ),
+                    ],
+                  );
+                },
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _TableHeader extends StatelessWidget {
+  final Function(int) onPageSizeChanged;
+
+  const _TableHeader({required this.onPageSizeChanged});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final headerStyle = theme.textTheme.titleSmall?.copyWith(
+      fontWeight: FontWeight.w600,
+    );
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      child: Row(
+        spacing: columnSpacing,
+        children: [
+          Expanded(
+            flex: 1,
+            child: Text('Referência', style: headerStyle),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text('Sócio', style: headerStyle),
+          ),
+          Expanded(
+            flex: 3,
+            child: Text('Ligação', style: headerStyle),
+          ),
+          SizedBox(
+            width: 110,
+            child: Text('Vencimento', style: headerStyle),
+          ),
+          SizedBox(
+            width: 120,
+            child: Text('Valor', style: headerStyle),
+          ),
+          SizedBox(
+            width: 88,
+            child: Text('Ações', style: headerStyle),
+          ),
+        ],
       ),
     );
   }
@@ -166,11 +281,13 @@ class _InvoiceRow extends StatefulWidget {
     required this.invoice,
     required this.service,
     required this.onChanged,
+    this.isEven = false,
   });
 
   final Invoice invoice;
   final InvoiceService service;
   final VoidCallback onChanged;
+  final bool isEven;
 
   @override
   State<_InvoiceRow> createState() => _InvoiceRowState();
@@ -216,92 +333,99 @@ class _InvoiceRowState extends State<_InvoiceRow> {
     final theme = Theme.of(context);
     final invoice = widget.invoice;
     final connection = invoice.connection;
+    final backgroundColor = widget.isEven
+        ? theme.colorScheme.surfaceContainer.withValues(alpha: 0.2)
+        : theme.colorScheme.surfaceContainer.withValues(alpha: 0.4);
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Row(
-        children: [
-          Expanded(
-            flex: 1,
-            child: Text(
-              formatMonthReference(invoice.referenceDate),
-              style: theme.textTheme.bodyMedium,
+    return ColoredBox(
+      color: backgroundColor,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        child: Row(
+          spacing: columnSpacing,
+          children: [
+            Expanded(
+              flex: 1,
+              child: Text(
+                formatMonthReference(invoice.referenceDate),
+                style: theme.textTheme.bodyMedium,
+              ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              connection?.customer?.name ?? '—',
-              style: theme.textTheme.bodyMedium,
+            Expanded(
+              flex: 3,
+              child: Text(
+                connection?.customer?.name ?? '—',
+                style: theme.textTheme.bodyMedium,
+              ),
             ),
-          ),
-          Expanded(
-            flex: 3,
-            child: Text(
-              connection == null
-                  ? '—'
-                  : '${connection.address?.name ?? '—'}, ${connection.number}${connection.letter ?? ''}',
-              style: theme.textTheme.bodyMedium,
+            Expanded(
+              flex: 3,
+              child: Text(
+                connection == null
+                    ? '—'
+                    : '${connection.address?.name ?? '—'}, ${connection.number}${connection.letter ?? ''}',
+                style: theme.textTheme.bodyMedium,
+              ),
             ),
-          ),
-          SizedBox(
-            width: _dueDateColumnWidth,
-            child: Text(
-              _formatDate(invoice.dueDate),
-              style: theme.textTheme.bodyMedium,
+            SizedBox(
+              width: 110,
+              child: Text(
+                _formatDate(invoice.dueDate),
+                style: theme.textTheme.bodyMedium,
+              ),
             ),
-          ),
-          SizedBox(
-            width: _amountColumnWidth,
-            child: Text(
-              formatBRL(invoice.amount),
-              style: theme.textTheme.bodyMedium,
+            SizedBox(
+              width: 120,
+              child: Text(
+                formatBRL(invoice.amount),
+                style: theme.textTheme.bodyMedium,
+              ),
             ),
-          ),
-          SizedBox(
-            width: _actionsColumnWidth,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                FButton(
-                  variant: FButtonVariant.ghost,
-                  size: FButtonSizeVariant.sm,
-                  mainAxisSize: MainAxisSize.min,
-                  semanticsTooltip: 'Baixar/imprimir boleto',
-                  onPress: _downloadPdf,
-                  child: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                ),
-                if (invoice.isPaid)
-                  FTooltip(
-                    tipBuilder: (context, controller) => const Text('Paga'),
-                    child: const Icon(
-                      Icons.check_circle,
-                      color: Colors.green,
-                      size: 20,
-                    ),
-                  )
-                else if (_marking)
-                  const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: Padding(
-                      padding: EdgeInsets.all(2),
-                      child: FCircularProgress(),
-                    ),
-                  )
-                else
+            SizedBox(
+              width: 88,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
                   FButton(
                     variant: FButtonVariant.ghost,
                     size: FButtonSizeVariant.sm,
                     mainAxisSize: MainAxisSize.min,
-                    semanticsTooltip: 'Marcar como paga',
-                    onPress: _markPaid,
-                    child: const Icon(Icons.attach_money, size: 20),
+                    semanticsTooltip: 'Baixar/imprimir boleto',
+                    onPress: _downloadPdf,
+                    child: const Icon(Icons.picture_as_pdf_outlined, size: 20),
                   ),
-              ],
+                  if (invoice.isPaid)
+                    FTooltip(
+                      tipBuilder: (context, controller) => const Text('Paga'),
+                      child: const Icon(
+                        Icons.check_circle,
+                        color: Colors.green,
+                        size: 20,
+                      ),
+                    )
+                  else if (_marking)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Padding(
+                        padding: EdgeInsets.all(2),
+                        child: FCircularProgress(),
+                      ),
+                    )
+                  else
+                    FButton(
+                      variant: FButtonVariant.ghost,
+                      size: FButtonSizeVariant.sm,
+                      mainAxisSize: MainAxisSize.min,
+                      semanticsTooltip: 'Marcar como paga',
+                      onPress: _markPaid,
+                      child: const Icon(Icons.attach_money, size: 20),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

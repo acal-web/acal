@@ -3,7 +3,8 @@ FactoryBot.define do
     association :connection
     reference_date { Date.current.beginning_of_month }
     due_date { Date.current.beginning_of_month + 10.days }
-    amount { 20.0 }
+    membership_value { 15.0 }
+    water_value { 5.0 }
 
     trait :paid do
       paid_at { Time.current }

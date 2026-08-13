@@ -17,7 +17,7 @@ RSpec.describe Invoices::OverdueConnectionsService do
       customer: { id: customer.id, name: customer.name },
       address: { id: address.id, name: address.name },
       category: { id: category.id, name: category.name },
-      invoices: [ { id: invoice.id, reference_date: invoice.reference_date, due_date: invoice.due_date, amount: invoice.amount } ],
+      invoices: [ { id: invoice.id, reference_date: invoice.reference_date, due_date: invoice.due_date, membership_value: invoice.membership_value, water_value: invoice.water_value } ],
       total_amount: 20.0
     )
   end

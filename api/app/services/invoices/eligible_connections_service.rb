@@ -11,18 +11,23 @@ module Invoices
         .includes(:customer, :address, :category)
 
       connections.map do |connection|
+        values = value_breakdown(connection)
         {
           connection_id: connection.id,
           customer: { id: connection.customer.id, name: connection.customer.name },
           address: { id: connection.address.id, name: connection.address.name },
           category: { id: connection.category.id, name: connection.category.name },
-          amount: amount_for(connection)
+          membership_value: values[:membership_value],
+          water_value: values[:water_value]
         }
       end
     end
 
-    def self.amount_for(connection)
-      connection.category.membership_price + connection.category.water_price
+    def self.value_breakdown(connection)
+      {
+        membership_value: connection.category.membership_price,
+        water_value: connection.category.water_price
+      }
     end
   end
 end

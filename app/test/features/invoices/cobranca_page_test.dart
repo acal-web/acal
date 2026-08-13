@@ -13,8 +13,8 @@ final _group = OverdueConnection(
   customerName: 'Fulano de Tal',
   addressName: 'Avenida Fernando Daltro',
   invoices: [
-    OverdueInvoice(id: 'inv-1', referenceDate: DateTime(2026, 6, 1), dueDate: DateTime(2026, 6, 10), amount: 20.0),
-    OverdueInvoice(id: 'inv-2', referenceDate: DateTime(2026, 7, 1), dueDate: DateTime(2026, 7, 10), amount: 20.0),
+    OverdueInvoice(id: 'inv-1', referenceDate: DateTime(2026, 6, 1), dueDate: DateTime(2026, 6, 10), membershipValue: 15.0, waterValue: 5.0),
+    OverdueInvoice(id: 'inv-2', referenceDate: DateTime(2026, 7, 1), dueDate: DateTime(2026, 7, 10), membershipValue: 15.0, waterValue: 5.0),
   ],
   totalAmount: 40.0,
 );

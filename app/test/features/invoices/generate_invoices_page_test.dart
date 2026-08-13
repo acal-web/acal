@@ -39,7 +39,7 @@ class _FakeInvoiceService extends InvoiceService {
     lastGeneratedIds = connectionIds;
     if (generateError != null) throw generateError!;
     return [
-      for (final id in connectionIds) Invoice(id: 'inv-$id', connectionId: id, referenceDate: reference, dueDate: dueDate, amount: 20),
+      for (final id in connectionIds) Invoice(id: 'inv-$id', connectionId: id, referenceDate: reference, dueDate: dueDate, membershipValue: 15, waterValue: 5),
     ];
   }
 }
@@ -55,7 +55,8 @@ const _candidateA = InvoiceCandidate(
   customerName: 'Fulano de Tal',
   addressName: 'Avenida Fernando Daltro',
   categoryName: 'Residente',
-  amount: 20.0,
+  membershipValue: 15.0,
+  waterValue: 5.0,
 );
 
 const _candidateB = InvoiceCandidate(
@@ -63,7 +64,8 @@ const _candidateB = InvoiceCandidate(
   customerName: 'Beltrano da Silva',
   addressName: 'Rua das Flores',
   categoryName: 'Especial',
-  amount: 15.0,
+  membershipValue: 10.0,
+  waterValue: 5.0,
 );
 
 Future<void> _pump(WidgetTester tester, {required InvoiceService invoiceService}) async {

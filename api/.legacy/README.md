@@ -50,6 +50,10 @@ bundle exec rails legacy_import:quality_analyses
 # Ligações
 ENDERECOPESSOA_SQL_PATH=$BASE_PATH/acal_enderecopessoa.sql \
 bundle exec rails legacy_import:connections
+
+# Faturas
+CONTA_SQL_PATH=$BASE_PATH/acal_conta.sql \
+bundle exec rails legacy_import:invoices
 ```
 
 ## Arquivos Necessários
@@ -65,6 +69,7 @@ Você precisa dos seguintes dumps SQL do sistema legado (padrão de nome: `acal_
 | `acal_tipo_parametro.sql` | `TIPO_PARAMETRO_SQL_PATH` | Tipos de parâmetro de qualidade |
 | `acal_parametro_coleta.sql` | `PARAMETRO_COLETA_SQL_PATH` | Parâmetros de coleta |
 | `acal_enderecopessoa.sql` | `ENDERECOPESSOA_SQL_PATH` | Ligações entre endereços e pessoas |
+| `acal_conta.sql` | `CONTA_SQL_PATH` | Faturas (contas a receber) |
 
 ## Estrutura do Sistema de Importação
 
@@ -74,7 +79,8 @@ app/services/legacy_import/
   ├── customer_importer.rb         # Importa clientes
   ├── address_importer.rb          # Importa endereços
   ├── connection_importer.rb       # Importa ligações
-  └── quality_analysis_importer.rb # Importa análises de qualidade
+  ├── quality_analysis_importer.rb # Importa análises de qualidade
+  └── invoice_importer.rb          # Importa faturas
 
 lib/tasks/
   └── legacy_import.rake           # Tasks Rake para importação
@@ -94,6 +100,7 @@ lib/tasks/
 3. **Endereços** - Sem dependências
 4. **Análises de Qualidade** - Sem dependências
 5. **Ligações** - Depende de Clientes, Endereços e Categorias
+6. **Faturas** - Depende de Ligações
 
 ## Exemplo Completo
 
@@ -122,6 +129,9 @@ bundle exec rails legacy_import:quality_analyses
 
 ENDERECOPESSOA_SQL_PATH=/workspace/api/.legacy/acal_enderecopessoa.sql \
 bundle exec rails legacy_import:connections
+
+CONTA_SQL_PATH=/workspace/api/.legacy/acal_conta.sql \
+bundle exec rails legacy_import:invoices
 ```
 
 ## Verificar Importação
@@ -136,6 +146,7 @@ bundle exec rails console
 > Address.count
 > Connection.count
 > QualityAnalysisParameter.count
+> Invoice.count
 ```
 
 ## Troubleshooting
@@ -178,13 +189,34 @@ bundle exec rails db:drop db:create db:migrate
 # ... execute os comandos de importação novamente
 ```
 
+### Faturas duplicadas (mesma ligação + período)
+
+Se o dump `conta` contiver duas linhas para a mesma ligação (`idEnderecoPessoa`) e o mesmo período (`dataReferente`) — comum em casos de "2ª via" (fatura de reemissão) — o importador mantém a primeira ocorrência encontrada no arquivo e reporta a outra em `skipped_invalid` com a razão "Fatura duplicada...".
+
+Isso evita uma falha fatal de importação, mas a escolha de qual fatura manter é **arbitrária** (baseada na ordem do arquivo, não necessariamente qual é a correta para o negócio).
+
+**Ação necessária:** Revise manualmente as entradas `skipped_invalid` com razão "Fatura duplicada..." após a importação. Para cada par:
+
+1. Procure ambos os `legacy_id`s na tabela legada `conta`
+2. Compare `dataPag`, `observacoes`, e `versao` para determinar qual é a fatura autorizada
+3. Se necessário, execute um `UPDATE` manual na `invoices` Postgres para corrigir
+
+Exemplo de revisão:
+```bash
+cd /workspace/api
+bundle exec rails console
+
+# Listar faturas importadas de um período específico
+Connection.find_by(legacy_id: 810).invoices.where(reference_date: "2013-07-15")
+```
+
 ## Notas Importantes
 
 - ✅ **Idempotente**: Pode executar múltiplas vezes sem problemas
 - ✅ **Deduplicação automática**: Por `legacy_id`, não cria duplicatas
 - ✅ **Relatórios detalhados**: Mostra o que foi importado, pulado e por quê
 - ⚠️ **Ordem crítica**: Sempre respeite a ordem de importação
-- ⚠️ **Dependências**: Ligações precisam de Clientes, Endereços e Categorias
+- ⚠️ **Dependências**: Ligações precisam de Clientes, Endereços e Categorias; Faturas precisam de Ligações
 
 ## Contato
 

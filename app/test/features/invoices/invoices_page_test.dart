@@ -41,7 +41,8 @@ final _invoice = Invoice(
   connectionId: 'conn-1',
   referenceDate: DateTime(2026, 8, 1),
   dueDate: DateTime(2026, 8, 10),
-  amount: 20.0,
+  membershipValue: 15.0,
+  waterValue: 5.0,
   connection: _connection,
 );
 
@@ -69,7 +70,8 @@ class _FakeInvoiceService extends InvoiceService {
       connectionId: invoice.connectionId,
       referenceDate: invoice.referenceDate,
       dueDate: invoice.dueDate,
-      amount: invoice.amount,
+      membershipValue: invoice.membershipValue,
+      waterValue: invoice.waterValue,
       paidAt: DateTime.now(),
       connection: invoice.connection,
     );
@@ -125,6 +127,7 @@ void main() {
     expect(find.text('08/2026'), findsOneWidget);
     expect(find.text('10/08/2026'), findsOneWidget);
     expect(find.text(formatBRL(20.0)), findsOneWidget);
+    expect(find.text('Mostrando 1 de 1 registros'), findsOneWidget);
   });
 
   testWidgets('shows a placeholder dash when the connection is missing', (tester) async {
@@ -133,7 +136,8 @@ void main() {
       connectionId: 'conn-2',
       referenceDate: DateTime(2026, 8, 1),
       dueDate: DateTime(2026, 8, 10),
-      amount: 20.0,
+      membershipValue: 15.0,
+      waterValue: 5.0,
     );
     final service = _FakeInvoiceService(invoices: [invoiceWithoutConnection]);
     await _pump(tester, service);
@@ -198,7 +202,8 @@ void main() {
       connectionId: 'conn-1',
       referenceDate: DateTime(2026, 8, 1),
       dueDate: DateTime(2026, 8, 10),
-      amount: 20.0,
+      membershipValue: 15.0,
+      waterValue: 5.0,
       paidAt: DateTime(2026, 8, 5),
       connection: _connection,
     );

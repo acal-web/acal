@@ -55,7 +55,7 @@ module LegacyImport
 
         if batch.size >= batch_size
           imported += batch.size
-          Address.insert_all(batch, ignore_duplicates: true)
+          Address.insert_all(batch)
           batch = []
         end
       rescue StandardError => e
@@ -65,7 +65,7 @@ module LegacyImport
       # Insert remaining batch
       if batch.any?
         imported += batch.size
-        Address.insert_all(batch, ignore_duplicates: true)
+        Address.insert_all(batch)
       end
 
       Result.new(imported:, skipped_duplicates:, skipped_invalid:)

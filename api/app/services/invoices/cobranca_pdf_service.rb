@@ -56,7 +56,7 @@ module Invoices
         [
           invoice[:reference_date].strftime("%m/%Y"),
           invoice[:due_date].strftime("%d/%m/%Y"),
-          PdfDocument.currency(invoice[:amount])
+          PdfDocument.currency(invoice[:membership_value] + invoice[:water_value])
         ]
       }
 

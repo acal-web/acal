@@ -15,7 +15,8 @@ RSpec.describe Invoices::EligibleConnectionsService do
       customer: { id: customer.id, name: customer.name },
       address: { id: address.id, name: address.name },
       category: { id: category.id, name: category.name },
-      amount: 20.0
+      membership_value: 5.0,
+      water_value: 15.0
     )
   end
 

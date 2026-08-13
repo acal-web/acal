@@ -115,4 +115,26 @@ namespace :legacy_import do
       end
     end
   end
+
+  desc "Importa faturas legadas a partir de dumps MySQL"
+  task invoices: :environment do
+    conta_path = ENV.fetch("CONTA_SQL_PATH") { abort "CONTA_SQL_PATH é obrigatório" }
+
+    puts "Iniciando importação de faturas..."
+    puts "  Contas: #{conta_path}"
+    puts
+
+    result = LegacyImport::InvoiceImporter.call(conta_path:)
+
+    puts "Importação concluída!"
+    puts "  Importadas: #{result.imported}"
+    puts "  Puladas (já existentes): #{result.skipped_duplicates}"
+
+    if result.skipped_invalid.any?
+      puts "  Puladas (inválidas):"
+      result.skipped_invalid.each do |entry|
+        puts "    legacy_id=#{entry[:legacy_id]}: #{entry[:reason]}"
+      end
+    end
+  end
 end

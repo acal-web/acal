@@ -34,7 +34,7 @@ module Dashboard
     def total_received
       Invoice
         .where(paid_at: month_start..month_end)
-        .sum(:amount)
+        .sum("membership_value + water_value")
         .to_f
     end
 
@@ -48,7 +48,7 @@ module Dashboard
       Invoice
         .filter_by_period(@year, @month)
         .unpaid
-        .sum(:amount)
+        .sum("membership_value + water_value")
         .to_f
     end
 

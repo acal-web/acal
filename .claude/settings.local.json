@@ -158,7 +158,12 @@
       "Bash(git commit -m 'test: remove legacy import test suite *)",
       "Bash(bundle clean *)",
       "Bash(grep -n '\"deleted_at\" => nil$' /workspace/api/spec/requests/customers_spec.rb)",
-      "Bash(grep -n '\"deleted_at\" => nil$' /workspace/api/spec/requests/categories_spec.rb)"
+      "Bash(grep -n '\"deleted_at\" => nil$' /workspace/api/spec/requests/categories_spec.rb)",
+      "Bash(xargs cat)",
+      "Bash(grep -o \"^INSERT INTO \\\\`conta\\\\`\" .legacy/acal_conta.sql)",
+      "Bash(.legacy/import.sh)",
+      "Bash(RAILS_ENV=development bundle exec rails runner ' *)",
+      "Bash(git commit -m 'refactor: standardize invoices_page UI with connections_page pattern *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

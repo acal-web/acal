@@ -81,7 +81,7 @@ module LegacyImport
 
         if batch.size >= batch_size
           imported += batch.size
-          Connection.insert_all(batch, ignore_duplicates: true)
+          Connection.insert_all(batch)
           batch = []
         end
       rescue StandardError => e
@@ -91,7 +91,7 @@ module LegacyImport
       # Insert remaining batch
       if batch.any?
         imported += batch.size
-        Connection.insert_all(batch, ignore_duplicates: true)
+        Connection.insert_all(batch)
       end
 
       Result.new(imported:, skipped_duplicates:, skipped_invalid:)

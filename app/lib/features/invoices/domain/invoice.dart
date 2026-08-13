@@ -5,7 +5,8 @@ class Invoice {
   final String connectionId;
   final DateTime referenceDate;
   final DateTime dueDate;
-  final double amount;
+  final double membershipValue;
+  final double waterValue;
   final DateTime? paidAt;
   final Connection? connection;
 
@@ -14,19 +15,23 @@ class Invoice {
     required this.connectionId,
     required this.referenceDate,
     required this.dueDate,
-    required this.amount,
+    required this.membershipValue,
+    required this.waterValue,
     this.paidAt,
     this.connection,
   });
 
   bool get isPaid => paidAt != null;
 
+  double get amount => membershipValue + waterValue;
+
   factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
         id: json['id']?.toString(),
         connectionId: json['connection_id'].toString(),
         referenceDate: DateTime.parse(json['reference_date'] as String),
         dueDate: DateTime.parse(json['due_date'] as String),
-        amount: double.parse(json['amount'].toString()),
+        membershipValue: double.parse(json['membership_value'].toString()),
+        waterValue: double.parse(json['water_value'].toString()),
         paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'] as String) : null,
         connection: json['connection'] != null ? Connection.fromJson(json['connection'] as Map<String, dynamic>) : null,
       );

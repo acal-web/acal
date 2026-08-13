@@ -7,7 +7,7 @@ class Invoice < ApplicationRecord
   belongs_to :connection, -> { unscope(where: :deleted_at) }
 
   validates :reference_date, :due_date, presence: true
-  validates :amount, presence: true, numericality: { greater_than_or_equal_to: 0 }
+  validates :membership_value, :water_value, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
   scope :filter_by_period, ->(year, month) {
     where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month) if year.present? && month.present?
@@ -20,5 +20,9 @@ class Invoice < ApplicationRecord
 
   def paid?
     paid_at.present?
+  end
+
+  def amount
+    membership_value + water_value
   end
 end
