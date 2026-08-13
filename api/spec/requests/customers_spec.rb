@@ -159,6 +159,7 @@ RSpec.describe "Customers", type: :request do
           "membership_number" => 42,
           "voter" => true,
           "legacy_id" => nil,
+          "tags" => [],
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil
@@ -202,6 +203,7 @@ RSpec.describe "Customers", type: :request do
           "membership_number" => 42,
           "voter" => true,
           "legacy_id" => nil,
+          "tags" => [],
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil
@@ -348,6 +350,7 @@ RSpec.describe "Customers", type: :request do
           "membership_number" => 7,
           "voter" => false,
           "legacy_id" => nil,
+          "tags" => [],
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil

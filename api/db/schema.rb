@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_13_114454) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_13_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -34,6 +34,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_13_114454) do
     t.integer "legacy_id"
     t.decimal "membership_price", precision: 10, scale: 2
     t.string "name"
+    t.jsonb "tags", default: [], null: false
     t.datetime "updated_at", null: false
     t.decimal "water_price", precision: 10, scale: 2
     t.index "lower((\"group\")::text), lower((name)::text)", name: "index_categories_on_group_and_name_unique", unique: true

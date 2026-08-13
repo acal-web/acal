@@ -91,7 +91,8 @@ RSpec.describe "Addresses", type: :request do
             "created_at" => address.created_at.as_json,
             "updated_at" => address.updated_at.as_json,
             "deleted_at" => nil,
-            "legacy_id" => nil
+            "legacy_id" => nil,
+            "tags" => []
           )
         end
       end
@@ -133,7 +134,8 @@ RSpec.describe "Addresses", type: :request do
             "created_at" => address.created_at.as_json,
             "updated_at" => address.updated_at.as_json,
             "deleted_at" => nil,
-            "legacy_id" => nil
+            "legacy_id" => nil,
+            "tags" => []
           )
         end
 
@@ -223,7 +225,8 @@ RSpec.describe "Addresses", type: :request do
             "created_at" => address.created_at.as_json,
             "updated_at" => address.updated_at.as_json,
             "deleted_at" => nil,
-            "legacy_id" => nil
+            "legacy_id" => nil,
+            "tags" => []
           )
         end
       end

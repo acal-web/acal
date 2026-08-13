@@ -154,7 +154,11 @@
       "Bash(bin/rails spec:services:legacy_import:customer_importer)",
       "Bash(RAILS_ENV=production ruby -e \"require 'dotenv'; Dotenv.load; puts \\\\\"DB_NAME: #{ENV['DB_NAME']}\\\\\"; puts \\\\\"DB_HOST: #{ENV['DB_HOST']}\\\\\"\")",
       "Bash(xargs ls -la)",
-      "Bash(grep -E \"\\\\.\\(dart|yaml\\)$\")"
+      "Bash(grep -E \"\\\\.\\(dart|yaml\\)$\")",
+      "Bash(git commit -m 'test: remove legacy import test suite *)",
+      "Bash(bundle clean *)",
+      "Bash(grep -n '\"deleted_at\" => nil$' /workspace/api/spec/requests/customers_spec.rb)",
+      "Bash(grep -n '\"deleted_at\" => nil$' /workspace/api/spec/requests/categories_spec.rb)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

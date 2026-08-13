@@ -77,6 +77,7 @@ RSpec.describe "Categories", type: :request do
           "water_price" => "12.5",
           "membership_price" => "30.0",
           "legacy_id" => nil,
+          "tags" => [],
           "created_at" => category.created_at.as_json,
           "updated_at" => category.updated_at.as_json,
           "deleted_at" => nil
@@ -122,6 +123,7 @@ RSpec.describe "Categories", type: :request do
           "water_price" => "12.5",
           "membership_price" => "30.0",
           "legacy_id" => nil,
+          "tags" => [],
           "created_at" => category.created_at.as_json,
           "updated_at" => category.updated_at.as_json,
           "deleted_at" => nil
@@ -265,6 +267,7 @@ RSpec.describe "Categories", type: :request do
           "water_price" => "5.0",
           "membership_price" => "10.0",
           "legacy_id" => nil,
+          "tags" => [],
           "created_at" => category.created_at.as_json,
           "updated_at" => category.updated_at.as_json,
           "deleted_at" => nil

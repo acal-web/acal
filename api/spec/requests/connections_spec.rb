@@ -9,6 +9,7 @@ RSpec.describe "Connections", type: :request do
       "membership_number" => customer.membership_number,
       "voter" => customer.voter,
       "legacy_id" => customer.legacy_id,
+      "tags" => customer.tags,
       "created_at" => customer.created_at.as_json,
       "updated_at" => customer.updated_at.as_json,
       "deleted_at" => customer.deleted_at
@@ -20,6 +21,7 @@ RSpec.describe "Connections", type: :request do
       "id" => address.id,
       "name" => address.name,
       "legacy_id" => address.legacy_id,
+      "tags" => address.tags,
       "created_at" => address.created_at.as_json,
       "updated_at" => address.updated_at.as_json,
       "deleted_at" => address.deleted_at
@@ -36,6 +38,7 @@ RSpec.describe "Connections", type: :request do
       "water_price" => category.water_price.to_s,
       "membership_price" => category.membership_price.to_s,
       "legacy_id" => category.legacy_id,
+      "tags" => category.tags,
       "created_at" => category.created_at.as_json,
       "updated_at" => category.updated_at.as_json,
       "deleted_at" => category.deleted_at
@@ -210,6 +213,7 @@ RSpec.describe "Connections", type: :request do
           "legacy_id" => nil,
           "membership_date" => nil,
           "exclusively_member" => false,
+          "tags" => [],
           "created_at" => connection.created_at.as_json,
           "updated_at" => connection.updated_at.as_json,
           "deleted_at" => nil,
