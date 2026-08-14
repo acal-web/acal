@@ -181,7 +181,8 @@
       "Bash(pkill -f \"rails s\")",
       "Bash(curl http://localhost:3000)",
       "Bash(bundle lock *)",
-      "Bash(git commit -m 'fix: move dotenv-rails out of development group for production *)"
+      "Bash(git commit -m 'fix: move dotenv-rails out of development group for production *)",
+      "Bash(git commit -m 'fix: dotenv should not load .env files in containerized production *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
