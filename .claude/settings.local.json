@@ -173,7 +173,15 @@
       "Bash(RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb:10)",
       "Bash(DISABLE_SPRING=1 RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb)",
       "Bash(RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb:10 --format progress)",
-      "Bash(git commit -m 'fix: invoice tests and specs for membership/water_value split *)"
+      "Bash(git commit -m 'fix: invoice tests and specs for membership/water_value split *)",
+      "Bash(RAILS_ENV=development bundle exec rails s -b 0.0.0.0)",
+      "Bash(curl -s http://localhost:3000/api/health)",
+      "Bash(RAILS_ENV=development bundle exec rails s)",
+      "Bash(curl -v http://localhost:3000)",
+      "Bash(pkill -f \"rails s\")",
+      "Bash(curl http://localhost:3000)",
+      "Bash(bundle lock *)",
+      "Bash(git commit -m 'fix: move dotenv-rails out of development group for production *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

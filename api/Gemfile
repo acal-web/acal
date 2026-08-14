@@ -42,12 +42,13 @@ gem "prawn"
 gem "prawn-table"
 gem "matrix" # prawn dependency; no longer bundled with Ruby by default
 
+# Load environment variables from .env files [https://github.com/bkeepers/dotenv]
+# Must be outside :development group so it's available in production
+gem "dotenv-rails"
+
 group :development do
   # Adds Rails-aware support (model/schema completion, test CodeLens) to the Ruby LSP [https://github.com/Shopify/ruby-lsp-rails]
   gem "ruby-lsp-rails", require: false
-
-  # Load environment variables from .env files [https://github.com/bkeepers/dotenv]
-  gem "dotenv-rails"
 end
 
 group :development, :test do
