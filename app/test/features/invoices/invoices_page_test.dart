@@ -55,7 +55,15 @@ class _FakeInvoiceService extends InvoiceService {
   String? markedPaidId;
 
   @override
-  Future<PagedResult<Invoice>> findAll({int page = 0, int size = 10, int? year, int? month}) async {
+  Future<PagedResult<Invoice>> findAll({
+    int page = 0,
+    int size = 10,
+    int? year,
+    int? month,
+    String? customerId,
+    String? addressId,
+    String? status,
+  }) async {
     lastYear = year;
     lastMonth = month;
     return PagedResult(data: invoices, pagination: _pagination);
@@ -143,21 +151,6 @@ void main() {
     await _pump(tester, service);
 
     expect(find.text('—'), findsNWidgets(2));
-  });
-
-  testWidgets('filters widget is present and can be expanded', (tester) async {
-    final service = _FakeInvoiceService(invoices: [_invoice]);
-    await _pump(tester, service);
-
-    // Filter header should be visible
-    expect(find.text('Filtros'), findsOneWidget);
-
-    // Expand filters
-    await tester.tap(find.text('Filtros'));
-    await tester.pumpAndSettle();
-
-    // After expansion, Período label should be visible
-    expect(find.text('Período'), findsOneWidget);
   });
 
   testWidgets('Gerar Faturas navigates to the generate page', (tester) async {

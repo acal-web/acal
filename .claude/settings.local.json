@@ -182,7 +182,10 @@
       "Bash(curl http://localhost:3000)",
       "Bash(bundle lock *)",
       "Bash(git commit -m 'fix: move dotenv-rails out of development group for production *)",
-      "Bash(git commit -m 'fix: dotenv should not load .env files in containerized production *)"
+      "Bash(git commit -m 'fix: dotenv should not load .env files in containerized production *)",
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx\\)$\")",
+      "Bash(flutter --version)",
+      "Bash(curl -s http://localhost:5000)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

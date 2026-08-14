@@ -3,7 +3,13 @@ class InvoicesController < ApplicationController
 
   # GET /invoices
   def index
-    invoices = Invoice.filter_by_period(params[:year], params[:month]).ordered.includes(connection: %i[ customer address category ])
+    invoices = Invoice
+      .filter_by_period(params[:year], params[:month])
+      .filter_by_customer(params[:customer_id])
+      .filter_by_address(params[:address_id])
+      .filter_by_status(params[:status])
+      .ordered
+      .includes(connection: %i[customer address category])
 
     render json: paginate(invoices), include: INVOICE_INCLUDES
   end

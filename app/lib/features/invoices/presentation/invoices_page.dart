@@ -34,6 +34,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
   bool _isLoading = false;
   bool _hasMorePages = true;
   MonthYear? _period;
+  String? _customerId;
+  String? _addressId;
+  String? _status;
   String? _errorMessage;
 
   @override
@@ -69,6 +72,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
         size: _pageSize,
         year: _period?.year,
         month: _period?.month,
+        customerId: _customerId,
+        addressId: _addressId,
+        status: _status,
       );
 
       setState(() {
@@ -94,8 +100,16 @@ class _InvoicesPageState extends State<InvoicesPage> {
     }
   }
 
-  void _search({MonthYear? period}) async {
+  void _search({
+    MonthYear? period,
+    String? customerId,
+    String? addressId,
+    String? status,
+  }) async {
     _period = period;
+    _customerId = customerId;
+    _addressId = addressId;
+    _status = status;
     await _loadFirstPage();
   }
 

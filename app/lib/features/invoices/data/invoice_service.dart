@@ -16,12 +16,18 @@ class InvoiceService {
     int size = 10,
     int? year,
     int? month,
+    String? customerId,
+    String? addressId,
+    String? status,
   }) async {
-    final query = {
+    final query = <String, String>{
       'page': '$page',
       'size': '$size',
       if (year != null) 'year': '$year',
       if (month != null) 'month': '$month',
+      if (customerId != null) 'customer_id': customerId,
+      if (addressId != null) 'address_id': addressId,
+      if (status != null) 'status': status,
     };
     final data = await _http.get('/invoices', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Invoice.fromJson);

@@ -13,6 +13,22 @@ class Invoice < ApplicationRecord
     where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month) if year.present? && month.present?
   }
 
+  scope :filter_by_customer, ->(customer_id) {
+    joins(:connection).where(connections: { customer_id: }) if customer_id.present?
+  }
+
+  scope :filter_by_address, ->(address_id) {
+    joins(:connection).where(connections: { address_id: }) if address_id.present?
+  }
+
+  scope :filter_by_status, ->(status) {
+    case status
+    when "paid" then where.not(paid_at: nil)
+    when "unpaid" then where(paid_at: nil)
+    else self
+    end
+  }
+
   scope :ordered, -> { order(reference_date: :desc, created_at: :desc) }
 
   scope :unpaid, -> { where(paid_at: nil) }

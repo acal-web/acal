@@ -1,26 +1,84 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/features/addresses/data/address_service.dart';
+import 'package:acalapp/features/addresses/domain/address.dart';
+import 'package:acalapp/features/addresses/widget/address_select_field.dart';
+import 'package:acalapp/features/customer/data/customer_service.dart';
+import 'package:acalapp/features/customer/domain/customer.dart';
+import 'package:acalapp/features/customer/widget/customer_select_field.dart';
 import 'package:acalapp/shared/widgets/period_filter_button.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
-class InvoiceFilterBar extends StatefulWidget {
-  const InvoiceFilterBar({super.key, required this.onSearch});
+enum _InvoiceStatus {
+  all('Todos', null),
+  paid('Pagos', 'paid'),
+  unpaid('Abertos', 'unpaid');
 
-  final void Function({MonthYear? period}) onSearch;
+  const _InvoiceStatus(this.label, this.value);
+  final String label;
+  final String? value;
+}
+
+class InvoiceFilterBar extends StatefulWidget {
+  const InvoiceFilterBar({
+    super.key,
+    required this.onSearch,
+    this.customerService,
+    this.addressService,
+  });
+
+  final void Function({
+    MonthYear? period,
+    String? customerId,
+    String? addressId,
+    String? status,
+  }) onSearch;
+  final CustomerService? customerService;
+  final AddressService? addressService;
 
   @override
   State<InvoiceFilterBar> createState() => _InvoiceFilterBarState();
 }
 
 class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
+  late final CustomerService _customerService;
+  late final AddressService _addressService;
+
   MonthYear? _period;
+  Customer? _customer;
+  Address? _address;
+  _InvoiceStatus _status = _InvoiceStatus.all;
   bool _expanded = false;
 
-  void _search() => widget.onSearch(period: _period);
+  @override
+  void initState() {
+    super.initState();
+    _customerService = widget.customerService ?? CustomerService();
+    _addressService = widget.addressService ?? AddressService();
+  }
+
+  void _search() {
+    widget.onSearch(
+      period: _period,
+      customerId: _customer?.id,
+      addressId: _address?.id,
+      status: _status.value,
+    );
+  }
 
   void _clear() {
-    setState(() => _period = null);
-    widget.onSearch(period: null);
+    setState(() {
+      _period = null;
+      _customer = null;
+      _address = null;
+      _status = _InvoiceStatus.all;
+    });
+    widget.onSearch(
+      period: null,
+      customerId: null,
+      addressId: null,
+      status: null,
+    );
   }
 
   @override
@@ -29,28 +87,32 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
       builder: (context, constraints) {
         final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
-        final periodField = FSelect<MonthYear?>(
+        final periodField = PeriodFilterButton(
+          period: _period,
+          onChanged: (p) => setState(() => _period = p),
+        );
+
+        final customerField = CustomerSelectField(
+          customerService: _customerService,
+          initialValue: _customer,
+          onSelected: (c) => setState(() => _customer = c),
+        );
+
+        final addressField = AddressSelectField(
+          addressService: _addressService,
+          initialValue: _address,
+          onSelected: (a) => setState(() => _address = a),
+        );
+
+        final statusField = FSelect<_InvoiceStatus>(
           items: {
-            'Todos os períodos': null,
-            ...Map.fromEntries(
-              List.generate(12, (i) {
-                final now = DateTime.now();
-                final month = now.month - i;
-                final year = now.year - (month <= 0 ? 1 : 0);
-                final adjustedMonth = month <= 0 ? month + 12 : month;
-                final period = (month: adjustedMonth, year: year);
-                return MapEntry(
-                  _formatMonthYear(period),
-                  period,
-                );
-              }).reversed,
-            ),
+            for (final status in _InvoiceStatus.values) status.label: status
           },
           control: FSelectControl.managed(
-            initial: _period,
-            onChange: (v) => setState(() => _period = v),
+            initial: _status,
+            onChange: (v) => setState(() => _status = v ?? _InvoiceStatus.all),
           ),
-          label: const Text('Período'),
+          label: const Text('Situação'),
         );
 
         final searchButtonNarrow = Expanded(
@@ -59,7 +121,11 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
-              children: [Icon(Icons.search, size: 18), SizedBox(width: 8), Text('Consultar')],
+              children: [
+                Icon(Icons.search, size: 18),
+                SizedBox(width: 8),
+                Text('Consultar')
+              ],
             ),
           ),
         );
@@ -82,7 +148,11 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               mainAxisSize: MainAxisSize.min,
-              children: [Icon(Icons.search, size: 18), SizedBox(width: 8), Text('Consultar')],
+              children: [
+                Icon(Icons.search, size: 18),
+                SizedBox(width: 8),
+                Text('Consultar')
+              ],
             ),
           ),
         );
@@ -104,7 +174,13 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   periodField,
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
+                  customerField,
+                  const SizedBox(height: 12),
+                  addressField,
+                  const SizedBox(height: 12),
+                  statusField,
+                  const SizedBox(height: 12),
                   Row(
                     children: [
                       clearButtonNarrow,
@@ -122,10 +198,14 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
                     children: [
                       Expanded(flex: 2, child: periodField),
                       const SizedBox(width: 8),
-                      const Spacer(flex: 6),
+                      Expanded(flex: 3, child: customerField),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 3, child: addressField),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 2, child: statusField),
                     ],
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   const Divider(),
                   Row(
                     children: [
@@ -190,13 +270,5 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
         );
       },
     );
-  }
-
-  String _formatMonthYear(MonthYear period) {
-    const months = [
-      'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-      'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-    ];
-    return '${months[period.month - 1]} de ${period.year}';
   }
 }
