@@ -115,63 +115,32 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
           label: const Text('Situação'),
         );
 
-        final searchButtonNarrow = Expanded(
-          child: FButton(
-            onPress: _search,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.search, size: 18),
-                SizedBox(width: 8),
-                Text('Consultar')
-              ],
-            ),
+        final searchButton = FButton(
+          onPress: _search,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.search, size: 18),
+              SizedBox(width: 8),
+              Text('Consultar')
+            ],
           ),
         );
 
-        final clearButtonNarrow = Expanded(
-          child: FButton(
-            variant: FButtonVariant.outline,
-            onPress: _clear,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
-            ),
-          ),
-        );
-
-        final searchButtonWide = SizedBox(
-          child: FButton(
-            onPress: _search,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.search, size: 18),
-                SizedBox(width: 8),
-                Text('Consultar')
-              ],
-            ),
-          ),
-        );
-
-        final clearButtonWide = SizedBox(
-          child: FButton(
-            variant: FButtonVariant.outline,
-            onPress: _clear,
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              mainAxisSize: MainAxisSize.min,
-              children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
-            ),
+        final clearButton = FButton(
+          variant: FButtonVariant.outline,
+          onPress: _clear,
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [Icon(Icons.clear, size: 18), SizedBox(width: 8), Text('Limpar')],
           ),
         );
 
         final fields = narrow
             ? Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   periodField,
                   const SizedBox(height: 12),
@@ -183,9 +152,9 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
                   const SizedBox(height: 12),
                   Row(
                     children: [
-                      clearButtonNarrow,
+                      Expanded(child: clearButton),
                       const SizedBox(width: 8),
-                      searchButtonNarrow,
+                      Expanded(child: searchButton),
                     ],
                   ),
                 ],
@@ -208,11 +177,11 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
                   const SizedBox(height: 12),
                   const Divider(),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const Spacer(),
-                      Expanded(flex: 2, child: clearButtonWide),
+                      SizedBox(width: 110, child: clearButton),
                       const SizedBox(width: 8),
-                      Expanded(flex: 2, child: searchButtonWide),
+                      SizedBox(width: 110, child: searchButton),
                     ],
                   ),
                 ],
