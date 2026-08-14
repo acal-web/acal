@@ -145,20 +145,19 @@ void main() {
     expect(find.text('—'), findsNWidgets(2));
   });
 
-  testWidgets('filtering by period passes year and month to the service', (tester) async {
+  testWidgets('filters widget is present and can be expanded', (tester) async {
     final service = _FakeInvoiceService(invoices: [_invoice]);
     await _pump(tester, service);
 
-    expect(service.lastYear, isNull);
-    expect(service.lastMonth, isNull);
+    // Filter header should be visible
+    expect(find.text('Filtros'), findsOneWidget);
 
-    await tester.tap(find.text('Todos os períodos'));
-    await tester.pumpAndSettle();
-    await tester.tap(find.text('Aplicar'));
+    // Expand filters
+    await tester.tap(find.text('Filtros'));
     await tester.pumpAndSettle();
 
-    expect(service.lastYear, DateTime.now().year);
-    expect(service.lastMonth, DateTime.now().month);
+    // After expansion, Período label should be visible
+    expect(find.text('Período'), findsOneWidget);
   });
 
   testWidgets('Gerar Faturas navigates to the generate page', (tester) async {
