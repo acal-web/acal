@@ -40,13 +40,11 @@ Future<void> _pump(
   );
 }
 
-// Opens the popover (tap + settle the open animation) and types into its
-// inner search field — the outer field is a read-only display trigger, the
-// second TextField that appears once the popover is open is the real input.
+// Types into the search field and waits for debounce.
+// With RawAutocomplete, there's only one TextField that's always visible.
 Future<void> _search_(WidgetTester tester, String query) async {
-  await tester.tap(find.byType(TextField));
-  await tester.pump();
-  await tester.enterText(find.byType(TextField).last, query);
+  await tester.enterText(find.byType(TextField), query);
+  // Wait for debounce (300ms) + one pump to render results
   await tester.pump(const Duration(milliseconds: 350));
   await tester.pump();
 }

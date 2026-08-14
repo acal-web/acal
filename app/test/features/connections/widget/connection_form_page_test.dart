@@ -102,44 +102,41 @@ Future<void> _settleSearch(WidgetTester tester) async {
   await tester.pump();
 }
 
-// Field order in ConnectionFormPage: Sócio, Logradouro, [Número, Letra],
-// Categoria, Data da Matrícula. SearchSelectField and DropdownMenu each
-// render a bare TextField; Número/Letra/Data are TextFormFields (which are
-// also TextFields under the hood), so they all share the same TextField
-// finder space in tree order.
-Finder _customerField() => find.byType(TextField).at(0);
-Finder _addressField() => find.byType(TextField).at(1);
+// Field order in ConnectionFormPage: [Número, Letra], Categoria, Data da Matrícula.
+// TextFormFields and DropdownMenu render TextField widgets in tree order.
 Finder _numberField() => find.byType(TextField).at(2);
 Finder _letterField() => find.byType(TextField).at(3);
 Finder _categoryField() => find.byType(TextField).at(4);
 
-// The popover opened by a SearchSelectField (FSelect) inserts its own inner
-// search TextField wherever the field sits in the tree — not necessarily at
-// the end — so it can't be reached via `find.byType(TextField).last` once
-// there's more than one FSelect-backed field on the page. Its default hint
-// ("Search", from Forui's un-localized default) is stable enough to target.
-Finder _openSearchPopoverField() => find.byWidgetPredicate((w) => w is TextField && w.decoration?.hintText == 'Search');
+// With RawAutocomplete, SearchSelectField renders a single visible TextField.
+Finder _customerSearchField() => find.byType(TextField).at(0);
+Finder _addressSearchField() => find.byType(TextField).at(1);
 
 Future<void> _fillAllFields(WidgetTester tester) async {
-  await tester.tap(_customerField());
-  await tester.pump();
-  await tester.enterText(_openSearchPopoverField(), 'fulano');
+  // Customer search
+  await tester.enterText(_customerSearchField(), 'fulano');
   await _settleSearch(tester);
+  await tester.pumpAndSettle();
   await tester.tap(find.text('Fulano de Tal'));
   await tester.pumpAndSettle();
-
-  await tester.tap(_addressField());
+  // Tap somewhere neutral to close any overlays
+  await tester.tap(find.byType(Scaffold));
   await tester.pumpAndSettle();
+
+  // Address search
+  await tester.enterText(_addressSearchField(), 'principal');
+  await _settleSearch(tester);
+  await tester.pump(const Duration(milliseconds: 200));
   await tester.tap(find.text('Rua Principal').last);
   await tester.pumpAndSettle();
 
   await tester.enterText(_numberField(), '12');
 
-  // Categoria uses CategorySelectField (Material DropdownMenu, not migrated
-  // yet) — unlike Sócio, it shows its options immediately, no typing needed.
+  // Categoria uses CategorySelectField (Material DropdownMenu) —
+  // it shows its options immediately without typing.
   await tester.tap(_categoryField());
   await tester.pumpAndSettle();
-  await tester.tap(find.text('Padrão').last);
+  await tester.tap(find.text('Padrão'));
   await tester.pumpAndSettle();
 }
 

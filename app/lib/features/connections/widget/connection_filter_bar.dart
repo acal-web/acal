@@ -82,7 +82,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           key: ValueKey(_filterKey),
           customerService: _customerService,
           initialValue: _customer,
-          active: null,
+          includeInactive: true,
           onSelected: (c) => setState(() => _customer = c),
         );
 

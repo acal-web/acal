@@ -3,10 +3,6 @@ import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:flutter/material.dart';
 
-/// A field that searches for customers by name OR document, showing
-/// matching results for selection. Accepts both formatted (123.456.789-09)
-/// and unformatted (12345678909) documents. Search results are merged and
-/// deduplicated by customer ID.
 class CustomerSelectField extends StatefulWidget {
   const CustomerSelectField({
     super.key,
@@ -15,7 +11,7 @@ class CustomerSelectField extends StatefulWidget {
     required this.onSelected,
     this.label = 'Sócio',
     this.hintText = 'Buscar por nome ou documento',
-    this.active = true,
+    this.includeInactive = false,
     this.validator,
   });
 
@@ -24,7 +20,7 @@ class CustomerSelectField extends StatefulWidget {
   final ValueChanged<Customer?> onSelected;
   final String label;
   final String hintText;
-  final bool? active; // null = search active and inactive; true = active only
+  final bool includeInactive;
   final FormFieldValidator<Customer>? validator;
 
   @override
@@ -42,16 +38,24 @@ class _CustomerSelectFieldState extends State<CustomerSelectField> {
 
   Future<List<Customer>> _search(String query) async {
     final hasDigits = RegExp(r'[0-9]').hasMatch(query);
+    final active = widget.includeInactive ? null : true;
     final pages = await Future.wait([
-      widget.customerService.findAll(name: query, size: 5, active: widget.active),
-      if (hasDigits) widget.customerService.findAll(document: query, size: 5, active: widget.active),
+      widget.customerService.findAll(name: query, size: 5, active: active),
+      if (hasDigits) widget.customerService.findAll(document: query, size: 5, active: active),
     ]);
     final seen = <String>{};
-    return [
-      for (final page in pages)
-        for (final customer in page.data)
-          if (customer.id != null && seen.add(customer.id!)) customer,
-    ];
+    final results = <Customer>[];
+    for (final page in pages) {
+      for (final customer in page.data) {
+        if (customer.id != null && seen.add(customer.id!)) {
+          if (!widget.includeInactive && !customer.active) {
+            continue;
+          }
+          results.add(customer);
+        }
+      }
+    }
+    return results;
   }
 
   void _handleSelected(Customer? customer) {
@@ -78,7 +82,10 @@ class _CustomerSelectFieldState extends State<CustomerSelectField> {
               initialValue: _selected,
               search: _search,
               labelBuilder: (c) => c.name,
-              subtitleBuilder: (c) => c.document,
+              subtitleBuilder: (c) {
+                final inactiveLabel = !c.active ? ' (inativo)' : '';
+                return '${c.document}$inactiveLabel';
+              },
               onSelected: _handleSelected,
               validator: widget.validator,
             ),
