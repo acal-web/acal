@@ -165,10 +165,14 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
                   SingleChildScrollView(
                     scrollDirection: Axis.horizontal,
                     child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         SizedBox(
                           width: 200,
-                          child: periodField,
+                          child: Align(
+                            alignment: Alignment.topLeft,
+                            child: periodField,
+                          ),
                         ),
                         const SizedBox(width: 8),
                         SizedBox(
