@@ -162,17 +162,31 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Expanded(flex: 2, child: periodField),
-                      const SizedBox(width: 8),
-                      Expanded(flex: 3, child: customerField),
-                      const SizedBox(width: 8),
-                      Expanded(flex: 3, child: addressField),
-                      const SizedBox(width: 8),
-                      Expanded(flex: 2, child: statusField),
-                    ],
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      children: [
+                        SizedBox(
+                          width: 200,
+                          child: periodField,
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 300,
+                          child: customerField,
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 300,
+                          child: addressField,
+                        ),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          width: 200,
+                          child: statusField,
+                        ),
+                      ],
+                    ),
                   ),
                   const SizedBox(height: 12),
                   const Divider(),
