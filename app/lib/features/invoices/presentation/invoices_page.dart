@@ -1,7 +1,7 @@
 import 'package:acalapp/core/config/layout_config.dart';
-import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
+import 'package:acalapp/features/invoices/widget/invoice_filter_bar.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
@@ -25,45 +25,83 @@ class InvoicesPage extends StatefulWidget {
 
 class _InvoicesPageState extends State<InvoicesPage> {
   late final InvoiceService _service;
-  late Future<PagedResult<Invoice>> _future;
-  int _page = 0;
-  int _pageSize = 10;
+  final _scrollController = ScrollController();
+  final List<Invoice> _allInvoices = [];
+
+  int _currentPage = 0;
+  final int _pageSize = 25;
+  int _totalCount = 0;
+  bool _isLoading = false;
+  bool _hasMorePages = true;
   MonthYear? _period;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _service = widget.invoiceService ?? InvoiceService();
-    _future = _fetch();
+    _scrollController.addListener(_onScroll);
+    _loadFirstPage();
   }
 
-  Future<PagedResult<Invoice>> _fetch() => _service.findAll(
-    page: _page,
-    size: _pageSize,
-    year: _period?.year,
-    month: _period?.month,
-  );
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
 
-  void _load() => setState(() {
-    _future = _fetch();
-  });
+  Future<void> _loadFirstPage() async {
+    _allInvoices.clear();
+    _currentPage = 0;
+    _hasMorePages = true;
+    _errorMessage = null;
+    await _loadNextPage();
+  }
 
-  void _goToPage(int page) => setState(() {
-    _page = page;
-    _future = _fetch();
-  });
+  Future<void> _loadNextPage() async {
+    if (_isLoading || !_hasMorePages) return;
 
-  void _changePageSize(int size) => setState(() {
-    _pageSize = size;
-    _page = 0;
-    _future = _fetch();
-  });
+    setState(() => _isLoading = true);
 
-  void _changePeriod(MonthYear? period) => setState(() {
+    try {
+      final result = await _service.findAll(
+        page: _currentPage,
+        size: _pageSize,
+        year: _period?.year,
+        month: _period?.month,
+      );
+
+      setState(() {
+        _allInvoices.addAll(result.data);
+        _totalCount = result.pagination.totalElements;
+        _hasMorePages = result.pagination.nextPage != null;
+        _currentPage++;
+        _isLoading = false;
+        _errorMessage = null;
+      });
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+        _errorMessage = 'Erro ao carregar faturas';
+      });
+    }
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >=
+        _scrollController.position.maxScrollExtent - 500) {
+      _loadNextPage();
+    }
+  }
+
+  void _search({MonthYear? period}) async {
     _period = period;
-    _page = 0;
-    _future = _fetch();
-  });
+    await _loadFirstPage();
+  }
+
+  Future<void> _reloadData() async {
+    await _loadFirstPage();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -110,129 +148,86 @@ class _InvoicesPageState extends State<InvoicesPage> {
               ),
             ),
             const Divider(),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: Row(
-                children: [
-                  Text(
-                    'Filtrar por Período',
-                    style: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  const SizedBox(width: 12),
-                  PeriodFilterButton(
-                    period: _period,
-                    onChanged: _changePeriod,
-                  ),
-                ],
-              ),
-            ),
+            InvoiceFilterBar(onSearch: _search),
+            const SizedBox(height: 8),
             Expanded(
-              child: FutureBuilder<PagedResult<Invoice>>(
-                future: _future,
-                builder: (context, snapshot) {
-                  if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
-                  }
-
-                  if (snapshot.hasError) {
-                    return Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text('Erro ao carregar faturas'),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
-                            onPressed: _load,
-                            child: const Text('Tentar novamente'),
-                          ),
-                        ],
-                      ),
-                    );
-                  }
-
-                  final data = snapshot.data;
-                  if (data == null || data.data.isEmpty) {
-                    return const Center(
-                      child: Text('Nenhuma fatura emitida.'),
-                    );
-                  }
-
-                  return Column(
-                    children: [
-                      _TableHeader(onPageSizeChanged: _changePageSize),
-                      const Divider(height: 1),
-                      Expanded(
-                        child: ListView.separated(
-                          itemCount: data.data.length,
-                          addRepaintBoundaries: true,
-                          addSemanticIndexes: false,
-                          separatorBuilder: (_, _) => const Divider(height: 1),
-                          itemBuilder: (context, index) {
-                            final invoice = data.data[index];
-                            final isEven = index.isEven;
-
-                            return _InvoiceRow(
-                              invoice: invoice,
-                              service: _service,
-                              onChanged: _load,
-                              isEven: isEven,
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  );
-                },
-              ),
+              child: _errorMessage != null
+                  ? _buildErrorView()
+                  : _allInvoices.isEmpty && !_isLoading
+                      ? const Center(child: Text('Nenhuma fatura emitida.'))
+                      : _buildTableWithInfiniteScroll(),
             ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 8),
-              child: FutureBuilder<PagedResult<Invoice>>(
-                future: _future,
-                builder: (context, snapshot) {
-                  if (!snapshot.hasData) return const SizedBox.shrink();
-                  final data = snapshot.data!;
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        'Mostrando ${data.data.length} de ${data.pagination.totalElements} registros',
-                        style: Theme.of(context).textTheme.bodySmall,
-                      ),
-                      Row(
-                        children: [
-                          IconButton(
-                            onPressed: _page > 0 ? () => _goToPage(_page - 1) : null,
-                            icon: const Icon(Icons.chevron_left),
-                            tooltip: 'Página anterior',
-                          ),
-                          Text(
-                            'Página ${_page + 1} de ${data.pagination.totalPages}',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                          IconButton(
-                            onPressed: !data.pagination.last ? () => _goToPage(_page + 1) : null,
-                            icon: const Icon(Icons.chevron_right),
-                            tooltip: 'Próxima página',
-                          ),
-                        ],
-                      ),
-                    ],
-                  );
-                },
+            if (_allInvoices.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 8),
+                child: Text(
+                  'Mostrando ${_allInvoices.length} de $_totalCount registros',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
               ),
-            ),
           ],
         ),
       ),
     );
   }
+
+  Widget _buildErrorView() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(_errorMessage!),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadFirstPage,
+            child: const Text('Tentar novamente'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTableWithInfiniteScroll() {
+    return Column(
+      children: [
+        const _TableHeader(),
+        const Divider(height: 1),
+        Expanded(
+          child: ListView.builder(
+            controller: _scrollController,
+            itemCount: _allInvoices.length + (_isLoading ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index == _allInvoices.length) {
+                return const Padding(
+                  padding: EdgeInsets.all(16),
+                  child: CircularProgressIndicator(),
+                );
+              }
+
+              final invoice = _allInvoices[index];
+              final isEven = index.isEven;
+
+              return Column(
+                children: [
+                  _InvoiceRow(
+                    invoice: invoice,
+                    service: _service,
+                    onChanged: _reloadData,
+                    isEven: isEven,
+                  ),
+                  const Divider(height: 1),
+                ],
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _TableHeader extends StatelessWidget {
-  final Function(int) onPageSizeChanged;
-
-  const _TableHeader({required this.onPageSizeChanged});
+  const _TableHeader();
 
   @override
   Widget build(BuildContext context) {
