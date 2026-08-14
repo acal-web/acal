@@ -7,7 +7,7 @@ RSpec.describe Invoices::OverdueConnectionsService do
   let(:connection) { create(:connection, customer: customer, address: address, category: category) }
 
   it "groups unpaid invoices overdue by more than the given threshold by connection" do
-    invoice = create(:invoice, connection: connection, reference_date: "2026-06-01", due_date: Date.current - 45.days, amount: 20.0)
+    invoice = create(:invoice, connection: connection, reference_date: "2026-06-01", due_date: Date.current - 45.days, membership_value: 15.0, water_value: 5.0)
 
     result = described_class.call(days: 30)
 
@@ -23,8 +23,8 @@ RSpec.describe Invoices::OverdueConnectionsService do
   end
 
   it "sums multiple overdue invoices for the same connection" do
-    create(:invoice, connection: connection, reference_date: "2026-05-01", due_date: Date.current - 60.days, amount: 20.0)
-    create(:invoice, connection: connection, reference_date: "2026-06-01", due_date: Date.current - 45.days, amount: 20.0)
+    create(:invoice, connection: connection, reference_date: "2026-05-01", due_date: Date.current - 60.days, membership_value: 15.0, water_value: 5.0)
+    create(:invoice, connection: connection, reference_date: "2026-06-01", due_date: Date.current - 45.days, membership_value: 15.0, water_value: 5.0)
 
     result = described_class.call(days: 30)
 

@@ -8,25 +8,11 @@ RSpec.describe LegacyImport::InvoiceImporter do
 
   describe ".call" do
     it "imports a single valid invoice" do
-      sql_path = fixture_path("invoices_valid.sql")
-      File.write(sql_path, <<~SQL)
-        CREATE TABLE `conta` (
-          `id` int(11),
-          `dataGerada` datetime,
-          `dataPag` datetime,
-          `dataVence` datetime,
-          `observacoes` text,
-          `idEnderecoPessoa` int(11),
-          `ValorTaxa` decimal(10,2),
-          `ValorOutros` decimal(10,2),
-          `SocioExclusivo` bit(1),
-          `dataReferente` date,
-          `versao` bigint(20)
-        );
-        INSERT INTO `conta` VALUES (100, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', NULL, 1, 10.00, 5.00, '\\0', '2026-08-01', 1);
-      SQL
+      mock_dump_data([
+        { "id" => "100", "idEnderecoPessoa" => "1", "dataReferente" => "2026-08-01", "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "10.00", "ValorOutros" => "5.00" }
+      ])
 
-      result = described_class.call(conta_path: sql_path)
+      result = described_class.call(conta_path: "dummy.sql")
 
       expect(result.imported).to eq(1)
       expect(result.skipped_duplicates).to eq(0)
@@ -40,149 +26,71 @@ RSpec.describe LegacyImport::InvoiceImporter do
       expect(invoice.membership_value).to eq(10.0)
       expect(invoice.water_value).to eq(5.0)
       expect(invoice.paid_at).to be_nil
-    ensure
-      File.delete(sql_path) if File.exist?(sql_path)
     end
 
     it "skips duplicate legacy_ids" do
       create(:invoice, legacy_id: 100, connection: connection)
-      sql_path = fixture_path("invoices_duplicate.sql")
-      File.write(sql_path, <<~SQL)
-        CREATE TABLE `conta` (
-          `id` int(11),
-          `dataGerada` datetime,
-          `dataPag` datetime,
-          `dataVence` datetime,
-          `observacoes` text,
-          `idEnderecoPessoa` int(11),
-          `ValorTaxa` decimal(10,2),
-          `ValorOutros` decimal(10,2),
-          `SocioExclusivo` bit(1),
-          `dataReferente` date,
-          `versao` bigint(20)
-        );
-        INSERT INTO `conta` VALUES (100, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', NULL, 1, 10.00, 5.00, '\\0', '2026-08-01', 1);
-      SQL
+      mock_dump_data([
+        { "id" => "100", "idEnderecoPessoa" => "1", "dataReferente" => "2026-08-01", "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "10.00", "ValorOutros" => "5.00" }
+      ])
 
-      result = described_class.call(conta_path: sql_path)
+      result = described_class.call(conta_path: "dummy.sql")
 
       expect(result.imported).to eq(0)
       expect(result.skipped_duplicates).to eq(1)
       expect(result.skipped_invalid).to be_empty
-    ensure
-      File.delete(sql_path) if File.exist?(sql_path)
     end
 
     it "skips invoices with missing connection (FK)" do
-      sql_path = fixture_path("invoices_missing_fk.sql")
-      File.write(sql_path, <<~SQL)
-        CREATE TABLE `conta` (
-          `id` int(11),
-          `dataGerada` datetime,
-          `dataPag` datetime,
-          `dataVence` datetime,
-          `observacoes` text,
-          `idEnderecoPessoa` int(11),
-          `ValorTaxa` decimal(10,2),
-          `ValorOutros` decimal(10,2),
-          `SocioExclusivo` bit(1),
-          `dataReferente` date,
-          `versao` bigint(20)
-        );
-        INSERT INTO `conta` VALUES (101, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', NULL, 999, 10.00, 5.00, '\\0', '2026-08-01', 1);
-      SQL
+      mock_dump_data([
+        { "id" => "101", "idEnderecoPessoa" => "999", "dataReferente" => "2026-08-01", "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "10.00", "ValorOutros" => "5.00" }
+      ])
 
-      result = described_class.call(conta_path: sql_path)
+      result = described_class.call(conta_path: "dummy.sql")
 
       expect(result.imported).to eq(0)
       expect(result.skipped_duplicates).to eq(0)
       expect(result.skipped_invalid.length).to eq(1)
       expect(result.skipped_invalid.first[:reason]).to include("Ligação não encontrada")
-    ensure
-      File.delete(sql_path) if File.exist?(sql_path)
     end
 
     it "skips invoices with blank required date fields" do
-      sql_path = fixture_path("invoices_blank_dates.sql")
-      File.write(sql_path, <<~SQL)
-        CREATE TABLE `conta` (
-          `id` int(11),
-          `dataGerada` datetime,
-          `dataPag` datetime,
-          `dataVence` datetime,
-          `observacoes` text,
-          `idEnderecoPessoa` int(11),
-          `ValorTaxa` decimal(10,2),
-          `ValorOutros` decimal(10,2),
-          `SocioExclusivo` bit(1),
-          `dataReferente` date,
-          `versao` bigint(20)
-        );
-        INSERT INTO `conta` VALUES (102, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', NULL, 1, 10.00, 5.00, '\\0', NULL, 1);
-      SQL
+      mock_dump_data([
+        { "id" => "102", "idEnderecoPessoa" => "1", "dataReferente" => nil, "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "10.00", "ValorOutros" => "5.00" }
+      ])
 
-      result = described_class.call(conta_path: sql_path)
+      result = described_class.call(conta_path: "dummy.sql")
 
       expect(result.imported).to eq(0)
       expect(result.skipped_invalid.length).to eq(1)
       expect(result.skipped_invalid.first[:reason]).to include("Data de referência vazia")
-    ensure
-      File.delete(sql_path) if File.exist?(sql_path)
     end
 
     it "skips invoices with negative amounts" do
-      sql_path = fixture_path("invoices_negative.sql")
-      File.write(sql_path, <<~SQL)
-        CREATE TABLE `conta` (
-          `id` int(11),
-          `dataGerada` datetime,
-          `dataPag` datetime,
-          `dataVence` datetime,
-          `observacoes` text,
-          `idEnderecoPessoa` int(11),
-          `ValorTaxa` decimal(10,2),
-          `ValorOutros` decimal(10,2),
-          `SocioExclusivo` bit(1),
-          `dataReferente` date,
-          `versao` bigint(20)
-        );
-        INSERT INTO `conta` VALUES (103, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', NULL, 1, -5.00, 5.00, '\\0', '2026-08-01', 1);
-      SQL
+      mock_dump_data([
+        { "id" => "103", "idEnderecoPessoa" => "1", "dataReferente" => "2026-08-01", "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "-5.00", "ValorOutros" => "5.00" }
+      ])
 
-      result = described_class.call(conta_path: sql_path)
+      result = described_class.call(conta_path: "dummy.sql")
 
       expect(result.imported).to eq(0)
       expect(result.skipped_invalid.length).to eq(1)
       expect(result.skipped_invalid.first[:reason]).to include("taxa negativo")
-    ensure
-      File.delete(sql_path) if File.exist?(sql_path)
     end
 
     it "detects duplicate period keys (same connection + reference_date) and reports the first as winner" do
-      sql_path = fixture_path("invoices_duplicate_periods.sql")
-      File.write(sql_path, <<~SQL)
-        CREATE TABLE `conta` (
-          `id` int(11),
-          `dataGerada` datetime,
-          `dataPag` datetime,
-          `dataVence` datetime,
-          `observacoes` text,
-          `idEnderecoPessoa` int(11),
-          `ValorTaxa` decimal(10,2),
-          `ValorOutros` decimal(10,2),
-          `SocioExclusivo` bit(1),
-          `dataReferente` date,
-          `versao` bigint(20)
-        );
-        INSERT INTO `conta` VALUES
-          (104, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', NULL, 1, 10.00, 5.00, '\\0', '2026-08-01', 1),
-          (105, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', '2ª via', 1, 15.00, 5.00, '\\0', '2026-08-01', 1),
-          (106, '2026-08-01 10:00:00', NULL, '2026-08-10 00:00:00', NULL, 2, 10.00, 5.00, '\\0', '2026-08-01', 1);
-      SQL
-
       other_connection = create(:connection, customer: create(:customer), address: create(:address), category: category, legacy_id: 2)
 
-      result = described_class.call(conta_path: sql_path)
+      mock_dump_data(
+        [
+          { "id" => "104", "idEnderecoPessoa" => "1", "dataReferente" => "2026-08-01", "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "10.00", "ValorOutros" => "5.00" },
+          { "id" => "105", "idEnderecoPessoa" => "1", "dataReferente" => "2026-08-01", "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "15.00", "ValorOutros" => "5.00" },
+          { "id" => "106", "idEnderecoPessoa" => "2", "dataReferente" => "2026-08-01", "dataVence" => "2026-08-10", "dataPag" => nil, "ValorTaxa" => "10.00", "ValorOutros" => "5.00" }
+        ],
+        { 2 => other_connection.id }
+      )
+
+      result = described_class.call(conta_path: "dummy.sql")
 
       expect(result.imported).to eq(2) # 104 and 106 only
       expect(result.skipped_duplicates).to eq(0)
@@ -193,14 +101,21 @@ RSpec.describe LegacyImport::InvoiceImporter do
 
       # Verify the unrelated row 106 is actually in the DB (not silently dropped)
       expect(Invoice.find_by(legacy_id: 106)).not_to be_nil
-    ensure
-      File.delete(sql_path) if File.exist?(sql_path)
     end
   end
 
   private
 
-  def fixture_path(name)
-    File.join(Dir.tmpdir, name)
+  def mock_dump_data(rows, extra_connections = {})
+    allow(LegacyImport::SqlDumpParser).to receive(:call) do |_path|
+      {
+        "conta" => Struct.new(:rows).new(rows)
+      }
+    end
+    # Mock pluck to return all connections known in this test context
+    all_connections = { connection.legacy_id => connection.id }.merge(extra_connections)
+    allow(Connection).to receive(:pluck).with(:legacy_id, :id).and_return(
+      all_connections.map { |k, v| [ k, v ] }
+    )
   end
 end

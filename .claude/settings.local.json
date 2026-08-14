@@ -163,7 +163,17 @@
       "Bash(grep -o \"^INSERT INTO \\\\`conta\\\\`\" .legacy/acal_conta.sql)",
       "Bash(.legacy/import.sh)",
       "Bash(RAILS_ENV=development bundle exec rails runner ' *)",
-      "Bash(git commit -m 'refactor: standardize invoices_page UI with connections_page pattern *)"
+      "Bash(git commit -m 'refactor: standardize invoices_page UI with connections_page pattern *)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/models/invoice_spec.rb spec/services/invoices spec/services/legacy_import spec/requests/invoices_spec.rb -v)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/models/invoice_spec.rb spec/services/invoices spec/services/legacy_import spec/requests/invoices_spec.rb)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/services/invoices spec/services/legacy_import spec/requests/invoices_spec.rb)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/services/invoices/overdue_connections_service_spec.rb spec/services/legacy_import/invoice_importer_spec.rb spec/requests/invoices_spec.rb)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb:10 -vvv)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb:10)",
+      "Bash(DISABLE_SPRING=1 RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb)",
+      "Bash(RAILS_ENV=test bundle exec rspec spec/services/legacy_import/invoice_importer_spec.rb:10 --format progress)",
+      "Bash(git commit -m 'fix: invoice tests and specs for membership/water_value split *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
