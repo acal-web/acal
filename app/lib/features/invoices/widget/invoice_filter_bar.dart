@@ -169,9 +169,19 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
                       children: [
                         SizedBox(
                           width: 200,
-                          child: Align(
-                            alignment: Alignment.topLeft,
-                            child: periodField,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Período',
+                                style: Theme.of(context).textTheme.labelSmall,
+                              ),
+                              const SizedBox(height: 4),
+                              Align(
+                                alignment: Alignment.topLeft,
+                                child: periodField,
+                              ),
+                            ],
                           ),
                         ),
                         const SizedBox(width: 8),
