@@ -38,6 +38,7 @@ final _connection = Connection(
 
 final _invoice = Invoice(
   id: 'inv-1',
+  number: '2026.08.000001',
   connectionId: 'conn-1',
   referenceDate: DateTime(2026, 8, 1),
   dueDate: DateTime(2026, 8, 10),
@@ -63,6 +64,8 @@ class _FakeInvoiceService extends InvoiceService {
     String? customerId,
     String? addressId,
     String? status,
+    String? sortBy,
+    bool? sortAscending,
   }) async {
     lastYear = year;
     lastMonth = month;
@@ -141,6 +144,7 @@ void main() {
   testWidgets('shows a placeholder dash when the connection is missing', (tester) async {
     final invoiceWithoutConnection = Invoice(
       id: 'inv-2',
+      number: '2026.08.000002',
       connectionId: 'conn-2',
       referenceDate: DateTime(2026, 8, 1),
       dueDate: DateTime(2026, 8, 10),
@@ -177,10 +181,14 @@ void main() {
     final service = _FakeInvoiceService(invoices: [_invoice]);
     await _pump(tester, service);
 
-    expect(find.byIcon(Icons.attach_money), findsOneWidget);
-    expect(find.byIcon(Icons.check_circle), findsNothing);
+    // PopupMenuButton opens to show menu items with icons
+    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await tester.pumpAndSettle();
 
-    await tester.tap(find.byIcon(Icons.attach_money));
+    // Should show "Marcar como Paga" option
+    expect(find.text('Marcar como Paga'), findsOneWidget);
+
+    await tester.tap(find.text('Marcar como Paga'));
     await tester.pump();
     await tester.pump(const Duration(seconds: 4));
     await tester.pump(const Duration(milliseconds: 200));
@@ -191,6 +199,7 @@ void main() {
   testWidgets('shows a paid indicator instead of the mark-paid action for a paid invoice', (tester) async {
     final paidInvoice = Invoice(
       id: 'inv-3',
+      number: '2026.08.000001',
       connectionId: 'conn-1',
       referenceDate: DateTime(2026, 8, 1),
       dueDate: DateTime(2026, 8, 10),
@@ -202,7 +211,12 @@ void main() {
     final service = _FakeInvoiceService(invoices: [paidInvoice]);
     await _pump(tester, service);
 
-    expect(find.byIcon(Icons.check_circle), findsOneWidget);
-    expect(find.byIcon(Icons.attach_money), findsNothing);
+    // PopupMenuButton opens to show menu items
+    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await tester.pumpAndSettle();
+
+    // Should show "Paga" status instead of mark-paid option
+    expect(find.text('Paga'), findsOneWidget);
+    expect(find.text('Marcar como Paga'), findsNothing);
   });
 }
