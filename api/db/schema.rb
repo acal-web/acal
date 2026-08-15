@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_13_150100) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_15_140820) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -83,13 +83,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_13_150100) do
     t.date "due_date", null: false
     t.integer "legacy_id"
     t.decimal "membership_value", precision: 10, scale: 2, default: "0.0", null: false
+    t.string "number"
     t.datetime "paid_at"
     t.date "reference_date", null: false
     t.datetime "updated_at", null: false
     t.decimal "water_value", precision: 10, scale: 2, default: "0.0", null: false
     t.index ["connection_id", "reference_date"], name: "index_invoices_on_connection_id_and_reference_date_unique", unique: true, where: "(deleted_at IS NULL)"
     t.index ["connection_id"], name: "index_invoices_on_connection_id"
+    t.index ["due_date", "paid_at"], name: "index_invoices_on_due_date_and_paid_at", where: "(deleted_at IS NULL)"
+    t.index ["due_date"], name: "index_invoices_on_due_date", where: "(deleted_at IS NULL)"
     t.index ["legacy_id"], name: "index_invoices_on_legacy_id", unique: true
+    t.index ["number"], name: "index_invoices_on_number", unique: true
+    t.index ["paid_at"], name: "index_invoices_on_paid_at", where: "(deleted_at IS NULL)"
+    t.index ["reference_date", "paid_at"], name: "index_invoices_on_reference_date_and_paid_at", where: "(deleted_at IS NULL)"
   end
 
   create_table "quality_analyses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

@@ -2,6 +2,7 @@ import 'package:acalapp/features/connections/domain/connection.dart';
 
 class Invoice {
   final String? id;
+  final String? number;
   final String connectionId;
   final DateTime referenceDate;
   final DateTime dueDate;
@@ -12,6 +13,7 @@ class Invoice {
 
   const Invoice({
     this.id,
+    this.number,
     required this.connectionId,
     required this.referenceDate,
     required this.dueDate,
@@ -27,6 +29,7 @@ class Invoice {
 
   factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
         id: json['id']?.toString(),
+        number: json['number']?.toString(),
         connectionId: json['connection_id'].toString(),
         referenceDate: DateTime.parse(json['reference_date'] as String),
         dueDate: DateTime.parse(json['due_date'] as String),

@@ -19,15 +19,19 @@ class InvoiceService {
     String? customerId,
     String? addressId,
     String? status,
+    String? sortBy,
+    bool? sortAscending,
   }) async {
     final query = <String, String>{
       'page': '$page',
       'size': '$size',
       if (year != null) 'year': '$year',
       if (month != null) 'month': '$month',
-      if (customerId != null) 'customer_id': customerId,
-      if (addressId != null) 'address_id': addressId,
-      if (status != null) 'status': status,
+      'customer_id': ?customerId,
+      'address_id': ?addressId,
+      'status': ?status,
+      if (sortBy != null) 'sort_by': sortBy,
+      if (sortAscending != null) 'sort_ascending': '$sortAscending',
     };
     final data = await _http.get('/invoices', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Invoice.fromJson);
@@ -78,6 +82,23 @@ class InvoiceService {
         query: {
           'connection_id': ?connectionId,
           if (days != null) 'days': '$days',
+        },
+      );
+
+  Future<Uint8List> printFiltered({
+    int? year,
+    int? month,
+    String? customerId,
+    String? addressId,
+    String? status,
+  }) => _http.getBytes(
+        '/invoices/print_filtered',
+        query: {
+          if (year != null) 'year': '$year',
+          if (month != null) 'month': '$month',
+          'customer_id': ?customerId,
+          'address_id': ?addressId,
+          'status': ?status,
         },
       );
 

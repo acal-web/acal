@@ -13,9 +13,11 @@ module Dashboard
     def call
       {
         total_received: total_received,
+        total_received_today: total_received_today,
         total_receivable: total_receivable,
         invoices_received_count: invoices_received_count,
         invoices_receivable_count: invoices_receivable_count,
+        invoices_paid_today_count: invoices_paid_today_count,
         recent_invoices: recent_invoices,
         members_by_category: members_by_category
       }
@@ -38,15 +40,29 @@ module Dashboard
         .to_f
     end
 
+    def total_received_today
+      today = Date.current
+      Invoice
+        .where(paid_at: today.beginning_of_day..today.end_of_day)
+        .sum("membership_value + water_value")
+        .to_f
+    end
+
     def invoices_received_count
       Invoice
         .where(paid_at: month_start..month_end)
         .count
     end
 
+    def invoices_paid_today_count
+      today = Date.current
+      Invoice
+        .where(paid_at: today.beginning_of_day..today.end_of_day)
+        .count
+    end
+
     def total_receivable
       Invoice
-        .filter_by_period(@year, @month)
         .unpaid
         .sum("membership_value + water_value")
         .to_f
@@ -54,13 +70,13 @@ module Dashboard
 
     def invoices_receivable_count
       Invoice
-        .filter_by_period(@year, @month)
         .unpaid
         .count
     end
 
     def recent_invoices
       Invoice
+        .filter_by_period(@year, @month)
         .includes(connection: %i[customer address category])
         .order(updated_at: :desc)
         .limit(10)

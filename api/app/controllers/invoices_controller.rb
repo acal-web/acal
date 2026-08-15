@@ -8,8 +8,9 @@ class InvoicesController < ApplicationController
       .filter_by_customer(params[:customer_id])
       .filter_by_address(params[:address_id])
       .filter_by_status(params[:status])
-      .ordered
       .includes(connection: %i[customer address category])
+
+    invoices = apply_sort(invoices, params[:sort_by], params[:sort_ascending] == "true")
 
     render json: paginate(invoices), include: INVOICE_INCLUDES
   end
@@ -66,9 +67,43 @@ class InvoicesController < ApplicationController
     send_data Invoices::CobrancaPdfService.call(groups), type: "application/pdf", disposition: "inline", filename: "cobranca.pdf"
   end
 
+  # GET /invoices/print_filtered
+  def print_filtered
+    invoices = Invoice
+      .filter_by_period(params[:year], params[:month])
+      .filter_by_customer(params[:customer_id])
+      .filter_by_address(params[:address_id])
+      .filter_by_status(params[:status])
+      .ordered
+      .includes(connection: %i[customer address category])
+
+    return head :no_content if invoices.empty?
+
+    send_data Invoices::PrintFilteredPdfService.call(invoices), type: "application/pdf", disposition: "inline", filename: "faturas-filtradas.pdf"
+  end
+
   private
 
   def overdue_days
     params[:days].presence&.to_i || 30
+  end
+
+  def apply_sort(invoices, sort_by, ascending = false)
+    sort_column = case sort_by
+    when "number" then "invoices.number"
+    when "reference_date" then "invoices.reference_date"
+    when "due_date" then "invoices.due_date"
+    when "amount" then "(invoices.membership_value + invoices.water_value)"
+    when "customer_name" then "customers.name"
+    else "invoices.reference_date"
+    end
+
+    direction = ascending ? "ASC" : "DESC"
+
+    if sort_by == "customer_name"
+      invoices.joins(connection: :customer).order("#{sort_column} #{direction}")
+    else
+      invoices.order("#{sort_column} #{direction}")
+    end
   end
 end

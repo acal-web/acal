@@ -1,10 +1,13 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/features/addresses/data/address_service.dart';
+import 'package:acalapp/features/addresses/domain/address.dart';
+import 'package:acalapp/features/addresses/widget/address_select_field.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
+import 'package:acalapp/features/categories/widget/category_select_field.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/customer/widget/customer_select_field.dart';
-import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
@@ -32,9 +35,10 @@ class ConnectionFilterBar extends StatefulWidget {
 }
 
 class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
+  late final AddressService _addressService;
   late final CategoryService _categoryService;
   late final CustomerService _customerService;
-  final _addressNameController = TextEditingController();
+  Address? _address;
   Customer? _customer;
   Category? _category;
   bool? _active;
@@ -44,19 +48,14 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   @override
   void initState() {
     super.initState();
+    _addressService = AddressService();
     _categoryService = widget.categoryService ?? CategoryService();
     _customerService = widget.customerService ?? CustomerService();
   }
 
-  @override
-  void dispose() {
-    _addressNameController.dispose();
-    super.dispose();
-  }
-
   void _search() => widget.onSearch((
         customerId: _customer?.id,
-        addressName: _addressNameController.text.trim(),
+        addressName: _address?.name,
         categoryId: _category?.id,
         active: _active,
       ));
@@ -64,7 +63,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   void _clear() {
     setState(() {
       _customer = null;
-      _addressNameController.clear();
+      _address = null;
       _category = null;
       _active = null;
       _filterKey++;
@@ -86,23 +85,21 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           onSelected: (c) => setState(() => _customer = c),
         );
 
-        final addressNameField = FTextField(
-          control: FTextFieldControl.managed(controller: _addressNameController),
-          label: const Text('Logradouro'),
-          hint: 'Buscar por nome',
-          onSubmit: (_) => _search(),
+        final addressField = AddressSelectField(
+          key: ValueKey(_filterKey),
+          addressService: _addressService,
+          initialValue: _address,
+          onSelected: (a) => setState(() => _address = a),
         );
 
-        final categoryField = SearchSelectField<Category>(
-          label: 'Categoria',
-          hintText: 'Buscar categoria por nome',
+        final categoryField = CategorySelectField(
+          categoryService: _categoryService,
           initialValue: _category,
-          search: (query) => _categoryService.findAll(name: query, size: 10).then((r) => r.data),
-          labelBuilder: (c) => c.name,
           onSelected: (c) => _category = c,
         );
 
         final activeField = FSelect<bool?>(
+          key: ValueKey(_filterKey),
           items: const {'Todas': null, 'Ativas': true, 'Encerradas': false},
           control: FSelectControl.managed(initial: _active, onChange: (v) => setState(() => _active = v)),
           label: const Text('Situação'),
@@ -160,7 +157,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                 children: [
                   customerField,
                   const SizedBox(height: 8),
-                  addressNameField,
+                  addressField,
                   const SizedBox(height: 8),
                   categoryField,
                   const SizedBox(height: 8),
@@ -183,7 +180,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                     children: [
                       Expanded(child: customerField),
                       const SizedBox(width: 8),
-                      Expanded(child: addressNameField),
+                      Expanded(child: addressField),
                     ],
                   ),
                   const SizedBox(height: 8),

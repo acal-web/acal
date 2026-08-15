@@ -9,6 +9,8 @@ class Invoice < ApplicationRecord
   validates :reference_date, :due_date, presence: true
   validates :membership_value, :water_value, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
+  before_create :generate_number
+
   scope :filter_by_period, ->(year, month) {
     where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month) if year.present? && month.present?
   }
@@ -40,5 +42,14 @@ class Invoice < ApplicationRecord
 
   def amount
     membership_value + water_value
+  end
+
+  private
+
+  def generate_number
+    year = reference_date.year
+    month = reference_date.month
+    count = Invoice.where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month).count + 1
+    self.number = "#{year}.#{month.to_s.rjust(2, '0')}.#{count.to_s.rjust(6, '0')}"
   end
 end

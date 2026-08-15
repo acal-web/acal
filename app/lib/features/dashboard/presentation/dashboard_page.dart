@@ -25,10 +25,14 @@ class _DashboardPageState extends State<DashboardPage> {
   void initState() {
     super.initState();
     _service = widget.dashboardService ?? DashboardService();
-    _future = _service.summary();
+    final now = DateTime.now();
+    _future = _service.summary(year: now.year, month: now.month);
   }
 
-  void _reload() => setState(() => _future = _service.summary());
+  void _reload() {
+    final now = DateTime.now();
+    setState(() => _future = _service.summary(year: now.year, month: now.month));
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,8 +45,8 @@ class _DashboardPageState extends State<DashboardPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const PageHeader(
-              title: 'Visão Geral',
-              subtitle: 'Bem-vindo de volta. Aqui está o resumo financeiro de hoje.',
+              title: 'Dashboard',
+              subtitle: 'Resumo financeiro.',
             ),
             const Divider(),
             Expanded(
@@ -120,18 +124,18 @@ class _DashboardPageState extends State<DashboardPage> {
             icon: Icons.trending_up,
           ),
           StatCard(
-            label: 'Total a Receber',
-            value: formatBRL(data.totalReceivable),
+            label: 'Total Recebido Hoje',
+            value: formatBRL(data.totalReceivedToday),
             icon: Icons.trending_down,
           ),
           StatCard(
-            label: 'Faturas a Receber',
+            label: 'Faturas a Receber este Mês',
             value: '${data.invoicesReceivableCount}',
             icon: Icons.receipt,
           ),
           StatCard(
-            label: 'Faturas Pagas',
-            value: '${data.invoicesReceivedCount}',
+            label: 'Faturas Pagas Hoje',
+            value: '${data.invoicesPaidTodayCount}',
             icon: Icons.check_circle,
           ),
         ],
@@ -151,8 +155,8 @@ class _DashboardPageState extends State<DashboardPage> {
         const SizedBox(width: 12),
         Expanded(
           child: StatCard(
-            label: 'Total a Receber',
-            value: formatBRL(data.totalReceivable),
+            label: 'Total Recebido Hoje',
+            value: formatBRL(data.totalReceivedToday),
             icon: Icons.trending_down,
           ),
         ),

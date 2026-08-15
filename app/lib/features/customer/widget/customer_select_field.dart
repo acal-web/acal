@@ -55,6 +55,7 @@ class _CustomerSelectFieldState extends State<CustomerSelectField> {
         }
       }
     }
+    results.sort((a, b) => a.name.compareTo(b.name));
     return results;
   }
 

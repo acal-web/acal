@@ -23,6 +23,7 @@ Rails.application.routes.draw do
       post :generate
       get :overdue
       get :cobranca_pdf
+      get :print_filtered
     end
 
     member do

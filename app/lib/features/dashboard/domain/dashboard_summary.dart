@@ -14,26 +14,32 @@ class CategoryCount {
 
 class DashboardSummary {
   final double totalReceived;
+  final double totalReceivedToday;
   final double totalReceivable;
   final int invoicesReceivedCount;
   final int invoicesReceivableCount;
+  final int invoicesPaidTodayCount;
   final List<Invoice> recentInvoices;
   final List<CategoryCount> membersByCategory;
 
   const DashboardSummary({
     required this.totalReceived,
+    required this.totalReceivedToday,
     required this.totalReceivable,
     required this.invoicesReceivedCount,
     required this.invoicesReceivableCount,
+    required this.invoicesPaidTodayCount,
     required this.recentInvoices,
     required this.membersByCategory,
   });
 
   factory DashboardSummary.fromJson(Map<String, dynamic> json) => DashboardSummary(
     totalReceived: double.parse(json['total_received'].toString()),
+    totalReceivedToday: double.parse(json['total_received_today'].toString()),
     totalReceivable: double.parse(json['total_receivable'].toString()),
     invoicesReceivedCount: json['invoices_received_count'] as int,
     invoicesReceivableCount: json['invoices_receivable_count'] as int,
+    invoicesPaidTodayCount: json['invoices_paid_today_count'] as int,
     recentInvoices: (json['recent_invoices'] as List)
         .map((e) => Invoice.fromJson(e as Map<String, dynamic>))
         .toList(),

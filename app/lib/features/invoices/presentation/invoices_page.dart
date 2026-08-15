@@ -33,11 +33,14 @@ class _InvoicesPageState extends State<InvoicesPage> {
   int _totalCount = 0;
   bool _isLoading = false;
   bool _hasMorePages = true;
+  bool _printingAll = false;
   MonthYear? _period;
   String? _customerId;
   String? _addressId;
   String? _status;
   String? _errorMessage;
+  String _sortBy = 'reference_date';
+  bool _sortAscending = false;
 
   @override
   void initState() {
@@ -75,6 +78,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
         customerId: _customerId,
         addressId: _addressId,
         status: _status,
+        sortBy: _sortBy,
+        sortAscending: _sortAscending,
       );
 
       setState(() {
@@ -113,8 +118,46 @@ class _InvoicesPageState extends State<InvoicesPage> {
     await _loadFirstPage();
   }
 
+  void _sort(String column) {
+    setState(() {
+      if (_sortBy == column) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortBy = column;
+        _sortAscending = false;
+      }
+    });
+    _loadFirstPage();
+  }
+
   Future<void> _reloadData() async {
     await _loadFirstPage();
+  }
+
+  Future<void> _printAll() async {
+    if (_allInvoices.length > 3000) {
+      if (mounted) {
+        AppToast.error(context, 'Máximo de 3000 faturas por impressão. Filtre os resultados.');
+      }
+      return;
+    }
+
+    setState(() => _printingAll = true);
+    try {
+      await Printing.layoutPdf(
+        onLayout: (_) => _service.printFiltered(
+          year: _period?.year,
+          month: _period?.month,
+          customerId: _customerId,
+          addressId: _addressId,
+          status: _status,
+        ),
+      );
+    } catch (_) {
+      if (mounted) AppToast.error(context, 'Erro ao gerar o relatório.');
+    } finally {
+      if (mounted) setState(() => _printingAll = false);
+    }
   }
 
   @override
@@ -163,6 +206,29 @@ class _InvoicesPageState extends State<InvoicesPage> {
             ),
             const Divider(),
             InvoiceFilterBar(onSearch: _search),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: FButton(
+                variant: FButtonVariant.outline,
+                mainAxisSize: MainAxisSize.min,
+                onPress: _allInvoices.isEmpty || _printingAll || _allInvoices.length > 3000 ? null : _printAll,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.print_outlined, size: 18),
+                    const SizedBox(width: 8),
+                    Text(
+                      _printingAll
+                          ? 'Gerando...'
+                          : _allInvoices.length > 3000
+                              ? 'Máximo 3000 itens'
+                              : 'Imprimir Filtrados',
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
             Expanded(
               child: _errorMessage != null
@@ -204,7 +270,11 @@ class _InvoicesPageState extends State<InvoicesPage> {
   Widget _buildTableWithInfiniteScroll() {
     return Column(
       children: [
-        const _TableHeader(),
+        _TableHeader(
+          sortBy: _sortBy,
+          sortAscending: _sortAscending,
+          onSort: _sort,
+        ),
         const Divider(height: 1),
         Expanded(
           child: ListView.builder(
@@ -241,7 +311,15 @@ class _InvoicesPageState extends State<InvoicesPage> {
 }
 
 class _TableHeader extends StatelessWidget {
-  const _TableHeader();
+  const _TableHeader({
+    required this.sortBy,
+    required this.sortAscending,
+    required this.onSort,
+  });
+
+  final String sortBy;
+  final bool sortAscending;
+  final Function(String) onSort;
 
   @override
   Widget build(BuildContext context) {
@@ -255,13 +333,38 @@ class _TableHeader extends StatelessWidget {
       child: Row(
         spacing: columnSpacing,
         children: [
-          Expanded(
-            flex: 1,
-            child: Text('Referência', style: headerStyle),
+          SizedBox(
+            width: 110,
+            child: _SortableHeader(
+              label: 'Número',
+              sortBy: 'number',
+              currentSort: sortBy,
+              ascending: sortAscending,
+              onSort: onSort,
+              style: headerStyle,
+            ),
+          ),
+          SizedBox(
+            width: 90,
+            child: _SortableHeader(
+              label: 'Referência',
+              sortBy: 'reference_date',
+              currentSort: sortBy,
+              ascending: sortAscending,
+              onSort: onSort,
+              style: headerStyle,
+            ),
           ),
           Expanded(
             flex: 3,
-            child: Text('Sócio', style: headerStyle),
+            child: _SortableHeader(
+              label: 'Sócio',
+              sortBy: 'customer_name',
+              currentSort: sortBy,
+              ascending: sortAscending,
+              onSort: onSort,
+              style: headerStyle,
+            ),
           ),
           Expanded(
             flex: 3,
@@ -269,11 +372,25 @@ class _TableHeader extends StatelessWidget {
           ),
           SizedBox(
             width: 110,
-            child: Text('Vencimento', style: headerStyle),
+            child: _SortableHeader(
+              label: 'Vencimento',
+              sortBy: 'due_date',
+              currentSort: sortBy,
+              ascending: sortAscending,
+              onSort: onSort,
+              style: headerStyle,
+            ),
           ),
           SizedBox(
             width: 120,
-            child: Text('Valor', style: headerStyle),
+            child: _SortableHeader(
+              label: 'Valor',
+              sortBy: 'amount',
+              currentSort: sortBy,
+              ascending: sortAscending,
+              onSort: onSort,
+              style: headerStyle,
+            ),
           ),
           SizedBox(
             width: 88,
@@ -342,9 +459,16 @@ class _InvoiceRowState extends State<_InvoiceRow> {
     final theme = Theme.of(context);
     final invoice = widget.invoice;
     final connection = invoice.connection;
-    final backgroundColor = widget.isEven
-        ? theme.colorScheme.surfaceContainer.withValues(alpha: 0.2)
-        : theme.colorScheme.surfaceContainer.withValues(alpha: 0.4);
+    final daysOverdue = DateTime.now().difference(invoice.dueDate).inDays;
+    final isOverdue = !invoice.isPaid && daysOverdue > 59;
+
+    final backgroundColor = invoice.isPaid
+        ? Colors.green.withValues(alpha: 0.15)
+        : isOverdue
+            ? Colors.red.withValues(alpha: 0.15)
+            : widget.isEven
+                ? theme.colorScheme.surfaceContainer.withValues(alpha: 0.2)
+                : theme.colorScheme.surfaceContainer.withValues(alpha: 0.4);
 
     return ColoredBox(
       color: backgroundColor,
@@ -353,8 +477,15 @@ class _InvoiceRowState extends State<_InvoiceRow> {
         child: Row(
           spacing: columnSpacing,
           children: [
-            Expanded(
-              flex: 1,
+            SizedBox(
+              width: 110,
+              child: Text(
+                invoice.number ?? '—',
+                style: theme.textTheme.bodyMedium,
+              ),
+            ),
+            SizedBox(
+              width: 80,
               child: Text(
                 formatMonthReference(invoice.referenceDate),
                 style: theme.textTheme.bodyMedium,
@@ -395,24 +526,51 @@ class _InvoiceRowState extends State<_InvoiceRow> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  FButton(
-                    variant: FButtonVariant.ghost,
-                    size: FButtonSizeVariant.sm,
-                    mainAxisSize: MainAxisSize.min,
-                    semanticsTooltip: 'Baixar/imprimir boleto',
-                    onPress: _downloadPdf,
-                    child: const Icon(Icons.picture_as_pdf_outlined, size: 20),
-                  ),
-                  if (invoice.isPaid)
-                    FTooltip(
-                      tipBuilder: (context, controller) => const Text('Paga'),
-                      child: const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 20,
+                  PopupMenuButton<String>(
+                    itemBuilder: (BuildContext context) => [
+                      PopupMenuItem<String>(
+                        value: 'download',
+                        child: const Row(
+                          children: [
+                            Icon(Icons.picture_as_pdf_outlined, size: 18),
+                            SizedBox(width: 12),
+                            Text('Imprimir Boleto'),
+                          ],
+                        ),
+                        onTap: () => Future.microtask(_downloadPdf),
                       ),
-                    )
-                  else if (_marking)
+                      if (!invoice.isPaid)
+                        PopupMenuItem<String>(
+                          value: 'mark_paid',
+                          child: const Row(
+                            children: [
+                              Icon(Icons.attach_money, size: 18),
+                              SizedBox(width: 12),
+                              Text('Marcar como Paga'),
+                            ],
+                          ),
+                          onTap: () => Future.microtask(_markPaid),
+                        ),
+                      if (invoice.isPaid)
+                        PopupMenuItem<String>(
+                          value: 'paid',
+                          enabled: false,
+                          child: const Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green, size: 18),
+                              SizedBox(width: 12),
+                              Text('Paga'),
+                            ],
+                          ),
+                        ),
+                    ],
+                    child: Icon(
+                      Icons.more_vert,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  if (_marking)
                     const SizedBox(
                       width: 20,
                       height: 20,
@@ -420,21 +578,58 @@ class _InvoiceRowState extends State<_InvoiceRow> {
                         padding: EdgeInsets.all(2),
                         child: FCircularProgress(),
                       ),
-                    )
-                  else
-                    FButton(
-                      variant: FButtonVariant.ghost,
-                      size: FButtonSizeVariant.sm,
-                      mainAxisSize: MainAxisSize.min,
-                      semanticsTooltip: 'Marcar como paga',
-                      onPress: _markPaid,
-                      child: const Icon(Icons.attach_money, size: 20),
                     ),
                 ],
               ),
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SortableHeader extends StatelessWidget {
+  const _SortableHeader({
+    required this.label,
+    required this.sortBy,
+    required this.currentSort,
+    required this.ascending,
+    required this.onSort,
+    required this.style,
+  });
+
+  final String label;
+  final String sortBy;
+  final String currentSort;
+  final bool ascending;
+  final Function(String) onSort;
+  final TextStyle? style;
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = currentSort == sortBy;
+    final icon = !isActive
+        ? Icons.unfold_more
+        : ascending
+            ? Icons.arrow_upward
+            : Icons.arrow_downward;
+
+    return GestureDetector(
+      onTap: () => onSort(sortBy),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          Flexible(
+            child: Text(label, style: style),
+          ),
+          Icon(
+            icon,
+            size: 14,
+            color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey,
+          ),
+        ],
       ),
     );
   }
