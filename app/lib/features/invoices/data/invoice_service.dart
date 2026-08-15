@@ -30,8 +30,8 @@ class InvoiceService {
       'customer_id': ?customerId,
       'address_id': ?addressId,
       'status': ?status,
-      if (sortBy != null) 'sort_by': sortBy,
-      if (sortAscending != null) 'sort_ascending': '$sortAscending',
+      'sort_by': ?sortBy,
+      'sort_ascending': ?sortAscending?.toString(),
     };
     final data = await _http.get('/invoices', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Invoice.fromJson);
