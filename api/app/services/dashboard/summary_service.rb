@@ -36,7 +36,7 @@ module Dashboard
     def total_received
       Invoice
         .where(paid_at: month_start..month_end)
-        .sum("membership_value + water_value")
+        .sum("membership_value + water_value + COALESCE(water_consumed_value, 0)")
         .to_f
     end
 
@@ -44,7 +44,7 @@ module Dashboard
       today = Date.current
       Invoice
         .where(paid_at: today.beginning_of_day..today.end_of_day)
-        .sum("membership_value + water_value")
+        .sum("membership_value + water_value + COALESCE(water_consumed_value, 0)")
         .to_f
     end
 
@@ -64,7 +64,7 @@ module Dashboard
     def total_receivable
       Invoice
         .unpaid
-        .sum("membership_value + water_value")
+        .sum("membership_value + water_value + COALESCE(water_consumed_value, 0)")
         .to_f
     end
 
