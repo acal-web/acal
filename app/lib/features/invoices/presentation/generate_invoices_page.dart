@@ -53,15 +53,19 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
     _invoiceService = widget.invoiceService ?? InvoiceService();
     _addressService = widget.addressService ?? AddressService();
     _addressService.findAll(size: 500).then((result) {
-      if (mounted) setState(() => _addresses = result.data);
+      if (mounted) {
+        setState(() {
+          _addresses = result.data;
+          _loadingAddresses = false;
+        });
+      }
     }).catchError((e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Erro ao carregar endereços')),
         );
+        setState(() => _loadingAddresses = false);
       }
-    }).whenComplete(() {
-      if (mounted) setState(() => _loadingAddresses = false);
     });
     _future = _fetch();
   }
@@ -76,8 +80,8 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
         .then((candidates) {
           if (mounted) {
             setState(() {
-              _candidatesCardKey = GlobalKey();
-              _selected = candidates.map((c) => c.connectionId).toSet();
+              final newCandidateIds = candidates.map((c) => c.connectionId).toSet();
+              _selected.retainAll(newCandidateIds);
             });
           }
         })
@@ -266,11 +270,20 @@ class _FilterBar extends StatefulWidget {
 
 class _FilterBarState extends State<_FilterBar> {
   late TextEditingController _referenceController;
+  late Map<String, String?> _addressItems;
 
   @override
   void initState() {
     super.initState();
     _referenceController = TextEditingController(text: formatMonthReference(widget.reference));
+    _buildAddressItems();
+  }
+
+  void _buildAddressItems() {
+    _addressItems = {
+      'Todos': null,
+      for (final address in widget.addresses) address.name: address.id,
+    };
   }
 
   @override
@@ -278,6 +291,9 @@ class _FilterBarState extends State<_FilterBar> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.reference != widget.reference) {
       _referenceController.text = formatMonthReference(widget.reference);
+    }
+    if (oldWidget.addresses != widget.addresses) {
+      _buildAddressItems();
     }
   }
 
@@ -305,10 +321,7 @@ class _FilterBarState extends State<_FilterBar> {
     );
 
     final addressField = FSelect<String?>(
-      items: {
-        'Todos': null,
-        for (final address in widget.addresses) address.name: address.id,
-      },
+      items: _addressItems,
       control: FSelectControl.managed(initial: widget.addressId, onChange: widget.loadingAddresses ? null : widget.onAddressChanged),
       label: const Text('Logradouro'),
       hint: widget.loadingAddresses ? 'Carregando...' : 'Selecione o endereço...',
@@ -394,6 +407,10 @@ class _CandidatesCardState extends State<_CandidatesCard> {
   bool _sortAscending = true;
   final Map<String, Map<String, TextEditingController>> _waterMeterControllers = {};
 
+  List<InvoiceCandidate>? _cachedSortedCandidates;
+  String? _lastSortBy;
+  bool? _lastSortAscending;
+
   @override
   void dispose() {
     for (final controllers in _waterMeterControllers.values) {
@@ -434,6 +451,12 @@ class _CandidatesCardState extends State<_CandidatesCard> {
   }
 
   List<InvoiceCandidate> get _sortedCandidates {
+    if (_cachedSortedCandidates != null &&
+        _lastSortBy == _sortBy &&
+        _lastSortAscending == _sortAscending) {
+      return _cachedSortedCandidates!;
+    }
+
     final sorted = [...widget.candidates];
 
     sorted.sort((a, b) {
@@ -454,8 +477,11 @@ class _CandidatesCardState extends State<_CandidatesCard> {
       return _sortAscending ? comparison : -comparison;
     });
 
-    return sorted;
+    _lastSortBy = _sortBy;
+    _lastSortAscending = _sortAscending;
+    return _cachedSortedCandidates = sorted;
   }
+
 
   void _sort(String column) {
     setState(() {
@@ -539,14 +565,13 @@ class _CandidatesCardState extends State<_CandidatesCard> {
             const Expanded(child: Center(child: Text('Nenhuma conexão elegível para o período selecionado.')))
           else
             Expanded(
-              child: ListView.separated(
-                itemCount: _sortedCandidates.length,
-                separatorBuilder: (_, _) => const Divider(height: 1),
-                itemBuilder: (context, i) {
+              child: ListView.builder(
+                itemCount: _sortedCandidates.length * 2,
+                itemBuilder: (context, index) {
+                  if (index.isOdd) return const Divider(height: 1);
+                  final i = index ~/ 2;
                   final candidate = _sortedCandidates[i];
                   final checked = widget.selected.contains(candidate.connectionId);
-                  final initialController = _getInitialController(candidate.connectionId, previousFinalReading: candidate.previousMeterFinalReading);
-                  final finalController = _getFinalController(candidate.connectionId);
 
                   return ColoredBox(
                     color: Colors.white,
@@ -557,26 +582,40 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                           Expanded(flex: 3, child: Text(candidate.customerName)),
                           Expanded(flex: 3, child: Text(candidate.fullAddress)),
                           Expanded(flex: 2, child: Text(candidate.categoryName)),
-                          SizedBox(
-                            width: _waterMeterColumnWidth,
-                            child: candidate.hasWaterMeter
-                                ? FTextFormField(
-                                    control: FTextFieldControl.managed(controller: initialController),
-                                    hint: '0.0',
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
-                                  )
-                                : const Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
-                          ),
-                          SizedBox(
-                            width: _waterMeterColumnWidth,
-                            child: candidate.hasWaterMeter
-                                ? FTextFormField(
-                                    control: FTextFieldControl.managed(controller: finalController),
-                                    hint: '0.0',
-                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
-                                  )
-                                : const Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
-                          ),
+                          if (candidate.hasWaterMeter) ...[
+                            SizedBox(
+                              width: _waterMeterColumnWidth,
+                              child: FTextFormField(
+                                control: FTextFieldControl.managed(
+                                  controller: _getInitialController(
+                                    candidate.connectionId,
+                                    previousFinalReading: candidate.previousMeterFinalReading,
+                                  ),
+                                ),
+                                hint: '0.0',
+                                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              ),
+                            ),
+                            SizedBox(
+                              width: _waterMeterColumnWidth,
+                              child: FTextFormField(
+                                control: FTextFieldControl.managed(
+                                  controller: _getFinalController(candidate.connectionId),
+                                ),
+                                hint: '0.0',
+                                keyboardType: TextInputType.numberWithOptions(decimal: true),
+                              ),
+                            ),
+                          ] else ...[
+                            const SizedBox(
+                              width: _waterMeterColumnWidth,
+                              child: Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
+                            ),
+                            const SizedBox(
+                              width: _waterMeterColumnWidth,
+                              child: Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
+                            ),
+                          ],
                           SizedBox(
                             width: _amountColumnWidth,
                             child: Text(formatBRL(candidate.amount)),
