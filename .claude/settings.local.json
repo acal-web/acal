@@ -234,7 +234,8 @@
       "Bash(git log *)",
       "Bash(xargs -I{} sh -c 'echo ==={}===; cat -n {}')",
       "Bash(mkdir -p /home/vscode/.claude/plans)",
-      "Read(//home/vscode/.claude/plans/**)"
+      "Read(//home/vscode/.claude/plans/**)",
+      "Bash(git commit -m 'feat: gate invoice pay action based on user role *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

@@ -1,4 +1,6 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/features/auth/domain/permissions.dart';
+import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/features/invoices/presentation/invoice_detail_page.dart';
@@ -569,7 +571,9 @@ class _InvoiceRowState extends State<_InvoiceRow> {
                         ),
                         onTap: () => Future.microtask(_downloadPdf),
                       ),
-                      if (!invoice.isPaid)
+                      if (!invoice.isPaid &&
+                          Permissions.canPayInvoices(
+                              CurrentUserScope.of(context).user?.role))
                         PopupMenuItem<String>(
                           value: 'mark_paid',
                           child: const Row(
