@@ -1,3 +1,5 @@
+require "jwt"
+
 class JwtToken
   ALGORITHM = "HS256"
   EXPIRATION_TIME = 30.days
