@@ -44,6 +44,8 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
   Set<String> _selected = {};
   bool _generating = false;
 
+  final GlobalKey<_CandidatesCardState> _candidatesCardKey = GlobalKey();
+
   @override
   void initState() {
     super.initState();
@@ -118,7 +120,13 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
 
     setState(() => _generating = true);
     try {
-      await _invoiceService.generate(connectionIds: _selected.toList(), reference: _reference, dueDate: dueDate);
+      final waterMeters = _candidatesCardKey.currentState?.getWaterMetersData() ?? [];
+      await _invoiceService.generate(
+        connectionIds: _selected.toList(),
+        reference: _reference,
+        dueDate: dueDate,
+        waterMeters: waterMeters,
+      );
       if (mounted) {
         AppToast.success(context, 'Faturas geradas com sucesso.');
         setState(() {
@@ -190,6 +198,7 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
                     children: [
                       Expanded(
                         child: _CandidatesCard(
+                          key: _candidatesCardKey,
                           candidates: candidates,
                           selected: _selected,
                           selectedAmount: selectedAmount,
@@ -354,6 +363,7 @@ class _FilterBarState extends State<_FilterBar> {
 
 class _CandidatesCard extends StatefulWidget {
   const _CandidatesCard({
+    super.key,
     required this.candidates,
     required this.selected,
     required this.selectedAmount,
@@ -402,6 +412,17 @@ class _CandidatesCardState extends State<_CandidatesCard> {
       'final': TextEditingController(),
     });
     return _waterMeterControllers[connectionId]!['final']!;
+  }
+
+  List<Map<String, dynamic>> getWaterMetersData() {
+    return _waterMeterControllers.entries
+        .where((e) => e.value['initial']!.text.isNotEmpty && e.value['final']!.text.isNotEmpty)
+        .map((e) => {
+          'connection_id': e.key,
+          'initial_reading': double.parse(e.value['initial']!.text),
+          'final_reading': double.parse(e.value['final']!.text),
+        })
+        .toList();
   }
 
   List<InvoiceCandidate> get _sortedCandidates {
@@ -516,10 +537,7 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                 itemBuilder: (context, i) {
                   final candidate = _sortedCandidates[i];
                   final checked = widget.selected.contains(candidate.connectionId);
-                  final isEven = i % 2 == 0;
-                  final backgroundColor = isEven
-                      ? cs.surfaceContainer.withValues(alpha: 0.3)
-                      : cs.surfaceContainer.withValues(alpha: 0.6);
+                  const backgroundColor = Colors.white;
 
                   return ColoredBox(
                     color: backgroundColor,
