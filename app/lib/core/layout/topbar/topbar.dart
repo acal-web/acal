@@ -1,6 +1,7 @@
 import 'package:acalapp/core/layout/topbar/topbar_fragments/topbar_body.dart';
 import 'package:acalapp/core/layout/topbar/topbar_fragments/topbar_helpers.dart';
 import 'package:acalapp/core/layout/topbar/topbar_fragments/topbar_logo.dart';
+import 'package:acalapp/core/layout/topbar/topbar_fragments/topbar_user_menu.dart';
 import 'package:flutter/material.dart';
 
 class TopBar extends StatelessWidget implements PreferredSizeWidget {
@@ -31,6 +32,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
                 padding: EdgeInsets.symmetric(horizontal: 12),
                 child: TopBarHelpers(),
               ),
+              const TopBarUserMenu(),
             ],
           ),
         ),

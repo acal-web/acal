@@ -1,8 +1,16 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/features/auth/domain/permissions.dart';
+import 'package:acalapp/features/auth/domain/user_role.dart';
+import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-typedef _MenuItemData = ({IconData icon, String label, String route});
+typedef _MenuItemData = ({
+  IconData icon,
+  String label,
+  String route,
+  bool Function(UserRole?)? requiredRole
+});
 
 class _MenuSection {
   const _MenuSection({this.title, required this.items});
@@ -13,28 +21,48 @@ class _MenuSection {
 
 const _menuSections = [
   _MenuSection(items: [
-    (icon: Icons.home, label: 'Home', route: '/dashboard'),
+    (icon: Icons.home, label: 'Home', route: '/dashboard', requiredRole: null),
   ]),
   _MenuSection(title: 'CADASTROS', items: [
-    (icon: Icons.people, label: 'Sócios', route: '/customers'),
-    (icon: Icons.location_on, label: 'Logradouros', route: '/addresses'),
-    (icon: Icons.category, label: 'Categorias', route: '/categories'),
+    (icon: Icons.people, label: 'Sócios', route: '/customers', requiredRole: null),
+    (icon: Icons.location_on, label: 'Logradouros', route: '/addresses', requiredRole: null),
+    (icon: Icons.category, label: 'Categorias', route: '/categories', requiredRole: null),
   ]),
   _MenuSection(title: 'ÁGUA', items: [
-    (icon: Icons.water_drop, label: 'Ligações', route: '/connections'),
-    (icon: Icons.straighten, label: 'Qualidade', route: '/quality'),
+    (icon: Icons.water_drop, label: 'Ligações', route: '/connections', requiredRole: null),
+    (icon: Icons.straighten, label: 'Qualidade', route: '/quality', requiredRole: null),
   ]),
   _MenuSection(title: 'FINANCEIRO', items: [
-    (icon: Icons.note_add, label: 'Gerar Faturas', route: '/invoices/generate'),
-    (icon: Icons.receipt_long, label: 'Faturas', route: '/invoices'),
-    (icon: Icons.point_of_sale, label: 'Caixa', route: '/cashbox'),
+    (
+      icon: Icons.note_add,
+      label: 'Gerar Faturas',
+      route: '/invoices/generate',
+      requiredRole: Permissions.canGenerateInvoices
+    ),
+    (icon: Icons.receipt_long, label: 'Faturas', route: '/invoices', requiredRole: null),
+    (icon: Icons.point_of_sale, label: 'Caixa', route: '/cashbox', requiredRole: null),
   ]),
   _MenuSection(title: 'ADMINISTRAÇÃO', items: [
-    (icon: Icons.how_to_vote, label: 'Eleição', route: '/elections'),
-    (icon: Icons.article, label: 'Documentação', route: '/documentation'),
+    (
+      icon: Icons.how_to_vote,
+      label: 'Eleição',
+      route: '/elections',
+      requiredRole: Permissions.canManageUsers
+    ),
+    (
+      icon: Icons.article,
+      label: 'Documentação',
+      route: '/documentation',
+      requiredRole: Permissions.canManageUsers
+    ),
   ]),
   _MenuSection(title: 'DESENVOLVIMENTO', items: [
-    (icon: Icons.palette_outlined, label: 'Design System', route: '/design-system'),
+    (
+      icon: Icons.palette_outlined,
+      label: 'Design System',
+      route: '/design-system',
+      requiredRole: null
+    ),
   ]),
 ];
 
@@ -50,6 +78,8 @@ class SideMenu extends StatelessWidget {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final location = GoRouterState.of(context).uri.path;
+    final currentUser = CurrentUserScope.of(context);
+    final userRole = currentUser.user?.role;
 
     return Container(
       width: LayoutConfig.sideMenuWidth,
@@ -62,20 +92,36 @@ class SideMenu extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            for (final section in _menuSections) ...[
-              if (section.title != null) _SectionHeader(title: section.title!),
-              ...section.items.map((item) => _MenuItem(
-                    icon: item.icon,
-                    label: item.label,
-                    route: item.route,
-                    isActive: location == item.route,
-                    onNavigate: onNavigate,
-                  )),
-            ],
+            for (final section in _menuSections) ..._buildSection(context, section, userRole, location),
           ],
         ),
       ),
     );
+  }
+
+  List<Widget> _buildSection(
+    BuildContext context,
+    _MenuSection section,
+    UserRole? userRole,
+    String location,
+  ) {
+    final visibleItems = section.items
+        .where((item) => item.requiredRole == null || item.requiredRole!(userRole))
+        .toList();
+
+    if (visibleItems.isEmpty) return [];
+
+    return [
+      if (section.title != null) _SectionHeader(title: section.title!),
+      for (final item in visibleItems)
+        _MenuItem(
+          icon: item.icon,
+          label: item.label,
+          route: item.route,
+          isActive: location == item.route,
+          onNavigate: onNavigate,
+        ),
+    ];
   }
 }
 
