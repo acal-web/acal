@@ -1,6 +1,6 @@
 FactoryBot.define do
   factory :invoice do
-    association :connection
+    association :connection, factory: :connection_with_all_data
     reference_date { Date.current.beginning_of_month }
     due_date { Date.current.beginning_of_month + 10.days }
     membership_value { 15.0 }

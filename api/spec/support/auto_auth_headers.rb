@@ -10,7 +10,8 @@ module AutoAuthHeaders
             options[:headers].merge!(auth_headers) if respond_to?(:auth_headers)
           end
 
-          super(path, **options)
+          # Call the original HTTP method
+          super(path, **options.except(:skip_auth))
         end
       end
     end

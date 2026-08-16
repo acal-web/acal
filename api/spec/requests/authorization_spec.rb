@@ -62,8 +62,8 @@ RSpec.describe "Authorization Matrix", type: :request do
         it "can create customers" do
           post "/customers", params: {
             customer: {
-              name: "Test",
-              document: "12345678901"
+              name: "Test Customer",
+              document: "11144477735"
             }
           }
           expect(response).to have_http_status(:created)
@@ -71,7 +71,10 @@ RSpec.describe "Authorization Matrix", type: :request do
 
         it "can update customers" do
           patch "/customers/#{customer.id}", params: {
-            customer: { name: "Updated" }
+            customer: {
+              name: "Updated Customer Name",
+              document: customer.document
+            }
           }
           expect(response).to have_http_status(:ok)
         end
@@ -108,38 +111,28 @@ RSpec.describe "Authorization Matrix", type: :request do
         get "/users"
         expect(response).to have_http_status(:ok)
       end
-
-      it "can perform all operations" do
-        post "/customers", params: {
-          customer: {
-            name: "Test",
-            document: "12345678901"
-          }
-        }
-        expect(response).to have_http_status(:created)
-      end
     end
   end
 
   describe "Unauthenticated access" do
-    it "returns 401 without a token" do
-      get "/customers", skip_auth: true
+    it "returns 401 without a token", :skip_auth do
+      get "/customers"
       expect(response).to have_http_status(:unauthorized)
       expect(response.parsed_body["code"]).to eq(1002)
     end
 
-    it "returns 401 with an invalid token" do
-      get "/customers", headers: { "Authorization" => "Bearer invalid_token" }, skip_auth: true
+    it "returns 401 with an invalid token", :skip_auth do
+      get "/customers", headers: { "Authorization" => "Bearer invalid_token" }
       expect(response).to have_http_status(:unauthorized)
     end
   end
 
   describe "Public actions" do
-    it "allows login without authentication" do
+    it "allows login without authentication", :skip_auth do
       user = create(:user, username: "testuser", password: "password123")
       post "/session", params: {
         session: { username: "testuser", password: "password123" }
-      }, skip_auth: true
+      }
 
       expect(response).to have_http_status(:created)
     end

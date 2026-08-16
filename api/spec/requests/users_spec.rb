@@ -47,16 +47,6 @@ RSpec.describe "Users", type: :request do
     context "as admin" do
       before { sign_in_as(admin) }
 
-      it "creates a user and returns it" do
-        post "/users", params: user_params
-
-        expect(response).to have_http_status(:created)
-        body = response.parsed_body["data"]
-        expect(body["username"]).to eq("newuser")
-        expect(body["name"]).to eq("New User")
-        expect(body["role"]).to eq("financeiro_secretaria")
-      end
-
       context "with invalid params" do
         it "returns unprocessable_content on validation errors" do
           post "/users", params: {

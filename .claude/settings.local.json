@@ -251,7 +251,9 @@
       "Bash(curl -X POST http://localhost:3000/session -H \"Content-Type: application/json\" -d '{\"session\": {\"username\": \"admin\", \"password\": \"password123\"}}')",
       "Bash(curl -s -X POST http://localhost:3000/session -H \"Content-Type: application/json\" -d '{\"session\": {\"username\": \"admin\", \"password\": \"password123\"}}')",
       "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1 | grep -E \"\\(passed|failed|examples\\)\" | tail -3')",
-      "Bash(git commit -m 'fix: add missing JWT library require in JwtToken model *)"
+      "Bash(git commit -m 'fix: add missing JWT library require in JwtToken model *)",
+      "Bash(python3 -m json.tool)",
+      "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1')"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

@@ -6,4 +6,12 @@ FactoryBot.define do
     sequence(:number)
     active { true }
   end
+
+  factory :connection_with_all_data, class: "Connection" do
+    sequence(:number)
+    active { true }
+    association :customer
+    association :address
+    association :category
+  end
 end

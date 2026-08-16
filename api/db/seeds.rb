@@ -6,5 +6,4 @@ if User.count.zero?
     password: "senha",
     role: "administrador"
   )
-  puts "[ACAL] Created initial admin user: alexandre"
 end
