@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_16_004300) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_16_115519) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -87,6 +87,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_004300) do
     t.datetime "paid_at"
     t.date "reference_date", null: false
     t.datetime "updated_at", null: false
+    t.decimal "water_consumed_value"
     t.decimal "water_value", precision: 10, scale: 2, default: "0.0", null: false
     t.index ["connection_id", "reference_date"], name: "index_invoices_on_connection_id_and_reference_date_unique", unique: true, where: "(deleted_at IS NULL)"
     t.index ["connection_id"], name: "index_invoices_on_connection_id"

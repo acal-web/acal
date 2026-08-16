@@ -39,7 +39,7 @@ class Invoice < ApplicationRecord
   end
 
   def amount
-    membership_value + water_value
+    membership_value + water_value + (water_consumed_value || 0)
   end
 
   private
