@@ -17,8 +17,7 @@ class _UsersPageState extends State<UsersPage> {
   late UsersService _usersService;
   List<UserModel> _users = [];
   bool _isLoading = false;
-  int _currentPage = 0;
-  bool _hasNextPage = false;
+  final int _currentPage = 0;
 
   @override
   void initState() {
@@ -34,7 +33,6 @@ class _UsersPageState extends State<UsersPage> {
       final content = response['content'] as List?;
       setState(() {
         _users = (content ?? []).map((item) => UserModel.fromJson(item)).toList();
-        _hasNextPage = response['hasNextPage'] ?? false;
       });
     } catch (e) {
       if (mounted) {
