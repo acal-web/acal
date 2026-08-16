@@ -31,6 +31,8 @@ class Category {
 
   String get fullName => '${groupLabel(group)} $name';
 
+  double get totalPrice => waterPrice + membershipPrice;
+
   factory Category.fromJson(Map<String, dynamic> json) => Category(
         id: json['id']?.toString(),
         name: json['name'] as String,

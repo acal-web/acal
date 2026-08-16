@@ -60,7 +60,9 @@ class _AddressesPageState extends State<AddressesPage> {
   Future<void> _loadNextPage() async {
     if (_isLoading || !_hasMorePages) return;
 
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       final result = await _service.findAll(
@@ -72,19 +74,23 @@ class _AddressesPageState extends State<AddressesPage> {
         sortAscending: true,
       );
 
-      setState(() {
-        _allAddresses.addAll(result.data);
-        _totalCount = result.pagination.totalElements;
-        _hasMorePages = result.pagination.nextPage != null;
-        _currentPage++;
-        _isLoading = false;
-        _errorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _allAddresses.addAll(result.data);
+          _totalCount = result.pagination.totalElements;
+          _hasMorePages = result.pagination.nextPage != null;
+          _currentPage++;
+          _isLoading = false;
+          _errorMessage = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Erro ao carregar endereços';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Erro ao carregar endereços';
+        });
+      }
     }
   }
 

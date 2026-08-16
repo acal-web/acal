@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
@@ -32,6 +34,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   String? _filterName;
   bool? _filterActive = true;
   String? _errorMessage;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -42,6 +45,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -57,7 +61,9 @@ class _CategoriesPageState extends State<CategoriesPage> {
   Future<void> _loadNextPage() async {
     if (_isLoading || !_hasMorePages) return;
 
-    setState(() => _isLoading = true);
+    if (mounted) {
+      setState(() => _isLoading = true);
+    }
 
     try {
       final result = await _service.findAll(
@@ -69,19 +75,23 @@ class _CategoriesPageState extends State<CategoriesPage> {
         sortAscending: true,
       );
 
-      setState(() {
-        _allCategories.addAll(result.data);
-        _totalCount = result.pagination.totalElements;
-        _hasMorePages = result.pagination.nextPage != null;
-        _currentPage++;
-        _isLoading = false;
-        _errorMessage = null;
-      });
+      if (mounted) {
+        setState(() {
+          _allCategories.addAll(result.data);
+          _totalCount = result.pagination.totalElements;
+          _hasMorePages = result.pagination.nextPage != null;
+          _currentPage++;
+          _isLoading = false;
+          _errorMessage = null;
+        });
+      }
     } catch (e) {
-      setState(() {
-        _isLoading = false;
-        _errorMessage = 'Erro ao carregar categorias';
-      });
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Erro ao carregar categorias';
+        });
+      }
     }
   }
 
@@ -92,10 +102,15 @@ class _CategoriesPageState extends State<CategoriesPage> {
     }
   }
 
-  void _search({String? name, required bool? active}) async {
-    _filterName = name;
-    _filterActive = active;
-    await _loadFirstPage();
+  void _search({String? name, required bool? active}) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () async {
+      if (mounted) {
+        _filterName = name;
+        _filterActive = active;
+        await _loadFirstPage();
+      }
+    });
   }
 
   Future<void> _openForm({Category? category, bool readOnly = false}) async {
@@ -181,9 +196,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
         _TableHeader(onAddPress: () => _openForm()),
         const Divider(height: 1),
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             controller: _scrollController,
             itemCount: _allCategories.length + (_isLoading ? 1 : 0),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allCategories.length) {
                 return const Padding(
@@ -195,18 +211,13 @@ class _CategoriesPageState extends State<CategoriesPage> {
               final category = _allCategories[index];
               final isEven = index.isEven;
 
-              return Column(
-                children: [
-                  _CategoryRow(
-                    category: category,
-                    onEdit: () => _openForm(category: category),
-                    onDelete: () => _delete(category),
-                    onView: () => _openForm(category: category, readOnly: true),
-                    onReactivate: () => _reactivate(category),
-                    isEven: isEven,
-                  ),
-                  const Divider(height: 1),
-                ],
+              return _CategoryRow(
+                category: category,
+                onEdit: () => _openForm(category: category),
+                onDelete: () => _delete(category),
+                onView: () => _openForm(category: category, readOnly: true),
+                onReactivate: () => _reactivate(category),
+                isEven: isEven,
               );
             },
           ),
@@ -233,6 +244,11 @@ class _CategoryRow extends StatelessWidget {
   final VoidCallback? onReactivate;
   final bool isEven;
 
+  static Color _getBackgroundColor(ColorScheme colorScheme, bool isEven) =>
+      isEven
+          ? colorScheme.surfaceContainer.withValues(alpha: 0.2)
+          : colorScheme.surfaceContainer.withValues(alpha: 0.4);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -241,9 +257,7 @@ class _CategoryRow extends StatelessWidget {
       color: category.active ? null : cs.onSurfaceVariant,
     );
 
-    final backgroundColor = isEven
-        ? cs.surfaceContainer.withValues(alpha: 0.2)
-        : cs.surfaceContainer.withValues(alpha: 0.4);
+    final backgroundColor = _getBackgroundColor(cs, isEven);
 
     return ColoredBox(
       color: backgroundColor,
@@ -280,7 +294,7 @@ class _CategoryRow extends StatelessWidget {
             Expanded(
               flex: 2,
               child: Text(
-                formatBRL(category.waterPrice + category.membershipPrice),
+                formatBRL(category.totalPrice),
                 style: style?.copyWith(
                   fontWeight: FontWeight.w600,
                 ),
