@@ -44,11 +44,12 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
   Set<String> _selected = {};
   bool _generating = false;
 
-  final GlobalKey<_CandidatesCardState> _candidatesCardKey = GlobalKey();
+  late GlobalKey<_CandidatesCardState> _candidatesCardKey;
 
   @override
   void initState() {
     super.initState();
+    _candidatesCardKey = GlobalKey();
     _invoiceService = widget.invoiceService ?? InvoiceService();
     _addressService = widget.addressService ?? AddressService();
     _addressService.findAll(size: 500).then((result) {
@@ -71,13 +72,20 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
       hasWaterMeter: _hasWaterMeter,
       addressId: _addressId,
     );
-    future.then((candidates) {
-      if (mounted) setState(() => _selected = candidates.map((c) => c.connectionId).toSet());
-    }).catchError((e) {
-      if (mounted) {
-        AppToast.error(context, 'Erro ao carregar candidatos');
-      }
-    });
+    future
+        .then((candidates) {
+          if (mounted) {
+            setState(() {
+              _candidatesCardKey = GlobalKey();
+              _selected = candidates.map((c) => c.connectionId).toSet();
+            });
+          }
+        })
+        .catchError((e) {
+          if (mounted) {
+            AppToast.error(context, 'Erro ao carregar candidatos');
+          }
+        });
     return future;
   }
 
