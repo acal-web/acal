@@ -1,4 +1,12 @@
 Rails.application.routes.draw do
+  resource :session, only: [ :create, :destroy ]
+  get "me", to: "me#show"
+  resources :users do
+    member do
+      patch :restore
+    end
+  end
+
   resources :addresses do
     member do
       patch :restore

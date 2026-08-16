@@ -36,13 +36,23 @@ class HttpService {
 
   static const _jsonHeaders = {'Content-Type': 'application/json'};
 
+  Map<String, String> _authHeaders() {
+    final headers = Map<String, String>.from(_jsonHeaders);
+    // Access CurrentUser via a global getter function injected at runtime
+    final token = _getAuthToken?.call();
+    if (token != null && token.isNotEmpty) {
+      headers['Authorization'] = 'Bearer $token';
+    }
+    return headers;
+  }
+
   Future<dynamic> get(String path, {Map<String, String>? query}) async {
-    final response = await _client.get(_uri(path, query));
+    final response = await _client.get(_uri(path, query), headers: _authHeaders());
     return _decode(response);
   }
 
   Future<Uint8List> getBytes(String path, {Map<String, String>? query}) async {
-    final response = await _client.get(_uri(path, query));
+    final response = await _client.get(_uri(path, query), headers: _authHeaders());
     _checkStatus(response);
     return response.bodyBytes;
   }
@@ -50,7 +60,7 @@ class HttpService {
   Future<dynamic> post(String path, Object body) async {
     final response = await _client.post(
       _uri(path),
-      headers: _jsonHeaders,
+      headers: _authHeaders(),
       body: jsonEncode(body),
     );
     return _decode(response);
@@ -59,7 +69,7 @@ class HttpService {
   Future<dynamic> put(String path, Object body) async {
     final response = await _client.put(
       _uri(path),
-      headers: _jsonHeaders,
+      headers: _authHeaders(),
       body: jsonEncode(body),
     );
     return _decode(response);
@@ -68,14 +78,14 @@ class HttpService {
   Future<dynamic> patch(String path, Object body) async {
     final response = await _client.patch(
       _uri(path),
-      headers: _jsonHeaders,
+      headers: _authHeaders(),
       body: jsonEncode(body),
     );
     return _decode(response);
   }
 
   Future<void> delete(String path) async {
-    final response = await _client.delete(_uri(path));
+    final response = await _client.delete(_uri(path), headers: _authHeaders());
     _checkStatus(response);
   }
 
@@ -97,7 +107,28 @@ class HttpService {
       } catch (_) {
         body = response.body;
       }
+
+      // Handle 401: clear auth state
+      if (response.statusCode == 401) {
+        _onUnauthorized?.call();
+      }
+
       throw ApiException(response.statusCode, body);
     }
   }
+}
+
+/// Global callback to get the auth token. Set by main.dart after creating CurrentUser.
+String? Function()? _getAuthToken;
+
+/// Global callback invoked when a 401 is received. Set by router to clear auth state.
+void Function()? _onUnauthorized;
+
+/// Call this from main.dart to inject the token getter and 401 handler.
+void setupHttpService({
+  required String? Function() getToken,
+  required void Function() onUnauthorized,
+}) {
+  _getAuthToken = getToken;
+  _onUnauthorized = onUnauthorized;
 }

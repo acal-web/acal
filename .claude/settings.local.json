@@ -229,7 +229,12 @@
       "Bash(unset DB_PORT)",
       "Bash(unset DB_USERNAME)",
       "Bash(unset DB_PASSWORD)",
-      "Bash(grep -E \"\\\\.\\(dart|tsx?|jsx?\\)$\")"
+      "Bash(grep -E \"\\\\.\\(dart|tsx?|jsx?\\)$\")",
+      "Bash(git -C /workspace log --oneline -20)",
+      "Bash(git log *)",
+      "Bash(xargs -I{} sh -c 'echo ==={}===; cat -n {}')",
+      "Bash(mkdir -p /home/vscode/.claude/plans)",
+      "Read(//home/vscode/.claude/plans/**)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

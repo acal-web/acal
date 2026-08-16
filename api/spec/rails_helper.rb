@@ -47,6 +47,14 @@ RSpec.configure do |config|
 
   config.include FactoryBot::Syntax::Methods
 
+  # Auto-sign in as admin for request specs (unless explicitly opted out)
+  config.before(:each, type: :request) do |example|
+    unless example.metadata[:skip_auth]
+      user = create(:user, role: 'administrador')
+      sign_in_as(user)
+    end
+  end
+
   # You can uncomment this line to turn off ActiveRecord support entirely.
   # config.use_active_record = false
 

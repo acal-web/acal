@@ -1,5 +1,7 @@
 import 'package:acalapp/core/layout/app_shell.dart';
 import 'package:acalapp/features/addresses/presentation/addresses_page.dart';
+import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
+import 'package:acalapp/features/auth/presentation/login_page.dart';
 import 'package:acalapp/features/cashbox/presentation/cashbox_page.dart';
 import 'package:acalapp/features/categories/presentation/categories_page.dart';
 import 'package:acalapp/features/connections/presentation/connections_page.dart';
@@ -12,11 +14,35 @@ import 'package:acalapp/features/invoices/presentation/generate_invoices_page.da
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/features/quality/presentation/quality_page.dart';
 import 'package:acalapp/features/customer/presentation/customer_page.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 
-final appRouter = GoRouter(
-  initialLocation: '/dashboard',
-  routes: [
+late GoRouter appRouter;
+
+/// Call this from main.dart to initialize the router with CurrentUser.
+void initializeRouter(Listenable currentUser) {
+  appRouter = GoRouter(
+    initialLocation: '/dashboard',
+    refreshListenable: currentUser,
+    redirect: (context, state) {
+      final isAuthenticated = CurrentUserScope.of(context).isAuthenticated;
+      final goingToLogin = state.matchedLocation == '/login';
+
+      if (!isAuthenticated && !goingToLogin) {
+        return '/login';
+      }
+
+      if (isAuthenticated && goingToLogin) {
+        return '/dashboard';
+      }
+
+      return null;
+    },
+    routes: [
+    GoRoute(
+      path: '/login',
+      pageBuilder: (context, state) => const NoTransitionPage(child: LoginPage()),
+    ),
     ShellRoute(
       builder: (context, state, child) => AppShell(body: child),
       routes: [
@@ -75,4 +101,5 @@ final appRouter = GoRouter(
       ],
     ),
   ],
-);
+  );
+}
