@@ -2,6 +2,10 @@ import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
 import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
+import 'package:acalapp/features/auth/domain/auth_user.dart';
+import 'package:acalapp/features/auth/domain/user_role.dart';
+import 'package:acalapp/features/auth/presentation/current_user.dart';
+import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
@@ -14,7 +18,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
-import 'package:go_router/go_router.dart';
+import 'package:go_router/go_router.dart'; // ignore: unused_import
 
 const _pagination = Pagination(number: 0, totalPages: 1, totalElements: 1, size: 10, first: true, last: true);
 
@@ -126,15 +130,29 @@ Future<void> _pump(WidgetTester tester, InvoiceService invoiceService) async {
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
 
+  final currentUser = CurrentUser();
+  currentUser.setSession(
+    AuthUser(
+      id: 'user-1',
+      username: 'testuser',
+      name: 'Test User',
+      role: UserRole.administrador,
+    ),
+    'test-token',
+  );
+
   await tester.pumpWidget(
-    MaterialApp.router(
-      routerConfig: _router(invoiceService),
-      locale: const Locale('pt', 'BR'),
-      supportedLocales: const [Locale('pt', 'BR')],
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
-      builder: (context, child) => FTheme(
-        data: fThemeLight,
-        child: FToaster(child: FTooltipGroup(child: child!)),
+    CurrentUserScope(
+      notifier: currentUser,
+      child: MaterialApp.router(
+        routerConfig: _router(invoiceService),
+        locale: const Locale('pt', 'BR'),
+        supportedLocales: const [Locale('pt', 'BR')],
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        builder: (context, child) => FTheme(
+          data: fThemeLight,
+          child: FToaster(child: FTooltipGroup(child: child!)),
+        ),
       ),
     ),
   );

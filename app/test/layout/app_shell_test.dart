@@ -1,5 +1,9 @@
 import 'package:acalapp/core/layout/app_shell.dart';
 import 'package:acalapp/core/layout/menu/side_menu.dart';
+import 'package:acalapp/features/auth/domain/auth_user.dart';
+import 'package:acalapp/features/auth/domain/user_role.dart';
+import 'package:acalapp/features/auth/presentation/current_user.dart';
+import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
@@ -17,13 +21,28 @@ GoRouter _router() => GoRouter(
       ],
     );
 
-    Widget _app(GoRouter router) => MaterialApp.router(
+Widget _app(GoRouter router) {
+  final currentUser = CurrentUser();
+  currentUser.setSession(
+    AuthUser(
+      id: 'user-1',
+      username: 'testuser',
+      name: 'Test User',
+      role: UserRole.administrador,
+    ),
+    'test-token',
+  );
+  return CurrentUserScope(
+    notifier: currentUser,
+    child: MaterialApp.router(
       routerConfig: router,
-    );
+    ),
+  );
+}
 
 // Logical pixels — breakpoint is 768.
 const _wide   = Size(1024, 768);
-const _narrow = Size(400,  800);
+const _narrow = Size(600,  800);
 
 void main() {
   group('AppShell — responsive menu', () {
