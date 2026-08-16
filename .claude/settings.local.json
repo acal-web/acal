@@ -218,7 +218,8 @@
       "Bash(git commit -m 'feat: add editable water meter fields to invoice generation table *)",
       "Bash(bin/rails db:test:prepare)",
       "Bash(bin/ci)",
-      "Bash(bin/rubocop lib/tasks/import_legacy_water_meters.rake)"
+      "Bash(bin/rubocop lib/tasks/import_legacy_water_meters.rake)",
+      "Bash(rails c *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
