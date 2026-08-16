@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_16_115519) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_16_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -72,8 +72,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_115519) do
     t.jsonb "tags", default: [], null: false
     t.datetime "updated_at", null: false
     t.boolean "voter", default: false, null: false
+    t.index "lower((document)::text) varchar_pattern_ops", name: "index_customers_document_lower"
+    t.index "lower((name)::text) varchar_pattern_ops", name: "index_customers_name_lower"
     t.index ["document"], name: "index_customers_on_document", unique: true
+    t.index ["membership_number"], name: "index_customers_on_membership_number"
     t.index ["name"], name: "index_customers_on_name"
+    t.index ["voter"], name: "index_customers_on_voter"
   end
 
   create_table "invoices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

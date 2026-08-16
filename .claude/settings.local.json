@@ -219,7 +219,17 @@
       "Bash(bin/rails db:test:prepare)",
       "Bash(bin/ci)",
       "Bash(bin/rubocop lib/tasks/import_legacy_water_meters.rake)",
-      "Bash(rails c *)"
+      "Bash(rails c *)",
+      "Bash(RAILS_ENV=production rails runner \"puts 'DB_HOST: ' + ENV['DB_HOST'].to_s; puts 'DB_PORT: ' + ENV['DB_PORT'].to_s; puts 'DB_NAME: ' + ENV['DB_NAME'].to_s\")",
+      "Bash(grep -E \"\\\\.\\(tsx?|jsx?\\)$\")",
+      "Bash(grep -E \"\\\\.dart$\")",
+      "Bash(git commit -m 'fix: restore totalPages and last fields for frontend compatibility *)",
+      "Bash(unset RAILS_ENV)",
+      "Bash(unset DB_HOST)",
+      "Bash(unset DB_PORT)",
+      "Bash(unset DB_USERNAME)",
+      "Bash(unset DB_PASSWORD)",
+      "Bash(grep -E \"\\\\.\\(dart|tsx?|jsx?\\)$\")"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
