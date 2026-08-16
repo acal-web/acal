@@ -10,12 +10,12 @@ class Customer < ApplicationRecord
   validate :validate_document_uniqueness
 
   scope :filter_by_name, ->(name) {
-    where("name ILIKE :q", q: "%#{sanitize_sql_like(name)}%") if name.present?
+    where("LOWER(name) LIKE LOWER(:q)", q: "%#{sanitize_sql_like(name)}%") if name.present?
   }
 
   scope :filter_by_document, ->(document) {
     digits = document.to_s.gsub(/\D/, "")
-    where("document ILIKE :q", q: "%#{sanitize_sql_like(digits)}%") if digits.present?
+    where("LOWER(document) LIKE LOWER(:q)", q: "%#{sanitize_sql_like(digits)}%") if digits.present?
   }
 
   private

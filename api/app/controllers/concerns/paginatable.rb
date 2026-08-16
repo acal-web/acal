@@ -3,10 +3,13 @@ module Paginatable
 
   def paginate(collection)
     page = params.fetch(:page, 0).to_i
-    size = params.fetch(:size, 10).to_i
+    size = [ params.fetch(:size, 10).to_i, 100 ].min
 
-    pagy    = Pagy::Offset.new(page: page + 1, limit: size, count: collection.count)
-    records = pagy.records(collection).to_a
+    count = collection.limit(10001).count
+    total_count = count > 10000 ? 10000 : count
+
+    pagy    = Pagy::Offset.new(page: page + 1, limit: size, count: total_count)
+    records = pagy.records(collection)
 
     {
       content:          records,
@@ -15,9 +18,8 @@ module Paginatable
         pageSize:       pagy.limit,
         offset:         pagy.offset
       },
-      totalPages:       pagy.pages,
-      totalElements:    pagy.count,
-      last:             pagy.next.nil?,
+      hasNextPage:      count > ((page + 1) * size),
+      totalElements:    total_count,
       first:            pagy.previous.nil?,
       size:             pagy.limit,
       number:           pagy.page - 1,
