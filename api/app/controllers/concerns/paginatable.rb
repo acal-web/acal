@@ -10,6 +10,7 @@ module Paginatable
 
     pagy    = Pagy::Offset.new(page: page + 1, limit: size, count: total_count)
     records = pagy.records(collection)
+    has_next = count > ((page + 1) * size)
 
     {
       content:          records,
@@ -18,8 +19,10 @@ module Paginatable
         pageSize:       pagy.limit,
         offset:         pagy.offset
       },
-      hasNextPage:      count > ((page + 1) * size),
+      hasNextPage:      has_next,
       totalElements:    total_count,
+      totalPages:       pagy.pages,
+      last:             !has_next,
       first:            pagy.previous.nil?,
       size:             pagy.limit,
       number:           pagy.page - 1,
