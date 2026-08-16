@@ -10,9 +10,12 @@ module Invoices
         .where.not(id: already_invoiced)
         .includes(:customer, :address, :category)
 
+      reference = reference_date.is_a?(Date) ? reference_date : Date.parse(reference_date.to_s)
+      previous_month = reference.prev_month
+      previous_meters_by_connection = load_previous_water_meters(connections, previous_month)
+
       connections.map do |connection|
         values = value_breakdown(connection)
-        previous_water_meter = previous_water_meter_for(connection, reference_date)
         {
           connection_id: connection.id,
           customer: { id: connection.customer.id, name: connection.customer.name },
@@ -22,7 +25,7 @@ module Invoices
           category: { id: connection.category.id, name: connection.category.name, has_water_meter: connection.category.has_water_meter },
           membership_value: values[:membership_value],
           water_value: values[:water_value],
-          previous_meter_final_reading: previous_water_meter&.final_reading
+          previous_meter_final_reading: previous_meters_by_connection[connection.id]
         }
       end
     end
@@ -34,16 +37,22 @@ module Invoices
       }
     end
 
-    def self.previous_water_meter_for(connection, reference_date)
-      reference = reference_date.is_a?(Date) ? reference_date : Date.parse(reference_date.to_s)
-      previous_month = reference.prev_month
-      previous_invoice = Invoice
-        .where(connection_id: connection.id, reference_date: previous_month.beginning_of_month..previous_month.end_of_month)
-        .first
+    def self.load_previous_water_meters(connections, previous_month)
+      connection_ids = connections.map(&:id)
+      previous_invoices = Invoice
+        .where(connection_id: connection_ids, reference_date: previous_month.beginning_of_month..previous_month.end_of_month)
+        .select(:id, :connection_id)
+        .index_by(&:id)
 
-      return nil unless previous_invoice
+      return {} if previous_invoices.empty?
 
-      WaterMeter.unscoped.find_by(invoice_id: previous_invoice.id)
+      invoice_ids = previous_invoices.keys
+      water_meters = WaterMeter.unscoped.where(invoice_id: invoice_ids).select(:invoice_id, :final_reading)
+
+      water_meters.each_with_object({}) do |meter, memo|
+        invoice = previous_invoices[meter.invoice_id]
+        memo[invoice.connection_id] = meter.final_reading
+      end
     end
   end
 end

@@ -35,7 +35,12 @@ class _FakeInvoiceService extends InvoiceService {
   }
 
   @override
-  Future<List<Invoice>> generate({required List<String> connectionIds, required DateTime reference, required DateTime dueDate}) async {
+  Future<List<Invoice>> generate({
+    required List<String> connectionIds,
+    required DateTime reference,
+    required DateTime dueDate,
+    List<Map<String, dynamic>>? waterMeters,
+  }) async {
     lastGeneratedIds = connectionIds;
     if (generateError != null) throw generateError!;
     return [

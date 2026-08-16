@@ -55,12 +55,15 @@ class InvoiceService {
     required List<String> connectionIds,
     required DateTime reference,
     required DateTime dueDate,
+    List<Map<String, dynamic>>? waterMeters,
   }) async {
-    final data = await _http.post('/invoices/generate', {
+    final body = {
       'connection_ids': connectionIds,
       'reference_date': _formatDate(reference),
       'due_date': _formatDate(dueDate),
-    }) as List;
+      'water_meters': ?waterMeters,
+    };
+    final data = await _http.post('/invoices/generate', body) as List;
     return data.map((e) => Invoice.fromJson(e as Map<String, dynamic>)).toList();
   }
 

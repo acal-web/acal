@@ -37,7 +37,8 @@ class InvoicesController < ApplicationController
     invoices = Invoices::GenerateService.call(
       connection_ids: params.fetch(:connection_ids, []),
       reference_date: params[:reference_date],
-      due_date: params[:due_date]
+      due_date: params[:due_date],
+      water_meters: params[:water_meters]
     )
 
     invoices = Invoice.where(id: invoices.map(&:id)).includes(connection: %i[customer address category], water_meter: {})
