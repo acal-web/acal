@@ -69,7 +69,7 @@ namespace :db do
               "INSERT INTO legacy_hidrometro (idhidrometro, Consumo, idconta, consumo_inicial, consumo_final) " \
               "VALUES ($1, $2, $3, $4, $5) " \
               "ON CONFLICT (idhidrometro) DO NOTHING",
-              [id, consumo, idconta, consumo_inicial, consumo_final]
+              [ id, consumo, idconta, consumo_inicial, consumo_final ]
             )
             count += 1
           rescue StandardError => e

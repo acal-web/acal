@@ -215,7 +215,10 @@
       "Bash(psql -U postgres -h localhost -d postgres -c \"SELECT pg_terminate_backend\\(pg_stat_activity.pid\\) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'api_development' AND pid <> pg_backend_pid\\(\\);\")",
       "Bash(DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:create)",
       "Bash(SKIP_DB_SETUP=1 bash .legacy/import.sh)",
-      "Bash(git commit -m 'feat: add editable water meter fields to invoice generation table *)"
+      "Bash(git commit -m 'feat: add editable water meter fields to invoice generation table *)",
+      "Bash(bin/rails db:test:prepare)",
+      "Bash(bin/ci)",
+      "Bash(bin/rubocop lib/tasks/import_legacy_water_meters.rake)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
