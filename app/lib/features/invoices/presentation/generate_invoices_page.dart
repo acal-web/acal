@@ -512,6 +512,8 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                     onSort: _sort,
                   ),
                 ),
+                SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. INICIAL', style: Theme.of(context).textTheme.labelLarge)),
+                SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. FINAL', style: Theme.of(context).textTheme.labelLarge)),
                 SizedBox(
                   width: _amountColumnWidth,
                   child: _SortableHeaderCell(
@@ -522,8 +524,6 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                     onSort: _sort,
                   ),
                 ),
-                SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. INICIAL', style: Theme.of(context).textTheme.labelLarge)),
-                SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. FINAL', style: Theme.of(context).textTheme.labelLarge)),
                 SizedBox(
                   width: _checkboxColumnWidth,
                   child: FCheckbox(
@@ -545,10 +545,11 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                 itemBuilder: (context, i) {
                   final candidate = _sortedCandidates[i];
                   final checked = widget.selected.contains(candidate.connectionId);
-                  const backgroundColor = Colors.white;
+                  final initialController = _getInitialController(candidate.connectionId, previousFinalReading: candidate.previousMeterFinalReading);
+                  final finalController = _getFinalController(candidate.connectionId);
 
                   return ColoredBox(
-                    color: backgroundColor,
+                    color: Colors.white,
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                       child: Row(
@@ -556,17 +557,11 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                           Expanded(flex: 3, child: Text(candidate.customerName)),
                           Expanded(flex: 3, child: Text(candidate.fullAddress)),
                           Expanded(flex: 2, child: Text(candidate.categoryName)),
-                          SizedBox(width: _amountColumnWidth, child: Text(formatBRL(candidate.amount))),
                           SizedBox(
                             width: _waterMeterColumnWidth,
                             child: candidate.hasWaterMeter
                                 ? FTextFormField(
-                                    control: FTextFieldControl.managed(
-                                      controller: _getInitialController(
-                                        candidate.connectionId,
-                                        previousFinalReading: candidate.previousMeterFinalReading,
-                                      ),
-                                    ),
+                                    control: FTextFieldControl.managed(controller: initialController),
                                     hint: '0.0',
                                     keyboardType: TextInputType.numberWithOptions(decimal: true),
                                   )
@@ -576,11 +571,15 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                             width: _waterMeterColumnWidth,
                             child: candidate.hasWaterMeter
                                 ? FTextFormField(
-                                    control: FTextFieldControl.managed(controller: _getFinalController(candidate.connectionId)),
+                                    control: FTextFieldControl.managed(controller: finalController),
                                     hint: '0.0',
                                     keyboardType: TextInputType.numberWithOptions(decimal: true),
                                   )
                                 : const Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
+                          ),
+                          SizedBox(
+                            width: _amountColumnWidth,
+                            child: Text(formatBRL(candidate.amount)),
                           ),
                           SizedBox(
                             width: _checkboxColumnWidth,
