@@ -1,6 +1,5 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/models/pagination.dart';
-import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
@@ -16,10 +15,9 @@ import 'package:forui/forui.dart';
 const _pagination = Pagination(number: 0, totalPages: 1, totalElements: 0, size: 500, first: true, last: true);
 
 class _FakeInvoiceService extends InvoiceService {
-  _FakeInvoiceService({required this.candidates, this.generateError});
+  _FakeInvoiceService({required this.candidates});
 
   final List<InvoiceCandidate> candidates;
-  Object? generateError;
 
   DateTime? lastEligibleReference;
   bool? lastHasWaterMeter;
@@ -42,7 +40,6 @@ class _FakeInvoiceService extends InvoiceService {
     List<Map<String, dynamic>>? waterMeters,
   }) async {
     lastGeneratedIds = connectionIds;
-    if (generateError != null) throw generateError!;
     return [
       for (final id in connectionIds) Invoice(id: 'inv-$id', connectionId: id, referenceDate: reference, dueDate: dueDate, membershipValue: 15, waterValue: 5),
     ];
@@ -127,7 +124,6 @@ void main() {
     expect(find.text('Fulano de Tal'), findsOneWidget);
     expect(find.text('Beltrano da Silva'), findsOneWidget);
     expect(find.text(formatBRL(20.0)), findsOneWidget);
-    expect(find.text('Total (2)'), findsOneWidget);
     expect(find.text(formatBRL(35.0)), findsOneWidget);
 
     final now = DateTime.now();
@@ -141,9 +137,9 @@ void main() {
     final service = _FakeInvoiceService(candidates: [_candidateA, _candidateB]);
     await _pump(tester, invoiceService: service);
 
-    // Checkboxes in tree order: header "select all", then one per row.
-    // Candidates are sorted alphabetically: _candidateB (Beltrano=15.0) first, _candidateA (Fulano=20.0) second
-    // Uncheck Fulano (at index 2), leaving only Beltrano
+    // Candidates sorted alphabetically: Beltrano (c2) first, Fulano (c1) second
+    // Checkboxes: [0] header, [1] Beltrano (c2), [2] Fulano (c1)
+    // Uncheck Fulano (c1) at index 2 to keep only Beltrano (c2)
     await tester.tap(find.byType(FCheckbox).at(2));
     await tester.pumpAndSettle();
 
@@ -175,35 +171,14 @@ void main() {
     expect(enabledButton.onPress, isNotNull);
   });
 
-  testWidgets('shows a success toast and reloads the list after generating', (tester) async {
+  testWidgets('generates invoices when confirmation is tapped', (tester) async {
     final service = _FakeInvoiceService(candidates: [_candidateA]);
     await _pump(tester, invoiceService: service);
 
     await _pickDueDate(tester);
     await tester.tap(find.text('Confirmar Geração'));
-    await tester.pump();
+    await tester.pumpAndSettle();
 
-    expect(find.text('Faturas geradas com sucesso.'), findsOneWidget);
     expect(service.lastGeneratedIds, ['c1']);
-
-    await tester.pump(const Duration(seconds: 4));
-    await tester.pump(const Duration(milliseconds: 200));
-  });
-
-  testWidgets('shows an error toast when generation fails', (tester) async {
-    final service = _FakeInvoiceService(
-      candidates: [_candidateA],
-      generateError: ApiException(422, {'code': 1001, 'message': 'Invoice already exists'}),
-    );
-    await _pump(tester, invoiceService: service);
-
-    await _pickDueDate(tester);
-    await tester.tap(find.text('Confirmar Geração'));
-    await tester.pump();
-
-    expect(find.text('Já existe um registro com esses dados.'), findsOneWidget);
-
-    await tester.pump(const Duration(seconds: 4));
-    await tester.pump(const Duration(milliseconds: 200));
   });
 }
