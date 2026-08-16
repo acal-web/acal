@@ -1,10 +1,8 @@
 class Invoice < ApplicationRecord
   include SoftDeletable
 
-  # Unscoped for the same reason as Connection's own associations: an
-  # invoice for a since-deleted connection must keep showing that
-  # connection's data.
   belongs_to :connection, -> { unscope(where: :deleted_at) }
+  has_one :water_meter, dependent: :destroy
 
   validates :reference_date, :due_date, presence: true
   validates :membership_value, :water_value, presence: true, numericality: { greater_than_or_equal_to: 0 }

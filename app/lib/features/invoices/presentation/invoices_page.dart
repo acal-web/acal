@@ -1,6 +1,7 @@
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
+import 'package:acalapp/features/invoices/presentation/invoice_detail_page.dart';
 import 'package:acalapp/features/invoices/widget/invoice_filter_bar.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
@@ -454,6 +455,16 @@ class _InvoiceRowState extends State<_InvoiceRow> {
     }
   }
 
+  Future<void> _viewDetails(String invoiceId) async {
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InvoiceDetailPage(invoiceId: invoiceId),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -528,6 +539,19 @@ class _InvoiceRowState extends State<_InvoiceRow> {
                 children: [
                   PopupMenuButton<String>(
                     itemBuilder: (BuildContext context) => [
+                      PopupMenuItem<String>(
+                        value: 'view',
+                        onTap: invoice.id != null
+                            ? () => Future.microtask(() => _viewDetails(invoice.id!))
+                            : null,
+                        child: const Row(
+                          children: [
+                            Icon(Icons.visibility_outlined, size: 18),
+                            SizedBox(width: 12),
+                            Text('Visualizar'),
+                          ],
+                        ),
+                      ),
                       PopupMenuItem<String>(
                         value: 'download',
                         child: const Row(

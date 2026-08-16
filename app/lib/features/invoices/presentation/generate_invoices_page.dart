@@ -385,10 +385,13 @@ class _CandidatesCardState extends State<_CandidatesCard> {
     super.dispose();
   }
 
-  TextEditingController _getInitialController(String connectionId) {
-    _waterMeterControllers.putIfAbsent(connectionId, () => {
-      'initial': TextEditingController(),
-      'final': TextEditingController(),
+  TextEditingController _getInitialController(String connectionId, {double? previousFinalReading}) {
+    _waterMeterControllers.putIfAbsent(connectionId, () {
+      final initialText = previousFinalReading != null ? previousFinalReading.toString() : '';
+      return {
+        'initial': TextEditingController(text: initialText),
+        'final': TextEditingController(),
+      };
     });
     return _waterMeterControllers[connectionId]!['initial']!;
   }
@@ -532,7 +535,12 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                             width: _waterMeterColumnWidth,
                             child: candidate.hasWaterMeter
                                 ? FTextFormField(
-                                    control: FTextFieldControl.managed(controller: _getInitialController(candidate.connectionId)),
+                                    control: FTextFieldControl.managed(
+                                      controller: _getInitialController(
+                                        candidate.connectionId,
+                                        previousFinalReading: candidate.previousMeterFinalReading,
+                                      ),
+                                    ),
                                     hint: '0.0',
                                     keyboardType: TextInputType.numberWithOptions(decimal: true),
                                   )

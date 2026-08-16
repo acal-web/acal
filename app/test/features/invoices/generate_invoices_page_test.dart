@@ -60,6 +60,7 @@ const _candidateA = InvoiceCandidate(
   membershipValue: 15.0,
   waterValue: 5.0,
   hasWaterMeter: true,
+  previousMeterFinalReading: 1000.0,
 );
 
 const _candidateB = InvoiceCandidate(

@@ -18,8 +18,22 @@ RSpec.describe Invoices::EligibleConnectionsService do
       letter: connection.letter,
       category: { id: category.id, name: category.name, has_water_meter: category.has_water_meter },
       membership_value: 5.0,
-      water_value: 15.0
+      water_value: 15.0,
+      previous_meter_final_reading: nil
     )
+  end
+
+  it "includes previous month's water meter final reading as initial reading for this month" do
+    connection = create(:connection, customer: customer, address: address, category: create(:category, has_water_meter: true))
+    previous_invoice = create(:invoice, connection: connection, reference_date: "2026-07-01")
+    previous_meter = create(:water_meter, invoice: previous_invoice, initial_reading: 100, final_reading: 550)
+
+    result = described_class.call(reference_date: "2026-08-01")
+
+    expect(result).to contain_exactly(hash_including(
+      connection_id: connection.id,
+      previous_meter_final_reading: 550.0
+    ))
   end
 
   it "excludes inactive connections" do

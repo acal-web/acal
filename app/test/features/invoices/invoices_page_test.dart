@@ -7,6 +7,7 @@ import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
+import 'package:acalapp/features/invoices/presentation/invoice_detail_page.dart';
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:flutter/material.dart';
@@ -73,6 +74,11 @@ class _FakeInvoiceService extends InvoiceService {
   }
 
   @override
+  Future<Invoice> getById(String invoiceId) async {
+    return invoices.firstWhere((i) => i.id == invoiceId);
+  }
+
+  @override
   Future<Invoice> markPaid(String invoiceId) async {
     markedPaidId = invoiceId;
     final invoice = invoices.firstWhere((i) => i.id == invoiceId);
@@ -103,6 +109,13 @@ GoRouter _router(InvoiceService invoiceService) => GoRouter(
         GoRoute(
           path: '/invoices/cobranca',
           builder: (_, _) => const Scaffold(body: Text('Cobranças Page')),
+        ),
+        GoRoute(
+          path: '/invoices/:id',
+          builder: (_, state) => InvoiceDetailPage(
+            invoiceId: state.pathParameters['id'] ?? '',
+            invoiceService: invoiceService,
+          ),
         ),
       ],
     );
@@ -218,5 +231,23 @@ void main() {
     // Should show "Paga" status instead of mark-paid option
     expect(find.text('Paga'), findsOneWidget);
     expect(find.text('Marcar como Paga'), findsNothing);
+  });
+
+  testWidgets('view action opens the invoice details page', (tester) async {
+    final service = _FakeInvoiceService(invoices: [_invoice]);
+    await _pump(tester, service);
+
+    // PopupMenuButton opens to show menu items
+    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await tester.pumpAndSettle();
+
+    // Should show "Visualizar" option as first item
+    expect(find.text('Visualizar'), findsOneWidget);
+
+    await tester.tap(find.text('Visualizar'));
+    await tester.pumpAndSettle();
+
+    // Should navigate to the invoice detail page with the title
+    expect(find.text('Detalhes da Fatura'), findsOneWidget);
   });
 }

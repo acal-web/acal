@@ -207,7 +207,15 @@
       "Bash(pkill -9 -f \"dart\")",
       "Bash(rails dbconsole *)",
       "Bash(rails generate *)",
-      "Bash(rails test *)"
+      "Bash(rails test *)",
+      "Bash(sqlite3 db/development.sqlite3 \".schema invoices\")",
+      "Bash(RAILS_ENV=development bundle exec rails legacy_import:categories CATEGORIA_SQL_PATH=/workspace/api/.legacy/acal_categoriasocio.sql TAXA_SQL_PATH=/workspace/api/.legacy/acal_taxa.sql)",
+      "Bash(bash .legacy/import.sh)",
+      "Bash(DISABLE_DATABASE_ENVIRONMENT_CHECK=1 RAILS_ENV=development bundle exec rails db:drop db:create db:migrate)",
+      "Bash(psql -U postgres -h localhost -d postgres -c \"SELECT pg_terminate_backend\\(pg_stat_activity.pid\\) FROM pg_stat_activity WHERE pg_stat_activity.datname = 'api_development' AND pid <> pg_backend_pid\\(\\);\")",
+      "Bash(DISABLE_DATABASE_ENVIRONMENT_CHECK=1 bundle exec rails db:create)",
+      "Bash(SKIP_DB_SETUP=1 bash .legacy/import.sh)",
+      "Bash(git commit -m 'feat: add editable water meter fields to invoice generation table *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

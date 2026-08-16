@@ -11,6 +11,7 @@ class InvoiceCandidate {
   final double membershipValue;
   final double waterValue;
   final bool hasWaterMeter;
+  final double? previousMeterFinalReading;
 
   const InvoiceCandidate({
     required this.connectionId,
@@ -22,6 +23,7 @@ class InvoiceCandidate {
     required this.membershipValue,
     required this.waterValue,
     required this.hasWaterMeter,
+    this.previousMeterFinalReading,
   });
 
   double get amount => membershipValue + waterValue;
@@ -38,5 +40,8 @@ class InvoiceCandidate {
         membershipValue: double.parse(json['membership_value'].toString()),
         waterValue: double.parse(json['water_value'].toString()),
         hasWaterMeter: (json['category'] as Map<String, dynamic>)['has_water_meter'] as bool? ?? false,
+        previousMeterFinalReading: json['previous_meter_final_reading'] != null
+            ? double.parse(json['previous_meter_final_reading'].toString())
+            : null,
       );
 }

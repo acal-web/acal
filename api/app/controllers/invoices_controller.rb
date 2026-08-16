@@ -1,5 +1,5 @@
 class InvoicesController < ApplicationController
-  INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] } }
+  INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] }, water_meter: {} }
 
   # GET /invoices
   def index
@@ -8,11 +8,17 @@ class InvoicesController < ApplicationController
       .filter_by_customer(params[:customer_id])
       .filter_by_address(params[:address_id])
       .filter_by_status(params[:status])
-      .includes(connection: %i[customer address category])
+      .includes(connection: %i[customer address category], water_meter: {})
 
     invoices = apply_sort(invoices, params[:sort_by], params[:sort_ascending] == "true")
 
     render json: paginate(invoices), include: INVOICE_INCLUDES
+  end
+
+  # GET /invoices/:id
+  def show
+    invoice = Invoice.includes(connection: %i[customer address category], water_meter: {}).find(params[:id])
+    render json: invoice, include: INVOICE_INCLUDES
   end
 
   # GET /invoices/eligible
@@ -34,19 +40,21 @@ class InvoicesController < ApplicationController
       due_date: params[:due_date]
     )
 
-    render json: invoices, status: :created
+    invoices = Invoice.where(id: invoices.map(&:id)).includes(connection: %i[customer address category], water_meter: {})
+
+    render json: invoices, status: :created, include: INVOICE_INCLUDES
   end
 
   # GET /invoices/:id/pdf
   def pdf
-    invoice = Invoice.includes(connection: %i[ customer address category ]).find(params[:id])
+    invoice = Invoice.includes(connection: %i[ customer address category ], water_meter: {}).find(params[:id])
 
     send_data Invoices::BoletoPdfService.call(invoice), type: "application/pdf", disposition: "inline", filename: "fatura-#{invoice.id}.pdf"
   end
 
   # PATCH /invoices/:id/pay
   def pay
-    invoice = Invoice.find(params[:id])
+    invoice = Invoice.includes(connection: %i[customer address category], water_meter: {}).find(params[:id])
     invoice.update!(paid_at: Time.current)
 
     render json: invoice, include: INVOICE_INCLUDES
@@ -75,7 +83,7 @@ class InvoicesController < ApplicationController
       .filter_by_address(params[:address_id])
       .filter_by_status(params[:status])
       .ordered
-      .includes(connection: %i[customer address category])
+      .includes(connection: %i[customer address category], water_meter: {})
 
     return head :no_content if invoices.empty?
 

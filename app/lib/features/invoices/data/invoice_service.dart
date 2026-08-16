@@ -64,6 +64,11 @@ class InvoiceService {
     return data.map((e) => Invoice.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  Future<Invoice> getById(String invoiceId) async {
+    final data = await _http.get('/invoices/$invoiceId') as Map<String, dynamic>;
+    return Invoice.fromJson(data);
+  }
+
   Future<Uint8List> pdf(String invoiceId) => _http.getBytes('/invoices/$invoiceId/pdf');
 
   Future<Invoice> markPaid(String invoiceId) async {

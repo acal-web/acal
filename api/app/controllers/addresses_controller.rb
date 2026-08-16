@@ -6,7 +6,7 @@ class AddressesController < ApplicationController
 
   # GET /addresses
   def index
-    addresses = active_scope.filter_by_name(params[:name])
+    addresses = active_scope.filter_by_name(params[:name]).order(:name)
     render json: paginate(sort(addresses))
   end
 

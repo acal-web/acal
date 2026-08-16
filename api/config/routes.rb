@@ -17,7 +17,7 @@ Rails.application.routes.draw do
   end
   resources :quality_analyses
 
-  resources :invoices, only: [ :index ] do
+  resources :invoices, only: [ :index, :show ] do
     collection do
       get :eligible
       post :generate

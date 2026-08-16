@@ -85,7 +85,8 @@ RSpec.describe "Invoices", type: :request do
             "letter" => connection.letter,
             "category" => { "id" => category.id, "name" => category.name, "has_water_meter" => category.has_water_meter },
             "membership_value" => "5.0",
-            "water_value" => "15.0"
+            "water_value" => "15.0",
+            "previous_meter_final_reading" => nil
           }
         ]
       )

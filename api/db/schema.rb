@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_15_140820) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_16_004300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -112,8 +112,23 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_15_140820) do
     t.index ["reference_date", "param_name"], name: "index_quality_analyses_on_reference_date_and_param_name_unique", unique: true, where: "(deleted_at IS NULL)"
   end
 
+  create_table "water_meters", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.decimal "final_reading", precision: 10, scale: 2, null: false
+    t.decimal "initial_reading", precision: 10, scale: 2, null: false
+    t.uuid "invoice_id", null: false
+    t.integer "legacy_id"
+    t.date "measured_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["invoice_id", "measured_at"], name: "index_water_meters_on_invoice_id_and_measured_at", unique: true, where: "(deleted_at IS NULL)"
+    t.index ["invoice_id"], name: "index_water_meters_on_invoice_id"
+    t.index ["legacy_id"], name: "index_water_meters_on_legacy_id", unique: true
+  end
+
   add_foreign_key "connections", "addresses"
   add_foreign_key "connections", "categories"
   add_foreign_key "connections", "customers"
   add_foreign_key "invoices", "connections"
+  add_foreign_key "water_meters", "invoices"
 end

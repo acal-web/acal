@@ -1,7 +1,4 @@
 module Invoices
-  # Renders the printable invoice document for a single Invoice: two stacked
-  # copies on one page (member's copy / association's copy), mirroring the
-  # legacy rc_novaConta.jrxml / rc_exclusivo.jrxml layout.
   class BoletoPdfService
     COPY_LABELS = [ "Via do Sócio", "Via da Associação" ].freeze
 
