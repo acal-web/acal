@@ -4,10 +4,25 @@ class SessionsController < ApplicationController
 
   # POST /session
   def create
-    user = User.find_by(username: params.dig(:session, :username).to_s.strip.downcase)
-    if user&.authenticate(params.dig(:session, :password).to_s)
+    username = params.dig(:session, :username).to_s.strip.downcase
+    password = params.dig(:session, :password).to_s
+
+    raise InvalidCredentialsError if username.blank? || password.blank?
+
+    user = User.find_by(username: username)
+    if user&.authenticate(password)
       session, raw_token = Session.start_for!(user, user_agent: request.user_agent, ip_address: request.remote_ip)
-      render json: { token: raw_token, user: UserSerializer.new(user) }, status: :created
+      render json: {
+        token: raw_token,
+        user: {
+          id: user.id,
+          username: user.username,
+          name: user.name,
+          role: user.role,
+          created_at: user.created_at,
+          updated_at: user.updated_at
+        }
+      }, status: :created
     else
       raise InvalidCredentialsError
     end

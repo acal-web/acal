@@ -4,6 +4,13 @@ class MeController < ApplicationController
 
   # GET /me
   def show
-    render json: UserSerializer.new(current_user)
+    render json: {
+      id: current_user.id,
+      username: current_user.username,
+      name: current_user.name,
+      role: current_user.role,
+      created_at: current_user.created_at,
+      updated_at: current_user.updated_at
+    }
   end
 end

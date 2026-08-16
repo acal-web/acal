@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_16_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_16_174436) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -117,6 +117,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_120000) do
     t.index ["reference_date", "param_name"], name: "index_quality_analyses_on_reference_date_and_param_name_unique", unique: true, where: "(deleted_at IS NULL)"
   end
 
+  create_table "sessions", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "expires_at", null: false
+    t.string "ip_address"
+    t.datetime "last_used_at"
+    t.string "token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.string "user_agent"
+    t.uuid "user_id", null: false
+    t.index ["token_digest"], name: "index_sessions_on_token_digest", unique: true
+    t.index ["user_id"], name: "index_sessions_on_user_id"
+  end
+
+  create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "deleted_at"
+    t.string "name", null: false
+    t.string "password_digest", null: false
+    t.string "role", null: false
+    t.datetime "updated_at", null: false
+    t.citext "username", null: false
+    t.index ["username"], name: "index_users_on_username", unique: true, where: "(deleted_at IS NULL)"
+  end
+
   create_table "water_meters", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
@@ -135,5 +159,6 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_120000) do
   add_foreign_key "connections", "categories"
   add_foreign_key "connections", "customers"
   add_foreign_key "invoices", "connections"
+  add_foreign_key "sessions", "users"
   add_foreign_key "water_meters", "invoices"
 end

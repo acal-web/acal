@@ -47,9 +47,10 @@ RSpec.configure do |config|
 
   config.include FactoryBot::Syntax::Methods
 
-  # Auto-sign in as admin for request specs (unless explicitly opted out)
+  # Auto-sign in as admin for request specs (if not explicitly marked skip_auth)
   config.before(:each, type: :request) do |example|
-    unless example.metadata[:skip_auth]
+    skip_auth = example.metadata[:skip_auth]
+    unless skip_auth
       user = create(:user, role: 'administrador')
       sign_in_as(user)
     end

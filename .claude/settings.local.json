@@ -236,7 +236,14 @@
       "Bash(mkdir -p /home/vscode/.claude/plans)",
       "Read(//home/vscode/.claude/plans/**)",
       "Bash(git commit -m 'feat: gate invoice pay action based on user role *)",
-      "Bash(git commit -m 'feat: add admin-only users management page \\(CRUD\\) *)"
+      "Bash(git commit -m 'feat: add admin-only users management page \\(CRUD\\) *)",
+      "Bash(psql -h localhost -U api -d api_development -c \"SELECT 1\")",
+      "Bash(docker compose *)",
+      "Bash(timeout 10 bash -c 'bundle exec rails s -p 3000 2>&1 &')",
+      "Bash(curl -X POST http://localhost:3000/session -H \"Content-Type: application/json\" -d '{\"session\": {\"username\": \"testlogin\", \"password\": \"password123\"}}')",
+      "Bash(pkill -f \"puma\\\\|rails s\")",
+      "Bash(git commit -m 'fix: correct login endpoint to return simple JSON and fix test specs *)",
+      "Bash(rm -f .claude/settings.local.json.tmp.*)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

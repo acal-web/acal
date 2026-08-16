@@ -19,11 +19,18 @@ class ApplicationController < ActionController::API
   end
 
   def authenticate_user!
+    # Skip auth for session creation (login)
+    return if controller_name == "sessions" && action_name == "create"
+
     raise UnauthenticatedError unless current_user
     current_session.touch_last_used!
   end
 
   def authorize_action!
+    # Skip authorization for session creation (login) and if no user authenticated
+    return if controller_name == "sessions" && action_name == "create"
+    return unless current_user
+
     return if Permissions.allowed?(current_user, controller_name, action_name)
     raise ForbiddenError
   end
