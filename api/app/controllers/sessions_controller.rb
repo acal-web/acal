@@ -11,9 +11,9 @@ class SessionsController < ApplicationController
 
     user = User.find_by(username: username)
     if user&.authenticate(password)
-      session, raw_token = Session.start_for!(user, user_agent: request.user_agent, ip_address: request.remote_ip)
+      token = JwtToken.encode(user.id)
       render json: {
-        token: raw_token,
+        token: token,
         user: {
           id: user.id,
           username: user.username,
@@ -30,7 +30,8 @@ class SessionsController < ApplicationController
 
   # DELETE /session
   def destroy
-    current_session&.destroy
+    # JWT is stateless, so there's nothing to destroy on the server
+    # Client just discards the token
     head :no_content
   end
 end

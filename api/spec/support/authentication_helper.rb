@@ -1,7 +1,7 @@
 module AuthenticationHelper
   def sign_in_as(user)
-    _, raw_token = Session.start_for!(user)
-    @auth_headers = { "Authorization" => "Bearer #{raw_token}" }
+    token = JwtToken.encode(user.id)
+    @auth_headers = { "Authorization" => "Bearer #{token}" }
   end
 
   def auth_headers

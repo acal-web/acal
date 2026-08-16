@@ -243,7 +243,10 @@
       "Bash(curl -X POST http://localhost:3000/session -H \"Content-Type: application/json\" -d '{\"session\": {\"username\": \"testlogin\", \"password\": \"password123\"}}')",
       "Bash(pkill -f \"puma\\\\|rails s\")",
       "Bash(git commit -m 'fix: correct login endpoint to return simple JSON and fix test specs *)",
-      "Bash(rm -f .claude/settings.local.json.tmp.*)"
+      "Bash(rm -f .claude/settings.local.json.tmp.*)",
+      "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1 | grep -E \"\\(passed|failed|examples\\)\" | tail -5')",
+      "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1 | grep \"rspec \\\\./spec\" | tail -15')",
+      "Bash(git commit -m 'feat: migrate from stateful sessions to stateless JWT authentication *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

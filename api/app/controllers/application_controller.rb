@@ -10,12 +10,13 @@ class ApplicationController < ActionController::API
 
   private
 
-  def current_session
-    @current_session ||= Session.find_active_by_token(bearer_token)
-  end
-
   def current_user
-    @current_user ||= current_session&.user
+    @current_user ||= begin
+      token_payload = JwtToken.decode(bearer_token)
+      return nil unless token_payload
+
+      User.find_by(id: token_payload[:user_id])
+    end
   end
 
   def authenticate_user!
@@ -23,7 +24,6 @@ class ApplicationController < ActionController::API
     return if controller_name == "sessions" && action_name == "create"
 
     raise UnauthenticatedError unless current_user
-    current_session.touch_last_used!
   end
 
   def authorize_action!

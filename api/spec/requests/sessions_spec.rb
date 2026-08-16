@@ -68,11 +68,11 @@ RSpec.describe "Sessions", type: :request do
 
   describe "DELETE /session (logout)" do
     context "when authenticated" do
-      it "destroys the session and returns 204" do
+      it "returns 204 (JWT is stateless)" do
         delete "/session", headers: auth_headers
 
         expect(response).to have_http_status(:no_content)
-        expect(Session.find_by(token_digest: Session.digest(auth_headers["Authorization"].delete_prefix("Bearer ")))).to be_nil
+        # No session stored in database with JWT - token is simply discarded by client
       end
     end
 
