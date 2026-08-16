@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
@@ -35,6 +37,7 @@ class _CustomersPageState extends State<CustomersPage> {
   String? _filterDocument;
   bool? _filterActive = true;
   String? _errorMessage;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -45,6 +48,7 @@ class _CustomersPageState extends State<CustomersPage> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -96,11 +100,16 @@ class _CustomersPageState extends State<CustomersPage> {
     }
   }
 
-  void _search({String? name, String? document, required bool? active}) async {
-    _filterName = name;
-    _filterDocument = document;
-    _filterActive = active;
-    await _loadFirstPage();
+  void _search({String? name, String? document, required bool? active}) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () async {
+      if (mounted) {
+        _filterName = name;
+        _filterDocument = document;
+        _filterActive = active;
+        await _loadFirstPage();
+      }
+    });
   }
 
   Future<void> _openForm({Customer? customer, bool readOnly = false}) async {
@@ -186,9 +195,10 @@ class _CustomersPageState extends State<CustomersPage> {
         _TableHeader(onAddPress: () => _openForm()),
         const Divider(height: 1),
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             controller: _scrollController,
             itemCount: _allCustomers.length + (_isLoading ? 1 : 0),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allCustomers.length) {
                 return const Padding(
@@ -200,18 +210,13 @@ class _CustomersPageState extends State<CustomersPage> {
               final customer = _allCustomers[index];
               final isEven = index.isEven;
 
-              return Column(
-                children: [
-                  _CustomerRow(
-                    customer: customer,
-                    onEdit: () => _openForm(customer: customer),
-                    onDelete: () => _delete(customer),
-                    onReactivate: () => _reactivate(customer),
-                    onView: () => _openForm(customer: customer, readOnly: true),
-                    isEven: isEven,
-                  ),
-                  const Divider(height: 1),
-                ],
+              return _CustomerRow(
+                customer: customer,
+                onEdit: () => _openForm(customer: customer),
+                onDelete: () => _delete(customer),
+                onReactivate: () => _reactivate(customer),
+                onView: () => _openForm(customer: customer, readOnly: true),
+                isEven: isEven,
               );
             },
           ),
@@ -266,7 +271,7 @@ class _TableHeader extends StatelessWidget {
   }
 }
 
-class _CustomerRow extends StatefulWidget {
+class _CustomerRow extends StatelessWidget {
   const _CustomerRow({
     required this.customer,
     required this.onEdit,
@@ -283,31 +288,20 @@ class _CustomerRow extends StatefulWidget {
   final VoidCallback? onView;
   final bool isEven;
 
-  @override
-  State<_CustomerRow> createState() => _CustomerRowState();
-}
-
-class _CustomerRowState extends State<_CustomerRow> {
-  late Customer _customer;
-
-  @override
-  void initState() {
-    super.initState();
-    _customer = widget.customer;
-  }
-
+  static Color _getBackgroundColor(ColorScheme colorScheme, bool isEven) =>
+      isEven
+          ? colorScheme.surfaceContainer.withValues(alpha: 0.2)
+          : colorScheme.surfaceContainer.withValues(alpha: 0.4);
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final style = theme.textTheme.bodyMedium?.copyWith(
-      color: _customer.active ? null : cs.onSurfaceVariant,
+      color: customer.active ? null : cs.onSurfaceVariant,
     );
 
-    final backgroundColor = widget.isEven
-        ? cs.surfaceContainer.withValues(alpha: 0.2)
-        : cs.surfaceContainer.withValues(alpha: 0.4);
+    final backgroundColor = _getBackgroundColor(cs, isEven);
 
     return ColoredBox(
       color: backgroundColor,
@@ -322,36 +316,36 @@ class _CustomerRowState extends State<_CustomerRow> {
                 spacing: 8,
                 children: [
                   Expanded(
-                    child: Text(_customer.name, style: style),
+                    child: Text(customer.name, style: style),
                   ),
-                  InvalidDataBadge(hasInvalidData: _customer.hasInvalidData),
+                  InvalidDataBadge(hasInvalidData: customer.hasInvalidData),
                 ],
               ),
             ),
             Expanded(
               flex: 2,
-              child: DocumentText(_customer.document, style: style),
+              child: DocumentText(customer.document, style: style),
             ),
             SizedBox(
               width: 90,
               child: Text(
-                _customer.membershipNumber?.toString() ?? '—',
+                customer.membershipNumber?.toString() ?? '—',
                 style: style,
               ),
             ),
             SizedBox(
               width: 90,
-              child: BoolText(_customer.voter, style: style),
+              child: BoolText(customer.voter, style: style),
             ),
             SizedBox(
               width: 140,
               child: Center(
                 child: RowActions(
-                  onEdit: widget.onEdit,
-                  onDelete: widget.onDelete,
-                  active: _customer.active,
-                  onReactivate: widget.onReactivate,
-                  onView: widget.onView,
+                  onEdit: onEdit,
+                  onDelete: onDelete,
+                  active: customer.active,
+                  onReactivate: onReactivate,
+                  onView: onView,
                 ),
               ),
             ),
