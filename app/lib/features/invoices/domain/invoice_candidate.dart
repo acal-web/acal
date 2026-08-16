@@ -31,10 +31,11 @@ class InvoiceCandidate {
   String get fullAddress => letter != null ? '$addressName, $number$letter' : '$addressName, $number';
 
   factory InvoiceCandidate.fromJson(Map<String, dynamic> json) {
-    double? parsePreviousMeter() {
-      final value = json['previous_meter_final_reading'];
+    double? parseDouble(dynamic value) {
       if (value == null) return null;
       try {
+        if (value is double) return value;
+        if (value is int) return value.toDouble();
         return double.parse(value.toString());
       } catch (_) {
         return null;
@@ -48,10 +49,10 @@ class InvoiceCandidate {
       number: json['number'] as int,
       letter: json['letter'] as String?,
       categoryName: (json['category'] as Map<String, dynamic>)['name'] as String,
-      membershipValue: double.parse(json['membership_value'].toString()),
-      waterValue: double.parse(json['water_value'].toString()),
+      membershipValue: parseDouble(json['membership_value'])!,
+      waterValue: parseDouble(json['water_value'])!,
       hasWaterMeter: (json['category'] as Map<String, dynamic>)['has_water_meter'] as bool? ?? false,
-      previousMeterFinalReading: parsePreviousMeter(),
+      previousMeterFinalReading: parseDouble(json['previous_meter_final_reading']),
     );
   }
 }
