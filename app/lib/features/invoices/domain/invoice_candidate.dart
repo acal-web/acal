@@ -30,18 +30,28 @@ class InvoiceCandidate {
 
   String get fullAddress => letter != null ? '$addressName, $number$letter' : '$addressName, $number';
 
-  factory InvoiceCandidate.fromJson(Map<String, dynamic> json) => InvoiceCandidate(
-        connectionId: json['connection_id'].toString(),
-        customerName: (json['customer'] as Map<String, dynamic>)['name'] as String,
-        addressName: (json['address'] as Map<String, dynamic>)['name'] as String,
-        number: json['number'] as int,
-        letter: json['letter'] as String?,
-        categoryName: (json['category'] as Map<String, dynamic>)['name'] as String,
-        membershipValue: double.parse(json['membership_value'].toString()),
-        waterValue: double.parse(json['water_value'].toString()),
-        hasWaterMeter: (json['category'] as Map<String, dynamic>)['has_water_meter'] as bool? ?? false,
-        previousMeterFinalReading: json['previous_meter_final_reading'] != null
-            ? double.parse(json['previous_meter_final_reading'].toString())
-            : null,
-      );
+  factory InvoiceCandidate.fromJson(Map<String, dynamic> json) {
+    double? parsePreviousMeter() {
+      final value = json['previous_meter_final_reading'];
+      if (value == null) return null;
+      try {
+        return double.parse(value.toString());
+      } catch (_) {
+        return null;
+      }
+    }
+
+    return InvoiceCandidate(
+      connectionId: json['connection_id'].toString(),
+      customerName: (json['customer'] as Map<String, dynamic>)['name'] as String,
+      addressName: (json['address'] as Map<String, dynamic>)['name'] as String,
+      number: json['number'] as int,
+      letter: json['letter'] as String?,
+      categoryName: (json['category'] as Map<String, dynamic>)['name'] as String,
+      membershipValue: double.parse(json['membership_value'].toString()),
+      waterValue: double.parse(json['water_value'].toString()),
+      hasWaterMeter: (json['category'] as Map<String, dynamic>)['has_water_meter'] as bool? ?? false,
+      previousMeterFinalReading: parsePreviousMeter(),
+    );
+  }
 }
