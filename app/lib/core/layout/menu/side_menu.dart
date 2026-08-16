@@ -44,6 +44,12 @@ const _menuSections = [
   ]),
   _MenuSection(title: 'ADMINISTRAÇÃO', items: [
     (
+      icon: Icons.people_alt,
+      label: 'Usuários',
+      route: '/users',
+      requiredRole: Permissions.canManageUsers
+    ),
+    (
       icon: Icons.how_to_vote,
       label: 'Eleição',
       route: '/elections',

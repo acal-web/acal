@@ -2,6 +2,7 @@ import 'package:acalapp/core/layout/app_shell.dart';
 import 'package:acalapp/features/addresses/presentation/addresses_page.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/auth/presentation/login_page.dart';
+import 'package:acalapp/features/users/presentation/users_page.dart';
 import 'package:acalapp/features/cashbox/presentation/cashbox_page.dart';
 import 'package:acalapp/features/categories/presentation/categories_page.dart';
 import 'package:acalapp/features/connections/presentation/connections_page.dart';
@@ -85,6 +86,10 @@ void initializeRouter(Listenable currentUser) {
         GoRoute(
           path: '/cashbox',
           pageBuilder: (context, state) => const NoTransitionPage(child: CashboxPage()),
+        ),
+        GoRoute(
+          path: '/users',
+          pageBuilder: (context, state) => const NoTransitionPage(child: UsersPage()),
         ),
         GoRoute(
           path: '/elections',
