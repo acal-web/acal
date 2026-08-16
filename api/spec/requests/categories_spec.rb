@@ -26,6 +26,7 @@ RSpec.describe "Categories", type: :request do
         expect(body["content"].size).to eq(10)
         expect(body.except("content")).to eq(
           "pageable" => { "pageNumber" => 0, "pageSize" => 10, "offset" => 0 },
+          "hasNextPage" => true,
           "totalPages" => 2,
           "totalElements" => 13,
           "last" => false,
