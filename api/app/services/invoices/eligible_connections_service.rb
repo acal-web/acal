@@ -16,7 +16,9 @@ module Invoices
           connection_id: connection.id,
           customer: { id: connection.customer.id, name: connection.customer.name },
           address: { id: connection.address.id, name: connection.address.name },
-          category: { id: connection.category.id, name: connection.category.name },
+          number: connection.number,
+          letter: connection.letter,
+          category: { id: connection.category.id, name: connection.category.name, has_water_meter: connection.category.has_water_meter },
           membership_value: values[:membership_value],
           water_value: values[:water_value]
         }

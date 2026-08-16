@@ -352,7 +352,7 @@ class _FilterBarState extends State<_FilterBar> {
   }
 }
 
-class _CandidatesCard extends StatelessWidget {
+class _CandidatesCard extends StatefulWidget {
   const _CandidatesCard({
     required this.candidates,
     required this.selected,
@@ -368,9 +368,78 @@ class _CandidatesCard extends StatelessWidget {
   final void Function(String connectionId, bool? checked) onToggle;
 
   @override
+  State<_CandidatesCard> createState() => _CandidatesCardState();
+}
+
+class _CandidatesCardState extends State<_CandidatesCard> {
+  String _sortBy = 'customerName';
+  bool _sortAscending = true;
+  final Map<String, Map<String, TextEditingController>> _waterMeterControllers = {};
+
+  @override
+  void dispose() {
+    for (final controllers in _waterMeterControllers.values) {
+      controllers['initial']?.dispose();
+      controllers['final']?.dispose();
+    }
+    super.dispose();
+  }
+
+  TextEditingController _getInitialController(String connectionId) {
+    _waterMeterControllers.putIfAbsent(connectionId, () => {
+      'initial': TextEditingController(),
+      'final': TextEditingController(),
+    });
+    return _waterMeterControllers[connectionId]!['initial']!;
+  }
+
+  TextEditingController _getFinalController(String connectionId) {
+    _waterMeterControllers.putIfAbsent(connectionId, () => {
+      'initial': TextEditingController(),
+      'final': TextEditingController(),
+    });
+    return _waterMeterControllers[connectionId]!['final']!;
+  }
+
+  List<InvoiceCandidate> get _sortedCandidates {
+    final sorted = [...widget.candidates];
+
+    sorted.sort((a, b) {
+      int comparison;
+      switch (_sortBy) {
+        case 'customerName':
+          comparison = a.customerName.compareTo(b.customerName);
+        case 'addressName':
+          comparison = a.fullAddress.compareTo(b.fullAddress);
+        case 'categoryName':
+          comparison = a.categoryName.compareTo(b.categoryName);
+        case 'amount':
+          comparison = a.amount.compareTo(b.amount);
+        default:
+          comparison = 0;
+      }
+
+      return _sortAscending ? comparison : -comparison;
+    });
+
+    return sorted;
+  }
+
+  void _sort(String column) {
+    setState(() {
+      if (_sortBy == column) {
+        _sortAscending = !_sortAscending;
+      } else {
+        _sortBy = column;
+        _sortAscending = true;
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    final allSelected = candidates.isNotEmpty && selected.length == candidates.length;
+    final allSelected = widget.candidates.isNotEmpty && widget.selected.length == widget.candidates.length;
 
     return Card(
       elevation: 1,
@@ -381,49 +450,113 @@ class _CandidatesCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             child: Row(
               children: [
-                Expanded(flex: 3, child: Text('SÓCIO', style: Theme.of(context).textTheme.labelLarge)),
-                Expanded(flex: 3, child: Text('ENDEREÇO', style: Theme.of(context).textTheme.labelLarge)),
-                Expanded(flex: 2, child: Text('CATEGORIA', style: Theme.of(context).textTheme.labelLarge)),
-                SizedBox(width: _amountColumnWidth, child: Text('VALOR TOTAL', style: Theme.of(context).textTheme.labelLarge)),
+                Expanded(
+                  flex: 3,
+                  child: _SortableHeaderCell(
+                    label: 'SÓCIO',
+                    sortBy: 'customerName',
+                    currentSort: _sortBy,
+                    ascending: _sortAscending,
+                    onSort: _sort,
+                  ),
+                ),
+                Expanded(
+                  flex: 3,
+                  child: _SortableHeaderCell(
+                    label: 'ENDEREÇO',
+                    sortBy: 'addressName',
+                    currentSort: _sortBy,
+                    ascending: _sortAscending,
+                    onSort: _sort,
+                  ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: _SortableHeaderCell(
+                    label: 'CATEGORIA',
+                    sortBy: 'categoryName',
+                    currentSort: _sortBy,
+                    ascending: _sortAscending,
+                    onSort: _sort,
+                  ),
+                ),
+                SizedBox(
+                  width: _amountColumnWidth,
+                  child: _SortableHeaderCell(
+                    label: 'VALOR TOTAL',
+                    sortBy: 'amount',
+                    currentSort: _sortBy,
+                    ascending: _sortAscending,
+                    onSort: _sort,
+                  ),
+                ),
                 SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. INICIAL', style: Theme.of(context).textTheme.labelLarge)),
+                SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. FINAL', style: Theme.of(context).textTheme.labelLarge)),
                 SizedBox(
                   width: _checkboxColumnWidth,
                   child: FCheckbox(
                     value: allSelected,
-                    onChange: candidates.isEmpty ? null : onToggleAll,
+                    onChange: widget.candidates.isEmpty ? null : widget.onToggleAll,
                   ),
                 ),
               ],
             ),
           ),
           const Divider(height: 1),
-          if (candidates.isEmpty)
+          if (widget.candidates.isEmpty)
             const Expanded(child: Center(child: Text('Nenhuma conexão elegível para o período selecionado.')))
           else
             Expanded(
               child: ListView.separated(
-                itemCount: candidates.length,
+                itemCount: _sortedCandidates.length,
                 separatorBuilder: (_, _) => const Divider(height: 1),
                 itemBuilder: (context, i) {
-                  final candidate = candidates[i];
-                  final checked = selected.contains(candidate.connectionId);
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                    child: Row(
-                      children: [
-                        Expanded(flex: 3, child: Text(candidate.customerName)),
-                        Expanded(flex: 3, child: Text(candidate.addressName)),
-                        Expanded(flex: 2, child: Text(candidate.categoryName)),
-                        SizedBox(width: _amountColumnWidth, child: Text(formatBRL(candidate.amount))),
-                        const SizedBox(width: _waterMeterColumnWidth, child: Text('0.0')),
-                        SizedBox(
-                          width: _checkboxColumnWidth,
-                          child: FCheckbox(
-                            value: checked,
-                            onChange: (v) => onToggle(candidate.connectionId, v),
+                  final candidate = _sortedCandidates[i];
+                  final checked = widget.selected.contains(candidate.connectionId);
+                  final isEven = i % 2 == 0;
+                  final backgroundColor = isEven
+                      ? cs.surfaceContainer.withValues(alpha: 0.3)
+                      : cs.surfaceContainer.withValues(alpha: 0.6);
+
+                  return ColoredBox(
+                    color: backgroundColor,
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                      child: Row(
+                        children: [
+                          Expanded(flex: 3, child: Text(candidate.customerName)),
+                          Expanded(flex: 3, child: Text(candidate.fullAddress)),
+                          Expanded(flex: 2, child: Text(candidate.categoryName)),
+                          SizedBox(width: _amountColumnWidth, child: Text(formatBRL(candidate.amount))),
+                          SizedBox(
+                            width: _waterMeterColumnWidth,
+                            child: candidate.hasWaterMeter
+                                ? FTextFormField(
+                                    control: FTextFieldControl.managed(controller: _getInitialController(candidate.connectionId)),
+                                    hint: '0.0',
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                  )
+                                : const Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
                           ),
-                        ),
-                      ],
+                          SizedBox(
+                            width: _waterMeterColumnWidth,
+                            child: candidate.hasWaterMeter
+                                ? FTextFormField(
+                                    control: FTextFieldControl.managed(controller: _getFinalController(candidate.connectionId)),
+                                    hint: '0.0',
+                                    keyboardType: TextInputType.numberWithOptions(decimal: true),
+                                  )
+                                : const Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
+                          ),
+                          SizedBox(
+                            width: _checkboxColumnWidth,
+                            child: FCheckbox(
+                              value: checked,
+                              onChange: (v) => widget.onToggle(candidate.connectionId, v),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -434,11 +567,55 @@ class _CandidatesCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
             child: Row(
               children: [
-                Text('Total (${selected.length})', style: Theme.of(context).textTheme.labelLarge),
+                Text('Total (${widget.selected.length})', style: Theme.of(context).textTheme.labelLarge),
                 const Spacer(),
-                Text(formatBRL(selectedAmount), style: Theme.of(context).textTheme.titleMedium),
+                Text(formatBRL(widget.selectedAmount), style: Theme.of(context).textTheme.titleMedium),
               ],
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SortableHeaderCell extends StatelessWidget {
+  const _SortableHeaderCell({
+    required this.label,
+    required this.sortBy,
+    required this.currentSort,
+    required this.ascending,
+    required this.onSort,
+  });
+
+  final String label;
+  final String sortBy;
+  final String currentSort;
+  final bool ascending;
+  final Function(String) onSort;
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = currentSort == sortBy;
+    final icon = !isActive
+        ? Icons.unfold_more
+        : ascending
+            ? Icons.arrow_upward
+            : Icons.arrow_downward;
+
+    return GestureDetector(
+      onTap: () => onSort(sortBy),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        spacing: 4,
+        children: [
+          Flexible(
+            child: Text(label, style: Theme.of(context).textTheme.labelLarge),
+          ),
+          Icon(
+            icon,
+            size: 16,
+            color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey,
           ),
         ],
       ),

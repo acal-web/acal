@@ -54,18 +54,24 @@ const _candidateA = InvoiceCandidate(
   connectionId: 'c1',
   customerName: 'Fulano de Tal',
   addressName: 'Avenida Fernando Daltro',
+  number: 123,
+  letter: 'A',
   categoryName: 'Residente',
   membershipValue: 15.0,
   waterValue: 5.0,
+  hasWaterMeter: true,
 );
 
 const _candidateB = InvoiceCandidate(
   connectionId: 'c2',
   customerName: 'Beltrano da Silva',
   addressName: 'Rua das Flores',
+  number: 456,
+  letter: null,
   categoryName: 'Especial',
   membershipValue: 10.0,
   waterValue: 5.0,
+  hasWaterMeter: false,
 );
 
 Future<void> _pump(WidgetTester tester, {required InvoiceService invoiceService}) async {
@@ -130,16 +136,18 @@ void main() {
     await _pump(tester, invoiceService: service);
 
     // Checkboxes in tree order: header "select all", then one per row.
+    // Candidates are sorted alphabetically: _candidateB (Beltrano=15.0) first, _candidateA (Fulano=20.0) second
+    // Uncheck Fulano (at index 2), leaving only Beltrano
     await tester.tap(find.byType(FCheckbox).at(2));
     await tester.pumpAndSettle();
 
     expect(find.text('Total (1)'), findsOneWidget);
-    expect(find.text(formatBRL(20.0)), findsWidgets);
+    expect(find.text(formatBRL(15.0)), findsWidgets);
 
     await _pickDueDate(tester);
     await _confirmGenerate(tester);
 
-    expect(service.lastGeneratedIds, ['c1']);
+    expect(service.lastGeneratedIds, ['c2']);
   });
 
   testWidgets('Confirmar Geração is disabled until a due date is picked', (tester) async {

@@ -46,6 +46,28 @@ RSpec.describe "Invoices", type: :request do
     end
   end
 
+  describe "GET /invoices/:id" do
+    it "returns a single invoice with its connection, customer, address and category" do
+      invoice = create(:invoice, connection: connection, reference_date: "2026-08-01")
+
+      get "/invoices/#{invoice.id}"
+
+      expect(response).to have_http_status(:ok)
+      invoice_json = response.parsed_body
+      expect(invoice_json["id"]).to eq(invoice.id)
+      expect(invoice_json["connection"]["id"]).to eq(connection.id)
+      expect(invoice_json["connection"]["customer"]["id"]).to eq(customer.id)
+      expect(invoice_json["connection"]["address"]["id"]).to eq(address.id)
+      expect(invoice_json["connection"]["category"]["id"]).to eq(category.id)
+    end
+
+    it "returns 404 for a non-existent invoice" do
+      get "/invoices/non-existent-id"
+
+      expect(response).to have_http_status(:not_found)
+    end
+  end
+
   describe "GET /invoices/eligible" do
     it "returns active connections without an invoice for the given reference" do
       connection
@@ -59,7 +81,9 @@ RSpec.describe "Invoices", type: :request do
             "connection_id" => connection.id,
             "customer" => { "id" => customer.id, "name" => customer.name },
             "address" => { "id" => address.id, "name" => address.name },
-            "category" => { "id" => category.id, "name" => category.name },
+            "number" => connection.number,
+            "letter" => connection.letter,
+            "category" => { "id" => category.id, "name" => category.name, "has_water_meter" => category.has_water_meter },
             "membership_value" => "5.0",
             "water_value" => "15.0"
           }

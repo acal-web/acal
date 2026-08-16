@@ -14,7 +14,9 @@ RSpec.describe Invoices::EligibleConnectionsService do
       connection_id: connection.id,
       customer: { id: customer.id, name: customer.name },
       address: { id: address.id, name: address.name },
-      category: { id: category.id, name: category.name },
+      number: connection.number,
+      letter: connection.letter,
+      category: { id: category.id, name: category.name, has_water_meter: category.has_water_meter },
       membership_value: 5.0,
       water_value: 15.0
     )
