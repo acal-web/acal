@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
@@ -31,6 +33,7 @@ class _AddressesPageState extends State<AddressesPage> {
   String? _filterName;
   bool? _filterActive = true;
   String? _errorMessage;
+  Timer? _searchDebounce;
 
   @override
   void initState() {
@@ -41,6 +44,7 @@ class _AddressesPageState extends State<AddressesPage> {
 
   @override
   void dispose() {
+    _searchDebounce?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -91,10 +95,15 @@ class _AddressesPageState extends State<AddressesPage> {
     }
   }
 
-  void _search({String? name, required bool? active}) async {
-    _filterName = name;
-    _filterActive = active;
-    await _loadFirstPage();
+  void _search({String? name, required bool? active}) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 500), () async {
+      if (mounted) {
+        _filterName = name;
+        _filterActive = active;
+        await _loadFirstPage();
+      }
+    });
   }
 
   Future<void> _openForm({Address? address, bool readOnly = false}) async {
@@ -180,9 +189,10 @@ class _AddressesPageState extends State<AddressesPage> {
         _TableHeader(onAddPress: () => _openForm()),
         const Divider(height: 1),
         Expanded(
-          child: ListView.builder(
+          child: ListView.separated(
             controller: _scrollController,
             itemCount: _allAddresses.length + (_isLoading ? 1 : 0),
+            separatorBuilder: (_, _) => const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allAddresses.length) {
                 return const Padding(
@@ -194,18 +204,13 @@ class _AddressesPageState extends State<AddressesPage> {
               final address = _allAddresses[index];
               final isEven = index.isEven;
 
-              return Column(
-                children: [
-                  _AddressRow(
-                    address: address,
-                    onEdit: () => _openForm(address: address),
-                    onDelete: () => _delete(address),
-                    onView: () => _openForm(address: address, readOnly: true),
-                    onReactivate: () => _reactivate(address),
-                    isEven: isEven,
-                  ),
-                  const Divider(height: 1),
-                ],
+              return _AddressRow(
+                address: address,
+                onEdit: () => _openForm(address: address),
+                onDelete: () => _delete(address),
+                onView: () => _openForm(address: address, readOnly: true),
+                onReactivate: () => _reactivate(address),
+                isEven: isEven,
               );
             },
           ),
@@ -264,6 +269,11 @@ class _AddressRow extends StatelessWidget {
   final VoidCallback? onReactivate;
   final bool isEven;
 
+  static Color _getBackgroundColor(ColorScheme colorScheme, bool isEven) =>
+      isEven
+          ? colorScheme.surfaceContainer.withValues(alpha: 0.2)
+          : colorScheme.surfaceContainer.withValues(alpha: 0.4);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -272,10 +282,7 @@ class _AddressRow extends StatelessWidget {
       color: address.active ? null : cs.onSurfaceVariant,
     );
 
-    final backgroundColor = isEven
-        ? cs.surfaceContainer.withValues(alpha: 0.2)
-        : cs.surfaceContainer.withValues(alpha: 0.4)
-        ;
+    final backgroundColor = _getBackgroundColor(cs, isEven);
 
     return ColoredBox(
       color: backgroundColor,
