@@ -429,46 +429,57 @@ class _ConnectionCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              connection.customer?.name ?? '—',
-              style: bodyMedium?.copyWith(color: textColor, fontWeight: FontWeight.w500),
-            ),
-            if (connection.customer != null)
-              DocumentText(
-                connection.customer!.document,
-                style: bodySmall?.copyWith(color: onSurfaceVariant),
+      color: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                connection.customer?.name ?? '—',
+                style: bodyMedium?.copyWith(color: textColor, fontWeight: FontWeight.w500),
               ),
-            const SizedBox(height: 8),
-            Text(
-              connection.fullLocation,
-              style: bodySmall?.copyWith(color: textColor),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  connection.category?.name ?? '—',
-                  style: bodySmall?.copyWith(color: textColor),
+              if (connection.customer != null)
+                DocumentText(
+                  connection.customer!.document,
+                  style: bodySmall?.copyWith(color: onSurfaceVariant),
                 ),
-                Icon(
-                  connection.active ? Icons.check : Icons.close,
-                  size: 18,
-                  color: connection.active ? primary : onSurfaceVariant,
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: RowActions(onEdit: onEdit, onDelete: onDelete),
-            ),
-          ],
+              const SizedBox(height: 8),
+              Text(
+                connection.fullLocation,
+                style: bodySmall?.copyWith(color: textColor),
+              ),
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    connection.category?.name ?? '—',
+                    style: bodySmall?.copyWith(color: textColor),
+                  ),
+                  Icon(
+                    connection.active ? Icons.check : Icons.close,
+                    size: 18,
+                    color: connection.active ? primary : onSurfaceVariant,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: RowActions(onEdit: onEdit, onDelete: onDelete),
+              ),
+            ],
+          ),
         ),
       ),
     );

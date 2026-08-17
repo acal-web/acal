@@ -363,26 +363,37 @@ class _AddressCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: Text(
-                address.name,
-                style: style?.copyWith(fontWeight: FontWeight.w500),
+      color: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  address.name,
+                  style: style?.copyWith(fontWeight: FontWeight.w500),
+                ),
               ),
-            ),
-            const SizedBox(width: 8),
-            RowActions(
-              onEdit: onEdit,
-              onDelete: onDelete,
-              active: address.active,
-              onView: onView,
-              onReactivate: onReactivate,
-            ),
-          ],
+              const SizedBox(width: 8),
+              RowActions(
+                onEdit: onEdit,
+                onDelete: onDelete,
+                active: address.active,
+                onView: onView,
+                onReactivate: onReactivate,
+              ),
+            ],
+          ),
         ),
       ),
     );

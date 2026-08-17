@@ -749,164 +749,175 @@ class _InvoiceCardState extends State<_InvoiceCard> {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              spacing: 8,
-              children: [
-                Expanded(
-                  child: Text(
-                    invoice.number ?? '—',
-                    style: theme.textTheme.bodyMedium?.copyWith(
-                      fontWeight: FontWeight.w500,
+      color: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: Text(
+                      invoice.number ?? '—',
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
-                ),
+                  Text(
+                    formatMonthReference(invoice.referenceDate),
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: theme.colorScheme.onSurfaceVariant,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(
+                connection?.customer?.name ?? '—',
+                style: theme.textTheme.bodyMedium,
+              ),
+              if (connection != null) ...[
+                const SizedBox(height: 4),
                 Text(
-                  formatMonthReference(invoice.referenceDate),
+                  '${connection.address?.name ?? '—'}, ${connection.number}${connection.letter ?? ''}',
                   style: theme.textTheme.bodySmall?.copyWith(
                     color: theme.colorScheme.onSurfaceVariant,
                   ),
                 ),
               ],
-            ),
-            const SizedBox(height: 8),
-            Text(
-              connection?.customer?.name ?? '—',
-              style: theme.textTheme.bodyMedium,
-            ),
-            if (connection != null) ...[
-              const SizedBox(height: 4),
-              Text(
-                '${connection.address?.name ?? '—'}, ${connection.number}${connection.letter ?? ''}',
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Vencimento:',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        _formatDate(invoice.dueDate),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(
+                        'Valor:',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      Text(
+                        formatBRL(invoice.amount),
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisSize: MainAxisSize.min,
+                  spacing: 8,
+                  children: [
+                    PopupMenuButton<String>(
+                      itemBuilder: (BuildContext context) => [
+                        PopupMenuItem<String>(
+                          value: 'view',
+                          onTap: invoice.id != null
+                              ? () => Future.microtask(() => _viewDetails(invoice.id!))
+                              : null,
+                          child: const Row(
+                            children: [
+                              Icon(Icons.visibility_outlined, size: 18),
+                              SizedBox(width: 12),
+                              Text('Visualizar'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem<String>(
+                          value: 'download',
+                          child: const Row(
+                            children: [
+                              Icon(Icons.picture_as_pdf_outlined, size: 18),
+                              SizedBox(width: 12),
+                              Text('Imprimir Boleto'),
+                            ],
+                          ),
+                          onTap: () => Future.microtask(_downloadPdf),
+                        ),
+                        if (!invoice.isPaid &&
+                            Permissions.canPayInvoices(
+                                CurrentUserScope.of(context).user?.role))
+                          PopupMenuItem<String>(
+                            value: 'mark_paid',
+                            child: const Row(
+                              children: [
+                                Icon(Icons.attach_money, size: 18),
+                                SizedBox(width: 12),
+                                Text('Marcar como Paga'),
+                              ],
+                            ),
+                            onTap: () => Future.microtask(_markPaid),
+                          ),
+                        if (invoice.isPaid)
+                          PopupMenuItem<String>(
+                            value: 'paid',
+                            enabled: false,
+                            child: const Row(
+                              children: [
+                                Icon(Icons.check_circle, color: Colors.green, size: 18),
+                                SizedBox(width: 12),
+                                Text('Paga'),
+                              ],
+                            ),
+                          ),
+                      ],
+                      child: Icon(
+                        Icons.more_vert,
+                        size: 20,
+                        color: Theme.of(context).colorScheme.primary,
+                      ),
+                    ),
+                    if (_marking)
+                      const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Padding(
+                          padding: EdgeInsets.all(2),
+                          child: FCircularProgress(),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ],
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Vencimento:',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    Text(
-                      _formatDate(invoice.dueDate),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(
-                      'Valor:',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    Text(
-                      formatBRL(invoice.amount),
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                mainAxisSize: MainAxisSize.min,
-                spacing: 8,
-                children: [
-                  PopupMenuButton<String>(
-                    itemBuilder: (BuildContext context) => [
-                      PopupMenuItem<String>(
-                        value: 'view',
-                        onTap: invoice.id != null
-                            ? () => Future.microtask(() => _viewDetails(invoice.id!))
-                            : null,
-                        child: const Row(
-                          children: [
-                            Icon(Icons.visibility_outlined, size: 18),
-                            SizedBox(width: 12),
-                            Text('Visualizar'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'download',
-                        child: const Row(
-                          children: [
-                            Icon(Icons.picture_as_pdf_outlined, size: 18),
-                            SizedBox(width: 12),
-                            Text('Imprimir Boleto'),
-                          ],
-                        ),
-                        onTap: () => Future.microtask(_downloadPdf),
-                      ),
-                      if (!invoice.isPaid &&
-                          Permissions.canPayInvoices(
-                              CurrentUserScope.of(context).user?.role))
-                        PopupMenuItem<String>(
-                          value: 'mark_paid',
-                          child: const Row(
-                            children: [
-                              Icon(Icons.attach_money, size: 18),
-                              SizedBox(width: 12),
-                              Text('Marcar como Paga'),
-                            ],
-                          ),
-                          onTap: () => Future.microtask(_markPaid),
-                        ),
-                      if (invoice.isPaid)
-                        PopupMenuItem<String>(
-                          value: 'paid',
-                          enabled: false,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green, size: 18),
-                              SizedBox(width: 12),
-                              Text('Paga'),
-                            ],
-                          ),
-                        ),
-                    ],
-                    child: Icon(
-                      Icons.more_vert,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
-                  ),
-                  if (_marking)
-                    const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: Padding(
-                        padding: EdgeInsets.all(2),
-                        child: FCircularProgress(),
-                      ),
-                    ),
-                ],
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

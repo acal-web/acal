@@ -358,50 +358,61 @@ class _CategoryCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              category.fullName,
-              style: style?.copyWith(fontWeight: FontWeight.w500),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              'Hidrômetro: ${category.hasWaterMeter ? "Sim" : "Não"}',
-              style: style?.copyWith(fontSize: 13),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Água: ${formatBRL(category.waterPrice)}',
-              style: style?.copyWith(fontSize: 13),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Societário: ${formatBRL(category.membershipPrice)}',
-              style: style?.copyWith(fontSize: 13),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              'Total: ${formatBRL(category.totalPrice)}',
-              style: style?.copyWith(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+      color: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: Theme.of(context).colorScheme.outlineVariant,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                category.fullName,
+                style: style?.copyWith(fontWeight: FontWeight.w500),
               ),
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: RowActions(
-                onEdit: onEdit,
-                onDelete: onDelete,
-                active: category.active,
-                onView: onView,
-                onReactivate: onReactivate,
+              const SizedBox(height: 8),
+              Text(
+                'Hidrômetro: ${category.hasWaterMeter ? "Sim" : "Não"}',
+                style: style?.copyWith(fontSize: 13),
               ),
-            ),
-          ],
+              const SizedBox(height: 4),
+              Text(
+                'Água: ${formatBRL(category.waterPrice)}',
+                style: style?.copyWith(fontSize: 13),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Societário: ${formatBRL(category.membershipPrice)}',
+                style: style?.copyWith(fontSize: 13),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Total: ${formatBRL(category.totalPrice)}',
+                style: style?.copyWith(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: RowActions(
+                  onEdit: onEdit,
+                  onDelete: onDelete,
+                  active: category.active,
+                  onView: onView,
+                  onReactivate: onReactivate,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

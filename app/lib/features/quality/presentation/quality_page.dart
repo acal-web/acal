@@ -383,57 +383,68 @@ class _QualityAnalysisCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  formatMonthReference(analysis.referenceDate),
-                  style: style?.copyWith(fontWeight: FontWeight.w500),
-                ),
-                Text(
-                  analysis.paramName,
-                  style: style?.copyWith(fontSize: 13, color: cs.onSurfaceVariant),
-                ),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Exigido:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
-                    Text('${analysis.required}', style: style?.copyWith(fontWeight: FontWeight.w500)),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Analisado:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
-                    Text('${analysis.analyzed}', style: style?.copyWith(fontWeight: FontWeight.w500)),
-                  ],
-                ),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text('Conformidade:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
-                    Text('${analysis.compliant}', style: style?.copyWith(fontWeight: FontWeight.w500)),
-                  ],
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: RowActions(onEdit: onEdit, onDelete: onDelete),
-            ),
-          ],
+      color: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: cs.outlineVariant,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    formatMonthReference(analysis.referenceDate),
+                    style: style?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                  Text(
+                    analysis.paramName,
+                    style: style?.copyWith(fontSize: 13, color: cs.onSurfaceVariant),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Exigido:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
+                      Text('${analysis.required}', style: style?.copyWith(fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Analisado:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
+                      Text('${analysis.analyzed}', style: style?.copyWith(fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Conformidade:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
+                      Text('${analysis.compliant}', style: style?.copyWith(fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: RowActions(onEdit: onEdit, onDelete: onDelete),
+              ),
+            ],
+          ),
         ),
       ),
     );

@@ -403,55 +403,66 @@ class _CustomerCard extends StatelessWidget {
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              spacing: 8,
-              children: [
-                Expanded(
-                  child: Text(
-                    customer.name,
-                    style: style?.copyWith(fontWeight: FontWeight.w500),
+      color: Colors.transparent,
+      elevation: 0,
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border.all(
+            color: theme.colorScheme.outlineVariant,
+            width: 1,
+          ),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                spacing: 8,
+                children: [
+                  Expanded(
+                    child: Text(
+                      customer.name,
+                      style: style?.copyWith(fontWeight: FontWeight.w500),
+                    ),
                   ),
-                ),
-                InvalidDataBadge(hasInvalidData: customer.hasInvalidData),
-              ],
-            ),
-            const SizedBox(height: 8),
-            DocumentText(customer.document, style: style),
-            const SizedBox(height: 8),
-            Row(
-              spacing: 16,
-              children: [
-                Text(
-                  'Nº Sócio: ${customer.membershipNumber?.toString() ?? "—"}',
-                  style: style?.copyWith(fontSize: 13),
-                ),
-                Text(
-                  'Votante: ',
-                  style: style?.copyWith(fontSize: 13),
-                ),
-                BoolText(
-                  customer.voter,
-                  style: style?.copyWith(fontSize: 13),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: RowActions(
-                onEdit: onEdit,
-                onDelete: onDelete,
-                active: customer.active,
-                onReactivate: onReactivate,
-                onView: onView,
+                  InvalidDataBadge(hasInvalidData: customer.hasInvalidData),
+                ],
               ),
-            ),
-          ],
+              const SizedBox(height: 8),
+              DocumentText(customer.document, style: style),
+              const SizedBox(height: 8),
+              Row(
+                spacing: 16,
+                children: [
+                  Text(
+                    'Nº Sócio: ${customer.membershipNumber?.toString() ?? "—"}',
+                    style: style?.copyWith(fontSize: 13),
+                  ),
+                  Text(
+                    'Votante: ',
+                    style: style?.copyWith(fontSize: 13),
+                  ),
+                  BoolText(
+                    customer.voter,
+                    style: style?.copyWith(fontSize: 13),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              Align(
+                alignment: Alignment.centerRight,
+                child: RowActions(
+                  onEdit: onEdit,
+                  onDelete: onDelete,
+                  active: customer.active,
+                  onReactivate: onReactivate,
+                  onView: onView,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
