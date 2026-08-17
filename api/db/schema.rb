@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_16_174436) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_17_004248) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -85,12 +85,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_174436) do
     t.datetime "created_at", null: false
     t.datetime "deleted_at"
     t.date "due_date", null: false
+    t.datetime "last_updated_at"
     t.integer "legacy_id"
     t.decimal "membership_value", precision: 10, scale: 2, default: "0.0", null: false
     t.string "number"
     t.datetime "paid_at"
     t.date "reference_date", null: false
     t.datetime "updated_at", null: false
+    t.uuid "user_id"
     t.decimal "water_consumed_value"
     t.decimal "water_value", precision: 10, scale: 2, default: "0.0", null: false
     t.index ["connection_id", "reference_date"], name: "index_invoices_on_connection_id_and_reference_date_unique", unique: true, where: "(deleted_at IS NULL)"
@@ -101,6 +103,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_174436) do
     t.index ["number"], name: "index_invoices_on_number", unique: true
     t.index ["paid_at"], name: "index_invoices_on_paid_at", where: "(deleted_at IS NULL)"
     t.index ["reference_date", "paid_at"], name: "index_invoices_on_reference_date_and_paid_at", where: "(deleted_at IS NULL)"
+    t.index ["user_id"], name: "index_invoices_on_user_id"
   end
 
   create_table "quality_analyses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
@@ -159,6 +162,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_16_174436) do
   add_foreign_key "connections", "categories"
   add_foreign_key "connections", "customers"
   add_foreign_key "invoices", "connections"
+  add_foreign_key "invoices", "users", on_delete: :nullify
   add_foreign_key "sessions", "users"
   add_foreign_key "water_meters", "invoices"
 end

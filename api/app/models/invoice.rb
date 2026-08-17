@@ -2,12 +2,14 @@ class Invoice < ApplicationRecord
   include SoftDeletable
 
   belongs_to :connection, -> { unscope(where: :deleted_at) }
+  belongs_to :user, optional: true
   has_one :water_meter, dependent: :destroy
 
   validates :reference_date, :due_date, presence: true
   validates :membership_value, :water_value, presence: true, numericality: { greater_than_or_equal_to: 0 }
 
   before_create :generate_number
+  before_save :update_last_updated_at
 
   scope :filter_by_period, ->(year, month) {
     where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month) if year.present? && month.present?
@@ -49,5 +51,9 @@ class Invoice < ApplicationRecord
     month = reference_date.month
     count = Invoice.where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month).count + 1
     self.number = "#{year}.#{month.to_s.rjust(2, '0')}.#{count.to_s.rjust(6, '0')}"
+  end
+
+  def update_last_updated_at
+    self.last_updated_at = Time.current
   end
 end

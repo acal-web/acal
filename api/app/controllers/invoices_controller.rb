@@ -56,7 +56,7 @@ class InvoicesController < ApplicationController
   # PATCH /invoices/:id/pay
   def pay
     invoice = Invoice.includes(connection: %i[customer address category], water_meter: {}).find(params[:id])
-    invoice.update!(paid_at: Time.current)
+    invoice.update!(paid_at: Time.current, user_id: current_user.id)
 
     render json: invoice, include: INVOICE_INCLUDES
   end

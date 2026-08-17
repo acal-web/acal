@@ -253,7 +253,8 @@
       "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1 | grep -E \"\\(passed|failed|examples\\)\" | tail -3')",
       "Bash(git commit -m 'fix: add missing JWT library require in JwtToken model *)",
       "Bash(python3 -m json.tool)",
-      "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1')"
+      "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1')",
+      "Bash(git commit -m 'feat: add user tracking and timestamps to invoices *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
