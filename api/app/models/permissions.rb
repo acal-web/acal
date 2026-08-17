@@ -65,10 +65,6 @@ class Permissions
     },
     me: {
       show: %w[administrador financeiro_secretaria tesoureiro]
-    },
-    sessions: {
-      create: :public,
-      destroy: %w[administrador financeiro_secretaria tesoureiro]
     }
   }.freeze
 

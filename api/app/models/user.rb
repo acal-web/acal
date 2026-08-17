@@ -2,7 +2,6 @@ class User < ApplicationRecord
   include SoftDeletable
 
   has_secure_password
-  has_many :sessions, dependent: :destroy
 
   ROLES = %w[administrador financeiro_secretaria tesoureiro].freeze
   enum :role, ROLES.index_by(&:itself)
