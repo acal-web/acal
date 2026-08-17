@@ -427,14 +427,22 @@ class _ConnectionCard extends StatelessWidget {
     final primary = theme.colorScheme.primary;
     final textColor = connection.active ? null : onSurfaceVariant;
 
+    final backgroundColor = connection.active
+        ? theme.colorScheme.surface
+        : theme.colorScheme.errorContainer.withValues(alpha: 0.2);
+
+    final borderColor = connection.active
+        ? theme.colorScheme.outlineVariant
+        : theme.colorScheme.error.withValues(alpha: 0.5);
+
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.transparent,
+      color: backgroundColor,
       elevation: 0,
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: theme.colorScheme.outlineVariant,
+            color: borderColor,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(12),

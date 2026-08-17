@@ -256,7 +256,10 @@
       "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1')",
       "Bash(git commit -m 'feat: add user tracking and timestamps to invoices *)",
       "Bash(git commit -m 'refactor: remove sessions table - migrate to stateless JWT authentication *)",
-      "Bash(xargs ls)"
+      "Bash(xargs ls)",
+      "Bash(find ~ -name \"android-sdk\" -o -name \"sdk\" 2>/dev/null | head -10)",
+      "Read(//home/vscode/**)",
+      "Bash(flutter doctor *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

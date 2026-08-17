@@ -746,15 +746,29 @@ class _InvoiceCardState extends State<_InvoiceCard> {
     final theme = Theme.of(context);
     final invoice = widget.invoice;
     final connection = invoice.connection;
+    final daysOverdue = DateTime.now().difference(invoice.dueDate).inDays;
+    final isOverdue = !invoice.isPaid && daysOverdue > 59;
+
+    final backgroundColor = invoice.isPaid
+        ? Colors.green.withValues(alpha: 0.15)
+        : isOverdue
+            ? Colors.red.withValues(alpha: 0.15)
+            : Colors.transparent;
+
+    final borderColor = invoice.isPaid
+        ? Colors.green.withValues(alpha: 0.5)
+        : isOverdue
+            ? Colors.red.withValues(alpha: 0.5)
+            : theme.colorScheme.outlineVariant;
 
     return Card(
       margin: const EdgeInsets.only(bottom: 12),
-      color: Colors.transparent,
+      color: backgroundColor,
       elevation: 0,
       child: Container(
         decoration: BoxDecoration(
           border: Border.all(
-            color: theme.colorScheme.outlineVariant,
+            color: borderColor,
             width: 1,
           ),
           borderRadius: BorderRadius.circular(12),
