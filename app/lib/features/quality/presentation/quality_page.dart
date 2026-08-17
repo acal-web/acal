@@ -125,7 +125,10 @@ class _QualityPageState extends State<QualityPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const PageHeader(subtitle: 'Resultados das medições laboratoriais de qualidade.'),
+            PageHeader(
+              subtitle: 'Resultados das medições laboratoriais de qualidade.',
+              action: narrow ? AddButton(onPress: () => _openForm()) : null,
+            ),
             const Divider(),
             CollapsibleFilterPanel(
               builder: (context, narrow) => Row(
@@ -148,7 +151,7 @@ class _QualityPageState extends State<QualityPage> {
                   ? _buildErrorView()
                   : _allAnalyses.isEmpty && !_isLoading
                       ? const Center(child: Text('Nenhuma análise cadastrada.'))
-                      : _buildTableWithInfiniteScroll(),
+                      : _buildTableWithInfiniteScroll(narrow),
             ),
             if (_allAnalyses.isNotEmpty)
               Padding(
@@ -180,25 +183,37 @@ class _QualityPageState extends State<QualityPage> {
     );
   }
 
-  Widget _buildTableWithInfiniteScroll() {
+  Widget _buildTableWithInfiniteScroll(bool narrow) {
     return Column(
       children: [
-        _TableHeader(onAddPress: () => _openForm()),
-        const Divider(height: 1),
+        if (!narrow) ...[
+          _TableHeader(onAddPress: () => _openForm()),
+          const Divider(height: 1),
+        ],
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
             itemCount: _allAnalyses.length + (_isLoading ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == _allAnalyses.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               }
 
               final analysis = _allAnalyses[index];
               final isEven = index.isEven;
+
+              if (narrow) {
+                return _QualityAnalysisCard(
+                  analysis: analysis,
+                  onEdit: () => _openForm(analysis: analysis),
+                  onDelete: () => _delete(analysis),
+                );
+              }
 
               return Column(
                 children: [
@@ -339,6 +354,84 @@ class _QualityAnalysisRow extends StatelessWidget {
               child: Center(
                 child: RowActions(onEdit: onEdit, onDelete: onDelete),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _QualityAnalysisCard extends StatelessWidget {
+  const _QualityAnalysisCard({
+    required this.analysis,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final QualityAnalysis analysis;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: cs.onSurface,
+    );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  formatMonthReference(analysis.referenceDate),
+                  style: style?.copyWith(fontWeight: FontWeight.w500),
+                ),
+                Text(
+                  analysis.paramName,
+                  style: style?.copyWith(fontSize: 13, color: cs.onSurfaceVariant),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Exigido:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
+                    Text('${analysis.required}', style: style?.copyWith(fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Analisado:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
+                    Text('${analysis.analyzed}', style: style?.copyWith(fontWeight: FontWeight.w500)),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Conformidade:', style: style?.copyWith(fontSize: 12, color: cs.onSurfaceVariant)),
+                    Text('${analysis.compliant}', style: style?.copyWith(fontWeight: FontWeight.w500)),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: RowActions(onEdit: onEdit, onDelete: onDelete),
             ),
           ],
         ),

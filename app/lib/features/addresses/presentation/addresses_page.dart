@@ -148,7 +148,10 @@ class _AddressesPageState extends State<AddressesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const PageHeader(subtitle: 'Gerencie os endereços cadastrados.'),
+            PageHeader(
+              subtitle: 'Gerencie os endereços cadastrados.',
+              action: narrow ? AddButton(onPress: () => _openForm()) : null,
+            ),
             const Divider(),
             AddressFilterBar(onSearch: _search),
             const SizedBox(height: 8),
@@ -157,7 +160,7 @@ class _AddressesPageState extends State<AddressesPage> {
                   ? _buildErrorView()
                   : _allAddresses.isEmpty && !_isLoading
                       ? const Center(child: Text('Nenhum endereço cadastrado.'))
-                      : _buildTableWithInfiniteScroll(),
+                      : _buildTableWithInfiniteScroll(narrow),
             ),
             if (_allAddresses.isNotEmpty)
               Padding(
@@ -189,35 +192,48 @@ class _AddressesPageState extends State<AddressesPage> {
     );
   }
 
-  Widget _buildTableWithInfiniteScroll() {
+  Widget _buildTableWithInfiniteScroll(bool narrow) {
     return Column(
       children: [
-        _TableHeader(onAddPress: () => _openForm()),
-        const Divider(height: 1),
+        if (!narrow) ...[
+          _TableHeader(onAddPress: () => _openForm()),
+          const Divider(height: 1),
+        ],
         Expanded(
           child: ListView.separated(
             controller: _scrollController,
             itemCount: _allAddresses.length + (_isLoading ? 1 : 0),
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            separatorBuilder: (_, _) =>
+                narrow ? const SizedBox(height: 8) : const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allAddresses.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               }
 
               final address = _allAddresses[index];
               final isEven = index.isEven;
 
-              return _AddressRow(
-                address: address,
-                onEdit: () => _openForm(address: address),
-                onDelete: () => _delete(address),
-                onView: () => _openForm(address: address, readOnly: true),
-                onReactivate: () => _reactivate(address),
-                isEven: isEven,
-              );
+              return narrow
+                  ? _AddressCard(
+                      address: address,
+                      onEdit: () => _openForm(address: address),
+                      onDelete: () => _delete(address),
+                      onView: () => _openForm(address: address, readOnly: true),
+                      onReactivate: () => _reactivate(address),
+                    )
+                  : _AddressRow(
+                      address: address,
+                      onEdit: () => _openForm(address: address),
+                      onDelete: () => _delete(address),
+                      onView: () => _openForm(address: address, readOnly: true),
+                      onReactivate: () => _reactivate(address),
+                      isEven: isEven,
+                    );
             },
           ),
         ),
@@ -314,6 +330,57 @@ class _AddressRow extends StatelessWidget {
                   onReactivate: onReactivate,
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _AddressCard extends StatelessWidget {
+  const _AddressCard({
+    required this.address,
+    required this.onEdit,
+    required this.onDelete,
+    this.onView,
+    this.onReactivate,
+  });
+
+  final Address address;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback? onView;
+  final VoidCallback? onReactivate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: address.active ? null : cs.onSurfaceVariant,
+    );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Expanded(
+              child: Text(
+                address.name,
+                style: style?.copyWith(fontWeight: FontWeight.w500),
+              ),
+            ),
+            const SizedBox(width: 8),
+            RowActions(
+              onEdit: onEdit,
+              onDelete: onDelete,
+              active: address.active,
+              onView: onView,
+              onReactivate: onReactivate,
             ),
           ],
         ),

@@ -255,7 +255,8 @@
       "Bash(python3 -m json.tool)",
       "Bash(timeout 120 bash -c 'bundle exec rspec spec/ 2>&1')",
       "Bash(git commit -m 'feat: add user tracking and timestamps to invoices *)",
-      "Bash(git commit -m 'refactor: remove sessions table - migrate to stateless JWT authentication *)"
+      "Bash(git commit -m 'refactor: remove sessions table - migrate to stateless JWT authentication *)",
+      "Bash(xargs ls)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

@@ -244,7 +244,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
                   ? _buildErrorView()
                   : _allInvoices.isEmpty && !_isLoading
                       ? const Center(child: Text('Nenhuma fatura emitida.'))
-                      : _buildTableWithInfiniteScroll(),
+                      : _buildTableWithInfiniteScroll(narrow),
             ),
             if (_allInvoices.isNotEmpty)
               Padding(
@@ -276,29 +276,41 @@ class _InvoicesPageState extends State<InvoicesPage> {
     );
   }
 
-  Widget _buildTableWithInfiniteScroll() {
+  Widget _buildTableWithInfiniteScroll(bool narrow) {
     return Column(
       children: [
-        _TableHeader(
-          sortBy: _sortBy,
-          sortAscending: _sortAscending,
-          onSort: _sort,
-        ),
-        const Divider(height: 1),
+        if (!narrow) ...[
+          _TableHeader(
+            sortBy: _sortBy,
+            sortAscending: _sortAscending,
+            onSort: _sort,
+          ),
+          const Divider(height: 1),
+        ],
         Expanded(
           child: ListView.builder(
             controller: _scrollController,
             itemCount: _allInvoices.length + (_isLoading ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == _allInvoices.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               }
 
               final invoice = _allInvoices[index];
               final isEven = index.isEven;
+
+              if (narrow) {
+                return _InvoiceCard(
+                  invoice: invoice,
+                  service: _service,
+                  onChanged: _reloadData,
+                );
+              }
 
               return Column(
                 children: [
@@ -664,6 +676,238 @@ class _SortableHeader extends StatelessWidget {
             color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _InvoiceCard extends StatefulWidget {
+  const _InvoiceCard({
+    required this.invoice,
+    required this.service,
+    required this.onChanged,
+  });
+
+  final Invoice invoice;
+  final InvoiceService service;
+  final VoidCallback onChanged;
+
+  @override
+  State<_InvoiceCard> createState() => _InvoiceCardState();
+}
+
+class _InvoiceCardState extends State<_InvoiceCard> {
+  bool _marking = false;
+
+  String _formatDate(DateTime date) =>
+      '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+
+  Future<void> _downloadPdf() async {
+    final id = widget.invoice.id;
+    if (id == null) return;
+    try {
+      await Printing.layoutPdf(onLayout: (_) => widget.service.pdf(id));
+    } catch (_) {
+      if (mounted) AppToast.error(context, 'Erro ao gerar o PDF da fatura.');
+    }
+  }
+
+  Future<void> _markPaid() async {
+    final id = widget.invoice.id;
+    if (id == null) return;
+    setState(() => _marking = true);
+    try {
+      await widget.service.markPaid(id);
+      if (mounted) {
+        AppToast.success(context, 'Fatura marcada como paga.');
+        widget.onChanged();
+      }
+    } catch (_) {
+      if (mounted) {
+        AppToast.error(context, 'Erro ao marcar a fatura como paga.');
+      }
+    } finally {
+      if (mounted) setState(() => _marking = false);
+    }
+  }
+
+  Future<void> _viewDetails(String invoiceId) async {
+    if (!mounted) return;
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => InvoiceDetailPage(invoiceId: invoiceId),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final invoice = widget.invoice;
+    final connection = invoice.connection;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: Text(
+                    invoice.number ?? '—',
+                    style: theme.textTheme.bodyMedium?.copyWith(
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                Text(
+                  formatMonthReference(invoice.referenceDate),
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              connection?.customer?.name ?? '—',
+              style: theme.textTheme.bodyMedium,
+            ),
+            if (connection != null) ...[
+              const SizedBox(height: 4),
+              Text(
+                '${connection.address?.name ?? '—'}, ${connection.number}${connection.letter ?? ''}',
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: theme.colorScheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Vencimento:',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Text(
+                      _formatDate(invoice.dueDate),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      'Valor:',
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurfaceVariant,
+                      ),
+                    ),
+                    Text(
+                      formatBRL(invoice.amount),
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  PopupMenuButton<String>(
+                    itemBuilder: (BuildContext context) => [
+                      PopupMenuItem<String>(
+                        value: 'view',
+                        onTap: invoice.id != null
+                            ? () => Future.microtask(() => _viewDetails(invoice.id!))
+                            : null,
+                        child: const Row(
+                          children: [
+                            Icon(Icons.visibility_outlined, size: 18),
+                            SizedBox(width: 12),
+                            Text('Visualizar'),
+                          ],
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'download',
+                        child: const Row(
+                          children: [
+                            Icon(Icons.picture_as_pdf_outlined, size: 18),
+                            SizedBox(width: 12),
+                            Text('Imprimir Boleto'),
+                          ],
+                        ),
+                        onTap: () => Future.microtask(_downloadPdf),
+                      ),
+                      if (!invoice.isPaid &&
+                          Permissions.canPayInvoices(
+                              CurrentUserScope.of(context).user?.role))
+                        PopupMenuItem<String>(
+                          value: 'mark_paid',
+                          child: const Row(
+                            children: [
+                              Icon(Icons.attach_money, size: 18),
+                              SizedBox(width: 12),
+                              Text('Marcar como Paga'),
+                            ],
+                          ),
+                          onTap: () => Future.microtask(_markPaid),
+                        ),
+                      if (invoice.isPaid)
+                        PopupMenuItem<String>(
+                          value: 'paid',
+                          enabled: false,
+                          child: const Row(
+                            children: [
+                              Icon(Icons.check_circle, color: Colors.green, size: 18),
+                              SizedBox(width: 12),
+                              Text('Paga'),
+                            ],
+                          ),
+                        ),
+                    ],
+                    child: Icon(
+                      Icons.more_vert,
+                      size: 20,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                  ),
+                  if (_marking)
+                    const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: Padding(
+                        padding: EdgeInsets.all(2),
+                        child: FCircularProgress(),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

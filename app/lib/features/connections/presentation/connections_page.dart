@@ -145,7 +145,10 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const PageHeader(subtitle: 'Gerencie as ligações de água.'),
+            PageHeader(
+              subtitle: 'Gerencie as ligações de água.',
+              action: narrow ? AddButton(onPress: () => _openForm()) : null,
+            ),
             const Divider(),
             ConnectionFilterBar(onSearch: _search),
             const SizedBox(height: 8),
@@ -154,7 +157,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                   ? _buildErrorView()
                   : _allConnections.isEmpty && !_isLoading
                       ? const Center(child: Text('Nenhuma ligação cadastrada.'))
-                      : _buildTableWithInfiniteScroll(),
+                      : _buildTableWithInfiniteScroll(narrow),
             ),
             if (_allConnections.isNotEmpty)
               Padding(
@@ -186,40 +189,51 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     );
   }
 
-  Widget _buildTableWithInfiniteScroll() {
+  Widget _buildTableWithInfiniteScroll(bool narrow) {
     return Column(
       children: [
-        _TableHeader(
-          onAddPress: () => _openForm(),
-          onSort: _onHeaderSort,
-          currentSortBy: _sortBy,
-          currentSortDirection: _sortDirection,
-        ),
-        const Divider(height: 1),
+        if (!narrow) ...[
+          _TableHeader(
+            onAddPress: () => _openForm(),
+            onSort: _onHeaderSort,
+            currentSortBy: _sortBy,
+            currentSortDirection: _sortDirection,
+          ),
+          const Divider(height: 1),
+        ],
         Expanded(
           child: ListView.separated(
             controller: _scrollController,
             itemCount: _allConnections.length + (_isLoading ? 1 : 0),
             addRepaintBoundaries: true,
             addSemanticIndexes: false,
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            separatorBuilder: (_, _) =>
+                narrow ? const SizedBox(height: 8) : const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allConnections.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               }
 
               final connection = _allConnections[index];
               final isEven = index.isEven;
 
-              return _ConnectionRow(
-                connection: connection,
-                onEdit: () => _openForm(connection: connection),
-                onDelete: () => _delete(connection),
-                isEven: isEven,
-              );
+              return narrow
+                  ? _ConnectionCard(
+                      connection: connection,
+                      onEdit: () => _openForm(connection: connection),
+                      onDelete: () => _delete(connection),
+                    )
+                  : _ConnectionRow(
+                      connection: connection,
+                      onEdit: () => _openForm(connection: connection),
+                      onDelete: () => _delete(connection),
+                      isEven: isEven,
+                    );
             },
           ),
         ),
@@ -384,6 +398,74 @@ class _ConnectionRow extends StatelessWidget {
             ),
             SizedBox(
               width: 88,
+              child: RowActions(onEdit: onEdit, onDelete: onDelete),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ConnectionCard extends StatelessWidget {
+  const _ConnectionCard({
+    required this.connection,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final Connection connection;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final bodyMedium = theme.textTheme.bodyMedium;
+    final bodySmall = theme.textTheme.bodySmall;
+    final onSurfaceVariant = theme.colorScheme.onSurfaceVariant;
+    final primary = theme.colorScheme.primary;
+    final textColor = connection.active ? null : onSurfaceVariant;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              connection.customer?.name ?? '—',
+              style: bodyMedium?.copyWith(color: textColor, fontWeight: FontWeight.w500),
+            ),
+            if (connection.customer != null)
+              DocumentText(
+                connection.customer!.document,
+                style: bodySmall?.copyWith(color: onSurfaceVariant),
+              ),
+            const SizedBox(height: 8),
+            Text(
+              connection.fullLocation,
+              style: bodySmall?.copyWith(color: textColor),
+            ),
+            const SizedBox(height: 4),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  connection.category?.name ?? '—',
+                  style: bodySmall?.copyWith(color: textColor),
+                ),
+                Icon(
+                  connection.active ? Icons.check : Icons.close,
+                  size: 18,
+                  color: connection.active ? primary : onSurfaceVariant,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
               child: RowActions(onEdit: onEdit, onDelete: onDelete),
             ),
           ],

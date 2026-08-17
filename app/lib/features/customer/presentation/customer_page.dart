@@ -154,7 +154,10 @@ class _CustomersPageState extends State<CustomersPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const PageHeader(subtitle: 'Gerencie os sócios cadastrados.'),
+            PageHeader(
+              subtitle: 'Gerencie os sócios cadastrados.',
+              action: narrow ? AddButton(onPress: () => _openForm()) : null,
+            ),
             const Divider(),
             CustomerFilterBar(onSearch: _search),
             const SizedBox(height: 8),
@@ -163,7 +166,7 @@ class _CustomersPageState extends State<CustomersPage> {
                   ? _buildErrorView()
                   : _allCustomers.isEmpty && !_isLoading
                       ? const Center(child: Text('Nenhum sócio cadastrado.'))
-                      : _buildTableWithInfiniteScroll(),
+                      : _buildTableWithInfiniteScroll(narrow),
             ),
             if (_allCustomers.isNotEmpty)
               Padding(
@@ -195,35 +198,48 @@ class _CustomersPageState extends State<CustomersPage> {
     );
   }
 
-  Widget _buildTableWithInfiniteScroll() {
+  Widget _buildTableWithInfiniteScroll(bool narrow) {
     return Column(
       children: [
-        _TableHeader(onAddPress: () => _openForm()),
-        const Divider(height: 1),
+        if (!narrow) ...[
+          _TableHeader(onAddPress: () => _openForm()),
+          const Divider(height: 1),
+        ],
         Expanded(
           child: ListView.separated(
             controller: _scrollController,
             itemCount: _allCustomers.length + (_isLoading ? 1 : 0),
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            separatorBuilder: (_, _) =>
+                narrow ? const SizedBox(height: 8) : const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allCustomers.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               }
 
               final customer = _allCustomers[index];
               final isEven = index.isEven;
 
-              return _CustomerRow(
-                customer: customer,
-                onEdit: () => _openForm(customer: customer),
-                onDelete: () => _delete(customer),
-                onReactivate: () => _reactivate(customer),
-                onView: () => _openForm(customer: customer, readOnly: true),
-                isEven: isEven,
-              );
+              return narrow
+                  ? _CustomerCard(
+                      customer: customer,
+                      onEdit: () => _openForm(customer: customer),
+                      onDelete: () => _delete(customer),
+                      onReactivate: () => _reactivate(customer),
+                      onView: () => _openForm(customer: customer, readOnly: true),
+                    )
+                  : _CustomerRow(
+                      customer: customer,
+                      onEdit: () => _openForm(customer: customer),
+                      onDelete: () => _delete(customer),
+                      onReactivate: () => _reactivate(customer),
+                      onView: () => _openForm(customer: customer, readOnly: true),
+                      isEven: isEven,
+                    );
             },
           ),
         ),
@@ -353,6 +369,86 @@ class _CustomerRow extends StatelessWidget {
                   onReactivate: onReactivate,
                   onView: onView,
                 ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomerCard extends StatelessWidget {
+  const _CustomerCard({
+    required this.customer,
+    required this.onEdit,
+    required this.onDelete,
+    this.onReactivate,
+    this.onView,
+  });
+
+  final Customer customer;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback? onReactivate;
+  final VoidCallback? onView;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: customer.active ? null : cs.onSurfaceVariant,
+    );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              spacing: 8,
+              children: [
+                Expanded(
+                  child: Text(
+                    customer.name,
+                    style: style?.copyWith(fontWeight: FontWeight.w500),
+                  ),
+                ),
+                InvalidDataBadge(hasInvalidData: customer.hasInvalidData),
+              ],
+            ),
+            const SizedBox(height: 8),
+            DocumentText(customer.document, style: style),
+            const SizedBox(height: 8),
+            Row(
+              spacing: 16,
+              children: [
+                Text(
+                  'Nº Sócio: ${customer.membershipNumber?.toString() ?? "—"}',
+                  style: style?.copyWith(fontSize: 13),
+                ),
+                Text(
+                  'Votante: ',
+                  style: style?.copyWith(fontSize: 13),
+                ),
+                BoolText(
+                  customer.voter,
+                  style: style?.copyWith(fontSize: 13),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
+              child: RowActions(
+                onEdit: onEdit,
+                onDelete: onDelete,
+                active: customer.active,
+                onReactivate: onReactivate,
+                onView: onView,
               ),
             ),
           ],

@@ -149,7 +149,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const PageHeader(subtitle: 'Gerencie as categorias de sócios cadastradas.'),
+            PageHeader(
+              subtitle: 'Gerencie as categorias de sócios cadastradas.',
+              action: narrow ? AddButton(onPress: () => _openForm()) : null,
+            ),
             const Divider(),
             CategoryFilterBar(onSearch: _search),
             const SizedBox(height: 8),
@@ -158,7 +161,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                   ? _buildErrorView()
                   : _allCategories.isEmpty && !_isLoading
                       ? const Center(child: Text('Nenhuma categoria cadastrada.'))
-                      : _buildTableWithInfiniteScroll(),
+                      : _buildTableWithInfiniteScroll(narrow),
             ),
             if (_allCategories.isNotEmpty)
               Padding(
@@ -190,35 +193,48 @@ class _CategoriesPageState extends State<CategoriesPage> {
     );
   }
 
-  Widget _buildTableWithInfiniteScroll() {
+  Widget _buildTableWithInfiniteScroll(bool narrow) {
     return Column(
       children: [
-        _TableHeader(onAddPress: () => _openForm()),
-        const Divider(height: 1),
+        if (!narrow) ...[
+          _TableHeader(onAddPress: () => _openForm()),
+          const Divider(height: 1),
+        ],
         Expanded(
           child: ListView.separated(
             controller: _scrollController,
             itemCount: _allCategories.length + (_isLoading ? 1 : 0),
-            separatorBuilder: (_, _) => const Divider(height: 1),
+            separatorBuilder: (_, _) =>
+                narrow ? const SizedBox(height: 8) : const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allCategories.length) {
-                return const Padding(
-                  padding: EdgeInsets.all(16),
-                  child: CircularProgressIndicator(),
+                return Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: CircularProgressIndicator(),
+                  ),
                 );
               }
 
               final category = _allCategories[index];
               final isEven = index.isEven;
 
-              return _CategoryRow(
-                category: category,
-                onEdit: () => _openForm(category: category),
-                onDelete: () => _delete(category),
-                onView: () => _openForm(category: category, readOnly: true),
-                onReactivate: () => _reactivate(category),
-                isEven: isEven,
-              );
+              return narrow
+                  ? _CategoryCard(
+                      category: category,
+                      onEdit: () => _openForm(category: category),
+                      onDelete: () => _delete(category),
+                      onView: () => _openForm(category: category, readOnly: true),
+                      onReactivate: () => _reactivate(category),
+                    )
+                  : _CategoryRow(
+                      category: category,
+                      onEdit: () => _openForm(category: category),
+                      onDelete: () => _delete(category),
+                      onView: () => _openForm(category: category, readOnly: true),
+                      onReactivate: () => _reactivate(category),
+                      isEven: isEven,
+                    );
             },
           ),
         ),
@@ -302,6 +318,81 @@ class _CategoryRow extends StatelessWidget {
             ),
             SizedBox(
               width: 88,
+              child: RowActions(
+                onEdit: onEdit,
+                onDelete: onDelete,
+                active: category.active,
+                onView: onView,
+                onReactivate: onReactivate,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  const _CategoryCard({
+    required this.category,
+    required this.onEdit,
+    required this.onDelete,
+    this.onView,
+    this.onReactivate,
+  });
+
+  final Category category;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+  final VoidCallback? onView;
+  final VoidCallback? onReactivate;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final style = theme.textTheme.bodyMedium?.copyWith(
+      color: category.active ? null : cs.onSurfaceVariant,
+    );
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              category.fullName,
+              style: style?.copyWith(fontWeight: FontWeight.w500),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Hidrômetro: ${category.hasWaterMeter ? "Sim" : "Não"}',
+              style: style?.copyWith(fontSize: 13),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Água: ${formatBRL(category.waterPrice)}',
+              style: style?.copyWith(fontSize: 13),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Societário: ${formatBRL(category.membershipPrice)}',
+              style: style?.copyWith(fontSize: 13),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Total: ${formatBRL(category.totalPrice)}',
+              style: style?.copyWith(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Align(
+              alignment: Alignment.centerRight,
               child: RowActions(
                 onEdit: onEdit,
                 onDelete: onDelete,
