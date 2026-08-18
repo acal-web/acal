@@ -1,3 +1,4 @@
+import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/shared/widgets/form_actions.dart';
 import 'package:acalapp/shared/widgets/form_dialog_header.dart';
 import 'package:flutter/material.dart';
@@ -6,6 +7,9 @@ import 'package:flutter/material.dart';
 /// pages: a bounded [Dialog] wrapping a [Form] with a title/close header
 /// and a Cancelar/Salvar action row. Close and Cancelar both pop `false`;
 /// [onSave] is expected to pop `true` on success.
+///
+/// On narrow screens, the Dialog is displayed within a ModalBottomSheet
+/// (see [showBlurredDialog]), which handles width constraints.
 class AppFormDialog extends StatelessWidget {
   const AppFormDialog({
     super.key,
@@ -32,6 +36,41 @@ class AppFormDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isNarrow =
+        MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
+
+    // On narrow screens (bottom sheet), don't constrain width; use full sheet width
+    if (isNarrow) {
+      return Padding(
+        padding: const EdgeInsets.all(0),
+        child: Form(
+          key: formKey,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              FormDialogHeader(
+                title: title,
+                onClose: () => Navigator.of(context).pop(false),
+              ),
+              const SizedBox(height: 8),
+              fields,
+              const SizedBox(height: 16),
+              FormActions(
+                onCancel: () => Navigator.of(context).pop(false),
+                onSave: onSave,
+                saving: saving,
+                saveLabel: saveLabel,
+                saveIcon: saveIcon,
+                readOnly: readOnly,
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    // On wide screens, use centered dialog with max width
     return Dialog(
       child: ConstrainedBox(
         constraints: BoxConstraints(maxWidth: maxWidth),
