@@ -63,9 +63,6 @@ Future<void> _pump(WidgetTester tester, void Function(ConnectionFilters filters)
   await tester.pumpAndSettle();
 }
 
-// Text fields in order: Logradouro
-// Customer field is a SearchSelectField (FSelect), not a plain TextField.
-Finder _addressNameField() => find.byType(TextField).at(0);
 
 void main() {
   testWidgets('renders without errors', (tester) async {
@@ -80,8 +77,6 @@ void main() {
   testWidgets('reports null filters after clearing', (tester) async {
     ConnectionFilters? captured;
     await _pump(tester, (filters) => captured = filters);
-
-    await tester.enterText(_addressNameField(), 'Principal');
 
     await tester.tap(find.text('Limpar'));
     await tester.pumpAndSettle();

@@ -1,7 +1,9 @@
+import 'dart:async';
+
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
-import 'package:acalapp/shared/widgets/search_select_field.dart';
 import 'package:flutter/material.dart';
+import 'package:forui/forui.dart';
 
 class CustomerSelectField extends StatefulWidget {
   const CustomerSelectField({
@@ -28,20 +30,23 @@ class CustomerSelectField extends StatefulWidget {
 }
 
 class _CustomerSelectFieldState extends State<CustomerSelectField> {
-  late Customer? _selected;
+  Timer? _debounceTimer;
 
   @override
-  void initState() {
-    super.initState();
-    _selected = widget.initialValue;
+  void dispose() {
+    _debounceTimer?.cancel();
+    super.dispose();
   }
 
-  Future<List<Customer>> _search(String query) async {
-    final hasDigits = RegExp(r'[0-9]').hasMatch(query);
+  Future<List<Customer>> _filter(String query) async {
+    final trimmed = query.trim();
+    if (trimmed.length < 3) return [];
+
+    final hasDigits = RegExp(r'[0-9]').hasMatch(trimmed);
     final active = widget.includeInactive ? null : true;
     final pages = await Future.wait([
-      widget.customerService.findAll(name: query, size: 5, active: active),
-      if (hasDigits) widget.customerService.findAll(document: query, size: 5, active: active),
+      widget.customerService.findAll(name: trimmed, size: 5, active: active),
+      if (hasDigits) widget.customerService.findAll(document: trimmed, size: 5, active: active),
     ]);
     final seen = <String>{};
     final results = <Customer>[];
@@ -59,56 +64,40 @@ class _CustomerSelectFieldState extends State<CustomerSelectField> {
     return results;
   }
 
-  void _handleSelected(Customer? customer) {
-    setState(() => _selected = customer);
-    widget.onSelected(customer);
-  }
-
-  void _handleClear() {
-    setState(() => _selected = null);
-    widget.onSelected(null);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Stack(
-          alignment: Alignment.centerRight,
-          children: [
-            SearchSelectField<Customer>(
-              label: widget.label,
-              hintText: widget.hintText,
-              initialValue: _selected,
-              search: _search,
-              labelBuilder: (c) => c.name,
-              subtitleBuilder: (c) {
-                final inactiveLabel = !c.active ? ' (inativo)' : '';
-                return '${c.document}$inactiveLabel';
-              },
-              onSelected: _handleSelected,
-              validator: widget.validator,
+    return FSelect<Customer>.searchBuilder(
+      format: (c) => c.name,
+      filter: (query) {
+        _debounceTimer?.cancel();
+        final completer = Completer<Iterable<Customer>>();
+        _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
+          final results = await _filter(query);
+          completer.complete(results);
+        });
+        return completer.future;
+      },
+      contentBuilder: (context, query, values) => [
+        for (final customer in values)
+          FSelectItem.item(
+            title: Text(customer.name),
+            subtitle: Text(
+              customer.active ? customer.document : '${customer.document} (inativo)',
             ),
-            if (_selected != null)
-              Positioned(
-                right: 16,
-                top: 48,
-                child: GestureDetector(
-                  onTap: _handleClear,
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Icon(
-                      Icons.clear,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.outline,
-                    ),
-                  ),
-                ),
-              ),
-          ],
-        ),
+            value: customer,
+          ),
       ],
+      control: FSelectControl.managed(
+        initial: widget.initialValue,
+        onChange: widget.onSelected,
+      ),
+      searchFieldProperties: FSelectSearchFieldProperties(
+        hint: widget.hintText,
+      ),
+      label: Text(widget.label),
+      hint: widget.hintText,
+      validator: widget.validator ?? (_) => null,
+      clearable: true,
     );
   }
 }

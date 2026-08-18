@@ -166,7 +166,7 @@ class _LoginPageState extends State<LoginPage> {
                         onSubmitted: (_) => _handleLogin(),
                         decoration: InputDecoration(
                           labelText: 'Usuário',
-                          hintText: 'seu_usuário',
+                          hintText: 'Usuário',
                           prefixIcon: Icon(Icons.person_outline, color: cs.outline),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),

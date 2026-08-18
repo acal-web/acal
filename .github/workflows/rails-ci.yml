@@ -80,5 +80,5 @@ jobs:
 
       - name: Trigger Coolify deploy
         run: |
-          curl --fail-with-body --request GET "${{ secrets.COOLIFY_DEPLOY_URL }}" \
+          curl --fail-with-body --request POST "${{ secrets.COOLIFY_DEPLOY_URL }}" \
             --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
