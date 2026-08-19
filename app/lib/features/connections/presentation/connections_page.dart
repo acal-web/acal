@@ -32,7 +32,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   String? _filterCustomerId;
   String? _filterAddressName;
   String? _filterCategoryId;
-  bool? _filterActive;
+  String _filterStatus = 'active';
   String? _errorMessage;
   String _sortBy = 'customer_name';
   String _sortDirection = 'asc';
@@ -72,7 +72,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
         customerId: _filterCustomerId,
         addressName: _filterAddressName,
         categoryId: _filterCategoryId,
-        active: _filterActive,
+        status: _filterStatus,
         sortBy: _sortBy,
         sortDirection: _sortDirection,
       );
@@ -108,7 +108,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     _filterCustomerId = filters.customerId;
     _filterAddressName = filters.addressName;
     _filterCategoryId = filters.categoryId;
-    _filterActive = filters.active;
+    _filterStatus = filters.status ?? 'active';
     await _loadFirstPage();
   }
 

@@ -93,6 +93,7 @@ class _CustomerSelectFieldState extends State<CustomerSelectField> {
       ),
       searchFieldProperties: FSelectSearchFieldProperties(
         hint: widget.hintText,
+        autofocus: true,
       ),
       label: Text(widget.label),
       hint: widget.hintText,

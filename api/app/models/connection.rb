@@ -43,6 +43,16 @@ class Connection < ApplicationRecord
     where(active: ActiveModel::Type::Boolean.new.cast(active)) unless active.nil? || active == ""
   }
 
+  scope :filter_by_status, ->(status) {
+    case status
+    when "active" then where(active: true, deleted_at: nil)
+    when "inactive" then where(active: false, deleted_at: nil)
+    when "deleted" then unscope(where: :deleted_at).where.not(deleted_at: nil)
+    when "all" then unscope(where: :deleted_at)
+    else self
+    end
+  }
+
   scope :filter_by_address_id, ->(address_id) {
     where(address_id: address_id) if address_id.present?
   }

@@ -12,6 +12,7 @@ class ConnectionsController < ApplicationController
       address_name: params[:address_name],
       category_id: params[:category_id],
       active: params[:active],
+      status: params[:status],
       sort_by: params[:sort_by],
       sort_direction: params[:sort_direction]
     )

@@ -84,6 +84,6 @@ void main() {
     expect(captured?.customerId, isNull);
     expect(captured?.addressName, isNull);
     expect(captured?.categoryId, isNull);
-    expect(captured?.active, isNull);
+    expect(captured?.status, 'active');
   });
 }

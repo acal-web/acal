@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/auth/data/auth_service.dart';
 import 'package:acalapp/features/auth/data/token_storage.dart';
 import 'package:acalapp/features/auth/domain/auth_user.dart';
@@ -36,8 +37,13 @@ class CurrentUser extends ChangeNotifier {
         _user = user;
         notifyListeners();
       }
+    } on ApiException catch (e) {
+      if (e.statusCode == 401) {
+        clear();
+        await TokenStorage.delete();
+      }
     } catch (_) {
-      clear();
+      // Ignore other errors (network issues, etc)
     }
   }
 

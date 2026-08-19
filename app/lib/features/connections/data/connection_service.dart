@@ -15,7 +15,7 @@ class ConnectionService {
     String? customerDocument,
     String? addressName,
     String? categoryId,
-    bool? active,
+    String? status,
     String? sortBy,
     String? sortDirection,
   }) async {
@@ -27,7 +27,7 @@ class ConnectionService {
       if (customerDocument != null && customerDocument.isNotEmpty) 'customer_document': customerDocument,
       if (addressName != null && addressName.isNotEmpty) 'address_name': addressName,
       if (categoryId != null && categoryId.isNotEmpty) 'category_id': categoryId,
-      if (active != null) 'active': '$active',
+      if (status != null && status.isNotEmpty) 'status': status,
       if (sortBy != null && sortBy.isNotEmpty) 'sort_by': sortBy,
       if (sortDirection != null && sortDirection.isNotEmpty) 'sort_direction': sortDirection,
     };

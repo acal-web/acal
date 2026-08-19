@@ -18,7 +18,6 @@ void main() async {
   }
 
   _currentUser = CurrentUser();
-  await _currentUser.restore();
 
   setupHttpService(
     getToken: () => _currentUser.token,
@@ -26,6 +25,8 @@ void main() async {
       _currentUser.clear();
     },
   );
+
+  await _currentUser.restore();
 
   initializeRouter(_currentUser);
 

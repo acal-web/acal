@@ -11,11 +11,22 @@ import 'package:acalapp/features/customer/widget/customer_select_field.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
+enum _ConnectionStatus {
+  active('Ativos', 'active'),
+  inactive('Inativos', 'inactive'),
+  deleted('Excluídos', 'deleted'),
+  all('Todos', 'all');
+
+  const _ConnectionStatus(this.label, this.value);
+  final String label;
+  final String value;
+}
+
 typedef ConnectionFilters = ({
   String? customerId,
   String? addressName,
   String? categoryId,
-  bool? active,
+  String? status,
 });
 
 class ConnectionFilterBar extends StatefulWidget {
@@ -41,7 +52,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   Address? _address;
   Customer? _customer;
   Category? _category;
-  bool? _active;
+  _ConnectionStatus _status = _ConnectionStatus.active;
   bool _expanded = false;
   int _filterKey = 0;
 
@@ -57,7 +68,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
         customerId: _customer?.id,
         addressName: _address?.name,
         categoryId: _category?.id,
-        active: _active,
+        status: _status.value,
       ));
 
   void _clear() {
@@ -65,10 +76,10 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
       _customer = null;
       _address = null;
       _category = null;
-      _active = null;
+      _status = _ConnectionStatus.active;
       _filterKey++;
     });
-    widget.onSearch((customerId: null, addressName: null, categoryId: null, active: null));
+    widget.onSearch((customerId: null, addressName: null, categoryId: null, status: 'active'));
   }
 
   @override
@@ -98,10 +109,15 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
           onSelected: (c) => _category = c,
         );
 
-        final activeField = FSelect<bool?>(
+        final statusField = FSelect<_ConnectionStatus>(
           key: ValueKey(_filterKey),
-          items: const {'Todas': null, 'Ativas': true, 'Encerradas': false},
-          control: FSelectControl.managed(initial: _active, onChange: (v) => setState(() => _active = v)),
+          items: {
+            for (final status in _ConnectionStatus.values) status.label: status
+          },
+          control: FSelectControl.managed(
+            initial: _status,
+            onChange: (v) => setState(() => _status = v ?? _ConnectionStatus.active),
+          ),
           label: const Text('Situação'),
         );
 
@@ -161,7 +177,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                   const SizedBox(height: 8),
                   categoryField,
                   const SizedBox(height: 8),
-                  activeField,
+                  statusField,
                   const SizedBox(height: 8),
                   Row(
                     children: [
@@ -189,7 +205,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
                     children: [
                       Expanded(child: categoryField),
                       const SizedBox(width: 8),
-                      Expanded(child: activeField),
+                      Expanded(child: statusField),
                     ],
                   ),
                   const SizedBox(height: 8),

@@ -182,6 +182,65 @@ RSpec.describe "Connections", type: :request do
         expect(response.parsed_body["content"].map { |c| c["address_id"] }).to eq([ ended_address.id ])
       end
 
+      it "filters by status=active (ativas)" do
+        create(:connection, customer: customer, address: address, category: category, active: true)
+        inactive_address = create(:address, name: "Inactive Street")
+        create(:connection, customer: create(:customer), address: inactive_address, category: category, active: false)
+        deleted_address = create(:address, name: "Deleted Street")
+        deleted_conn = create(:connection, customer: create(:customer), address: deleted_address, category: category, active: true)
+        deleted_conn.soft_delete!
+
+        get "/connections", params: { status: "active" }
+
+        expect(response.parsed_body["totalElements"]).to eq(1)
+        expect(response.parsed_body["content"].map { |c| c["address_id"] }).to eq([ address.id ])
+      end
+
+      it "filters by status=inactive (inativos)" do
+        create(:connection, customer: customer, address: address, category: category, active: true)
+        inactive_address = create(:address, name: "Inactive Street")
+        create(:connection, customer: create(:customer), address: inactive_address, category: category, active: false)
+        deleted_address = create(:address, name: "Deleted Street")
+        deleted_conn = create(:connection, customer: create(:customer), address: deleted_address, category: category, active: false)
+        deleted_conn.soft_delete!
+
+        get "/connections", params: { status: "inactive" }
+
+        expect(response.parsed_body["totalElements"]).to eq(1)
+        expect(response.parsed_body["content"].map { |c| c["address_id"] }).to eq([ inactive_address.id ])
+      end
+
+      it "filters by status=deleted (excluidos)" do
+        create(:connection, customer: customer, address: address, category: category, active: true)
+        inactive_address = create(:address, name: "Inactive Street")
+        create(:connection, customer: create(:customer), address: inactive_address, category: category, active: false)
+        deleted_address_1 = create(:address, name: "Deleted Street 1")
+        deleted_conn_1 = create(:connection, customer: create(:customer), address: deleted_address_1, category: category, active: true)
+        deleted_conn_1.soft_delete!
+        deleted_address_2 = create(:address, name: "Deleted Street 2")
+        deleted_conn_2 = create(:connection, customer: create(:customer), address: deleted_address_2, category: category, active: false)
+        deleted_conn_2.soft_delete!
+
+        get "/connections", params: { status: "deleted" }
+
+        expect(response.parsed_body["totalElements"]).to eq(2)
+        expect(response.parsed_body["content"].map { |c| c["address_id"] }.sort).to eq([ deleted_address_1.id, deleted_address_2.id ].sort)
+      end
+
+      it "filters by status=all (todos)" do
+        create(:connection, customer: customer, address: address, category: category, active: true)
+        inactive_address = create(:address, name: "Inactive Street")
+        create(:connection, customer: create(:customer), address: inactive_address, category: category, active: false)
+        deleted_address = create(:address, name: "Deleted Street")
+        deleted_conn = create(:connection, customer: create(:customer), address: deleted_address, category: category, active: true)
+        deleted_conn.soft_delete!
+
+        get "/connections", params: { status: "all" }
+
+        expect(response.parsed_body["totalElements"]).to eq(3)
+        expect(response.parsed_body["content"].map { |c| c["address_id"] }.sort).to eq([ address.id, inactive_address.id, deleted_address.id ].sort)
+      end
+
       it "combines multiple filters" do
         create(:connection, customer: customer, address: address, category: category)
         create(:connection, customer: create(:customer), address: create(:address, name: "Second Avenue"), category: category)
