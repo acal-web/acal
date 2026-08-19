@@ -65,6 +65,33 @@ class InvoiceDetailsCard extends StatelessWidget {
                 const SizedBox(height: 32),
 
                 InvoiceWaterQualitySection(invoice: invoice),
+
+                const SizedBox(height: 32),
+
+                CustomPaint(
+                  painter: DashedLinePainter(color: cs.outlineVariant),
+                  size: Size(double.infinity, 1),
+                ),
+
+                IntrinsicHeight(
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(
+                        child: InvoiceCustomerSection(invoice: invoice),
+                      ),
+                      const SizedBox(width: 32),
+                      Expanded(
+                        child: InvoicePaymentSection(invoice: invoice),
+                      ),
+                      const SizedBox(width: 32),
+                      Expanded(
+                        child: InvoiceSummarySection(invoice: invoice),
+                      ),
+                    ],
+                  ),
+                )
+
               ],
             ),
           ),
@@ -72,4 +99,36 @@ class InvoiceDetailsCard extends StatelessWidget {
       ),
     );
   }
+}
+
+class DashedLinePainter extends CustomPainter {
+  final Color color;
+  final double dashWidth;
+  final double dashSpace;
+
+  DashedLinePainter({
+    required this.color,
+    this.dashWidth = 5,
+    this.dashSpace = 5,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = 1;
+
+    double startX = 0;
+    while (startX < size.width) {
+      canvas.drawLine(
+        Offset(startX, 0),
+        Offset(startX + dashWidth, 0),
+        paint,
+      );
+      startX += dashWidth + dashSpace;
+    }
+  }
+
+  @override
+  bool shouldRepaint(DashedLinePainter oldDelegate) => false;
 }
