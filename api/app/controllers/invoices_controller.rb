@@ -1,5 +1,5 @@
 class InvoicesController < ApplicationController
-  INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] }, water_meter: {} }
+  INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] }, water_meter: {}, quality_analyses: {} }
 
   # GET /invoices
   def index

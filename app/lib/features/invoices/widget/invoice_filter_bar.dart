@@ -44,7 +44,7 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
   late final CustomerService _customerService;
   late final AddressService _addressService;
 
-  MonthYear? _period;
+  late MonthYear _period;
   Customer? _customer;
   Address? _address;
   _InvoiceStatus _status = _InvoiceStatus.all;
@@ -55,6 +55,8 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
     super.initState();
     _customerService = widget.customerService ?? CustomerService();
     _addressService = widget.addressService ?? AddressService();
+    final now = DateTime.now();
+    _period = (year: now.year, month: now.month);
   }
 
   void _search() {
@@ -67,14 +69,15 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
   }
 
   void _clear() {
+    final now = DateTime.now();
     setState(() {
-      _period = null;
+      _period = (year: now.year, month: now.month);
       _customer = null;
       _address = null;
       _status = _InvoiceStatus.all;
     });
     widget.onSearch(
-      period: null,
+      period: _period,
       customerId: null,
       addressId: null,
       status: null,
@@ -89,7 +92,11 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
 
         final periodField = PeriodFilterButton(
           period: _period,
-          onChanged: (p) => setState(() => _period = p),
+          onChanged: (p) {
+            if (p != null) {
+              setState(() => _period = p);
+            }
+          },
         );
 
         final customerField = CustomerSelectField(

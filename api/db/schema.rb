@@ -95,6 +95,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_005001) do
     t.uuid "user_id"
     t.decimal "water_consumed_value"
     t.decimal "water_value", precision: 10, scale: 2, default: "0.0", null: false
+    t.index ["connection_id", "reference_date", "paid_at"], name: "index_invoices_on_connection_ref_paid", where: "(deleted_at IS NULL)"
     t.index ["connection_id", "reference_date"], name: "index_invoices_on_connection_id_and_reference_date_unique", unique: true, where: "(deleted_at IS NULL)"
     t.index ["connection_id"], name: "index_invoices_on_connection_id"
     t.index ["due_date", "paid_at"], name: "index_invoices_on_due_date_and_paid_at", where: "(deleted_at IS NULL)"

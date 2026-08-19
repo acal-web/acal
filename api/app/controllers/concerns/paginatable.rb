@@ -5,8 +5,8 @@ module Paginatable
     page = params.fetch(:page, 0).to_i
     size = [ params.fetch(:size, 10).to_i, 100 ].min
 
-    count = collection.limit(10001).count
-    total_count = count > 10000 ? 10000 : count
+    count = collection.limit(200001).count
+    total_count = count > 200000 ? 200000 : count
 
     pagy    = Pagy::Offset.new(page: page + 1, limit: size, count: total_count)
     records = pagy.records(collection)

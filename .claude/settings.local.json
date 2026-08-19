@@ -266,7 +266,10 @@
       "Bash(grep -n \"decoration\\\\|BoxDecoration\\\\|borderRadius\\\\|BorderRadius\\\\|color:\\\\|Color\\\\|shadow\\\\|BoxShadow\\\\|elevation\" /home/vscode/.pub-cache/hosted/pub.dev/forui-0.25.0/lib/src/widgets/popover/popover.dart | head -50)",
       "Bash(curl -i -X POST https://85.31.230.47/session -H 'Content-Type: application/json' -H 'Host: api.acalapp.site' -d '{ *)",
       "Bash(curl -k -i -X POST https://85.31.230.47/session -H 'Content-Type: application/json' -H 'Host: api.acalapp.site' -d '{ *)",
-      "Bash(curl -k -i -X POST https://85.31.230.47/session -H 'Content-Type: application/json' -d '{ *)"
+      "Bash(curl -k -i -X POST https://85.31.230.47/session -H 'Content-Type: application/json' -d '{ *)",
+      "Bash(grep -E \"\\\\.\\(dart|swift|kt\\)$\")",
+      "Bash(grep -E \"\\\\.\\(dart\\)$\")",
+      "Bash(grep -E \"\\\\.\\(rb\\)$\")"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

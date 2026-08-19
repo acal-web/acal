@@ -35,14 +35,12 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
   Future<void> _print() async {
     setState(() => _printing = true);
     try {
-      await Printing.layoutPdf(
-        onLayout: (_) => _service.pdf(widget.invoiceId),
-      );
+      await Printing.layoutPdf(onLayout: (_) => _service.pdf(widget.invoiceId));
     } catch (_) {
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Erro ao gerar PDF')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Erro ao gerar PDF')));
       }
     } finally {
       if (mounted) setState(() => _printing = false);
@@ -89,7 +87,8 @@ class _InvoiceDetailPageState extends State<InvoiceDetailPage> {
           if (snapshot.hasError) {
             return AsyncErrorView(
               message: 'Erro ao carregar fatura',
-              onRetry: () => setState(() => _future = Future.error('Not implemented')),
+              onRetry: () =>
+                  setState(() => _future = Future.error('Not implemented')),
             );
           }
 

@@ -1,4 +1,6 @@
 import 'package:acalapp/features/connections/domain/connection.dart';
+import 'package:acalapp/features/invoices/domain/water_meter.dart';
+import 'package:acalapp/features/quality/domain/quality_analysis.dart';
 
 class Invoice {
   final String? id;
@@ -10,6 +12,8 @@ class Invoice {
   final double waterValue;
   final DateTime? paidAt;
   final Connection? connection;
+  final WaterMeter? waterMeter;
+  final List<QualityAnalysis>? qualityAnalyses;
 
   const Invoice({
     this.id,
@@ -21,6 +25,8 @@ class Invoice {
     required this.waterValue,
     this.paidAt,
     this.connection,
+    this.waterMeter,
+    this.qualityAnalyses,
   });
 
   bool get isPaid => paidAt != null;
@@ -37,5 +43,9 @@ class Invoice {
         waterValue: double.parse(json['water_value'].toString()),
         paidAt: json['paid_at'] != null ? DateTime.parse(json['paid_at'] as String) : null,
         connection: json['connection'] != null ? Connection.fromJson(json['connection'] as Map<String, dynamic>) : null,
+        waterMeter: json['water_meter'] != null ? WaterMeter.fromJson(json['water_meter'] as Map<String, dynamic>) : null,
+        qualityAnalyses: json['quality_analyses'] != null
+            ? (json['quality_analyses'] as List).map((e) => QualityAnalysis.fromJson(e as Map<String, dynamic>)).toList()
+            : null,
       );
 }

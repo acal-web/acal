@@ -44,6 +44,10 @@ class Invoice < ApplicationRecord
     membership_value + water_value + (water_consumed_value || 0)
   end
 
+  def quality_analyses
+    QualityAnalysis.where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", reference_date.year, reference_date.month)
+  end
+
   private
 
   def generate_number
