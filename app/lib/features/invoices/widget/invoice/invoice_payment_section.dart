@@ -23,7 +23,7 @@ class InvoicePaymentSection extends StatelessWidget {
         const SizedBox(height: 16),
         Expanded(
           child: _buildPaidAtBox(
-            invoice.paidAt != null ? dateFormat.format(invoice.paidAt!) : '—',
+            invoice.paidAt != null ? dateFormat.format(invoice.paidAt!) : null,
             cs,
           ),
         ),
@@ -40,7 +40,8 @@ class InvoicePaymentSection extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
             'Boleto nº',
@@ -63,7 +64,7 @@ class InvoicePaymentSection extends StatelessWidget {
     );
   }
 
-  Widget _buildPaidAtBox(String value, ColorScheme cs) {
+  Widget _buildPaidAtBox(String? value, ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       constraints: const BoxConstraints(minHeight: 140),
@@ -71,28 +72,30 @@ class InvoicePaymentSection extends StatelessWidget {
         border: Border.all(color: cs.outlineVariant, width: 2),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Pago em',
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: FontWeight.w500,
-              color: cs.onSurface.withValues(alpha: 0.7),
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
-      ),
+      child: value != null
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Pago em',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: cs.onSurface.withValues(alpha: 0.7),
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ],
+            )
+          : const SizedBox.expand(),
     );
   }
 }

@@ -493,6 +493,7 @@ class _InvoiceRowState extends State<_InvoiceRow> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -566,12 +567,18 @@ class _InvoiceRowState extends State<_InvoiceRow> {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   PopupMenuButton<String>(
+                    onSelected: (value) {
+                      if (value == 'view' && invoice.id != null) {
+                        _viewDetails(invoice.id!);
+                      } else if (value == 'download') {
+                        _downloadPdf();
+                      } else if (value == 'mark_paid') {
+                        _markPaid();
+                      }
+                    },
                     itemBuilder: (BuildContext context) => [
                       PopupMenuItem<String>(
                         value: 'view',
-                        onTap: invoice.id != null
-                            ? () => Future.microtask(() => _viewDetails(invoice.id!))
-                            : null,
                         child: const Row(
                           children: [
                             Icon(Icons.visibility_outlined, size: 18),
@@ -589,7 +596,6 @@ class _InvoiceRowState extends State<_InvoiceRow> {
                             Text('Imprimir Boleto'),
                           ],
                         ),
-                        onTap: () => Future.microtask(_downloadPdf),
                       ),
                       if (!invoice.isPaid &&
                           Permissions.canPayInvoices(
@@ -603,7 +609,6 @@ class _InvoiceRowState extends State<_InvoiceRow> {
                               Text('Marcar como Paga'),
                             ],
                           ),
-                          onTap: () => Future.microtask(_markPaid),
                         ),
                       if (invoice.isPaid)
                         PopupMenuItem<String>(
@@ -757,6 +762,7 @@ class _InvoiceCardState extends State<_InvoiceCard> {
     );
   }
 
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -876,12 +882,18 @@ class _InvoiceCardState extends State<_InvoiceCard> {
                   spacing: 8,
                   children: [
                     PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'view' && invoice.id != null) {
+                          _viewDetails(invoice.id!);
+                        } else if (value == 'download') {
+                          _downloadPdf();
+                        } else if (value == 'mark_paid') {
+                          _markPaid();
+                        }
+                      },
                       itemBuilder: (BuildContext context) => [
                         PopupMenuItem<String>(
                           value: 'view',
-                          onTap: invoice.id != null
-                              ? () => Future.microtask(() => _viewDetails(invoice.id!))
-                              : null,
                           child: const Row(
                             children: [
                               Icon(Icons.visibility_outlined, size: 18),
@@ -899,7 +911,6 @@ class _InvoiceCardState extends State<_InvoiceCard> {
                               Text('Imprimir Boleto'),
                             ],
                           ),
-                          onTap: () => Future.microtask(_downloadPdf),
                         ),
                         if (!invoice.isPaid &&
                             Permissions.canPayInvoices(
@@ -913,7 +924,6 @@ class _InvoiceCardState extends State<_InvoiceCard> {
                                 Text('Marcar como Paga'),
                               ],
                             ),
-                            onTap: () => Future.microtask(_markPaid),
                           ),
                         if (invoice.isPaid)
                           PopupMenuItem<String>(

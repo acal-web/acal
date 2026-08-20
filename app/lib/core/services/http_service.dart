@@ -46,13 +46,15 @@ class HttpService {
     return headers;
   }
 
+  static const _requestTimeout = Duration(seconds: 30);
+
   Future<dynamic> get(String path, {Map<String, String>? query}) async {
-    final response = await _client.get(_uri(path, query), headers: _authHeaders());
+    final response = await _client.get(_uri(path, query), headers: _authHeaders()).timeout(_requestTimeout);
     return _decode(response);
   }
 
   Future<Uint8List> getBytes(String path, {Map<String, String>? query}) async {
-    final response = await _client.get(_uri(path, query), headers: _authHeaders());
+    final response = await _client.get(_uri(path, query), headers: _authHeaders()).timeout(_requestTimeout);
     _checkStatus(response);
     return response.bodyBytes;
   }
@@ -62,7 +64,7 @@ class HttpService {
       _uri(path),
       headers: _authHeaders(),
       body: jsonEncode(body),
-    );
+    ).timeout(_requestTimeout);
     return _decode(response);
   }
 
@@ -71,7 +73,7 @@ class HttpService {
       _uri(path),
       headers: _authHeaders(),
       body: jsonEncode(body),
-    );
+    ).timeout(_requestTimeout);
     return _decode(response);
   }
 
@@ -80,12 +82,12 @@ class HttpService {
       _uri(path),
       headers: _authHeaders(),
       body: jsonEncode(body),
-    );
+    ).timeout(_requestTimeout);
     return _decode(response);
   }
 
   Future<void> delete(String path) async {
-    final response = await _client.delete(_uri(path), headers: _authHeaders());
+    final response = await _client.delete(_uri(path), headers: _authHeaders()).timeout(_requestTimeout);
     _checkStatus(response);
   }
 

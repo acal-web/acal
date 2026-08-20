@@ -72,8 +72,16 @@ class _CustomerSelectFieldState extends State<CustomerSelectField> {
         _debounceTimer?.cancel();
         final completer = Completer<Iterable<Customer>>();
         _debounceTimer = Timer(const Duration(milliseconds: 300), () async {
-          final results = await _filter(query);
-          completer.complete(results);
+          try {
+            final results = await _filter(query);
+            if (!completer.isCompleted) {
+              completer.complete(results);
+            }
+          } catch (e) {
+            if (!completer.isCompleted) {
+              completer.complete([]);
+            }
+          }
         });
         return completer.future;
       },

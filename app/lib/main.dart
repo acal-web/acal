@@ -26,9 +26,9 @@ void main() async {
     },
   );
 
-  await _currentUser.restore();
-
   initializeRouter(_currentUser);
+
+  _currentUser.restore();
 
   runApp(MainApp(currentUser: _currentUser));
 }
