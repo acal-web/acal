@@ -1,0 +1,20 @@
+<svg viewBox="0 0 192 192" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gota de água minimalista -->
+  <defs>
+    <linearGradient id="dropGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1E90FF;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0A47A3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+
+  <!-- Fundo branco -->
+  <rect width="192" height="192" fill="#FFFFFF"/>
+
+  <!-- Gota principal -->
+  <path d="M96 20C96 20 60 80 60 120C60 148.8 76.3 165 96 165C115.7 165 132 148.8 132 120C132 80 96 20 96 20Z"
+        fill="url(#dropGradient)"
+        stroke="none"/>
+
+  <!-- Destaque (para dar dimensão) -->
+  <ellipse cx="85" cy="60" rx="15" ry="20" fill="#FFFFFF" opacity="0.3"/>
+</svg>
