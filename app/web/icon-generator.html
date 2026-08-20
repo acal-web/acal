@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ACAL Icon Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #0A0A0A;
+            margin-bottom: 10px;
+        }
+
+        .info {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 0;
+            border: 1px solid #ddd;
+        }
+
+        .card h3 {
+            color: #0A0A0A;
+            margin-bottom: 10px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .icon-preview {
+            width: 100%;
+            aspect-ratio: 1;
+            background: #f9f9f9;
+            border: 1px solid #e5e5e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+            position: relative;
+        }
+
+        canvas {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        .info-text {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #0A0A0A;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+
+        button:hover {
+            background: #171717;
+        }
+
+        .success {
+            color: #00aa00;
+            font-size: 12px;
+            margin-top: 8px;
+            display: none;
+        }
+
+        .resolutions {
+            background: white;
+            padding: 20px;
+            border: 1px solid #ddd;
+            margin-bottom: 30px;
+        }
+
+        .resolution-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .res-item {
+            font-size: 13px;
+            color: #555;
+            padding: 10px;
+            background: #f9f9f9;
+            border-radius: 0;
+            border: 1px solid #e5e5e5;
+        }
+
+        .res-item strong {
+            color: #0A0A0A;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>ACAL Icon Generator</h1>
+        <p class="info">Gere os ícones da gota em todas as resoluções do Android</p>
+
+        <div class="resolutions">
+            <h3>Resoluções Android</h3>
+            <div class="resolution-list">
+                <div class="res-item"><strong>mdpi</strong><br>48×48</div>
+                <div class="res-item"><strong>hdpi</strong><br>72×72</div>
+                <div class="res-item"><strong>xhdpi</strong><br>96×96</div>
+                <div class="res-item"><strong>xxhdpi</strong><br>144×144</div>
+                <div class="res-item"><strong>xxxhdpi</strong><br>192×192</div>
+            </div>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h3>mdpi (48×48)</h3>
+                <div class="icon-preview">
+                    <canvas id="canvas-mdpi" width="48" height="48"></canvas>
+                </div>
+                <p class="info-text">Baixa densidade<br>Pasta: mipmap-mdpi</p>
+                <button onclick="downloadIcon('mdpi', 48)">Baixar</button>
+                <div class="success" id="success-mdpi">✓ Copiado!</div>
+            </div>
+
+            <div class="card">
+                <h3>hdpi (72×72)</h3>
+                <div class="icon-preview">
+                    <canvas id="canvas-hdpi" width="72" height="72"></canvas>
+                </div>
+                <p class="info-text">Média densidade<br>Pasta: mipmap-hdpi</p>
+                <button onclick="downloadIcon('hdpi', 72)">Baixar</button>
+                <div class="success" id="success-hdpi">✓ Copiado!</div>
+            </div>
+
+            <div class="card">
+                <h3>xhdpi (96×96)</h3>
+                <div class="icon-preview">
+                    <canvas id="canvas-xhdpi" width="96" height="96"></canvas>
+                </div>
+                <p class="info-text">Alta densidade<br>Pasta: mipmap-xhdpi</p>
+                <button onclick="downloadIcon('xhdpi', 96)">Baixar</button>
+                <div class="success" id="success-xhdpi">✓ Copiado!</div>
+            </div>
+
+            <div class="card">
+                <h3>xxhdpi (144×144)</h3>
+                <div class="icon-preview">
+                    <canvas id="canvas-xxhdpi" width="144" height="144"></canvas>
+                </div>
+                <p class="info-text">Muito alta densidade<br>Pasta: mipmap-xxhdpi</p>
+                <button onclick="downloadIcon('xxhdpi', 144)">Baixar</button>
+                <div class="success" id="success-xxhdpi">✓ Copiado!</div>
+            </div>
+
+            <div class="card">
+                <h3>xxxhdpi (192×192)</h3>
+                <div class="icon-preview">
+                    <canvas id="canvas-xxxhdpi" width="192" height="192"></canvas>
+                </div>
+                <p class="info-text">Ultra alta densidade<br>Pasta: mipmap-xxxhdpi</p>
+                <button onclick="downloadIcon('xxxhdpi', 192)">Baixar</button>
+                <div class="success" id="success-xxxhdpi">✓ Copiado!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function drawDrop(ctx, size) {
+            const centerX = size / 2;
+            const centerY = size / 2;
+            const scale = size / 192;
+
+            // Limpar canvas
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, size, size);
+
+            // Desenhar gota com gradiente
+            const gradient = ctx.createLinearGradient(0, 0, 0, size);
+            gradient.addColorStop(0, '#1E90FF');
+            gradient.addColorStop(1, '#0A47A3');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+
+            // Desenhar gota (path simplificado)
+            const top = 20 * scale;
+            const left = 60 * scale;
+            const width = 72 * scale;
+            const height = 145 * scale;
+
+            // Curva superior da gota
+            ctx.moveTo(centerX, top);
+            ctx.quadraticCurveTo(left, centerY - height / 3, left, centerY);
+            ctx.quadraticCurveTo(left, centerY + height / 2, centerX, centerY + height);
+            ctx.quadraticCurveTo(left + width, centerY + height / 2, left + width, centerY);
+            ctx.quadraticCurveTo(centerX + width / 2, centerY - height / 3, centerX, top);
+
+            ctx.fill();
+
+            // Destaque (brilho)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(centerX - 15 * scale, centerY - 60 * scale, 15 * scale, 20 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function initializeIcons() {
+            const sizes = {
+                'mdpi': 48,
+                'hdpi': 72,
+                'xhdpi': 96,
+                'xxhdpi': 144,
+                'xxxhdpi': 192
+            };
+
+            Object.entries(sizes).forEach(([name, size]) => {
+                const canvas = document.getElementById(`canvas-${name}`);
+                const ctx = canvas.getContext('2d');
+                drawDrop(ctx, size);
+            });
+        }
+
+        function downloadIcon(density, size) {
+            const canvas = document.getElementById(`canvas-${density}`);
+            canvas.toBlob(blob => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ic_launcher_${size}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                // Mostrar sucesso
+                const successEl = document.getElementById(`success-${density}`);
+                successEl.style.display = 'block';
+                setTimeout(() => {
+                    successEl.style.display = 'none';
+                }, 2000);
+            });
+        }
+
+        // Inicializar ao carregar
+        window.addEventListener('load', initializeIcons);
+    </script>
+</body>
+</html>

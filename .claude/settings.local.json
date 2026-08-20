@@ -270,7 +270,12 @@
       "Bash(grep -E \"\\\\.\\(dart|swift|kt\\)$\")",
       "Bash(grep -E \"\\\\.\\(dart\\)$\")",
       "Bash(grep -E \"\\\\.\\(rb\\)$\")",
-      "Bash(rubocop --format json)"
+      "Bash(rubocop --format json)",
+      "Bash(rails db:legacy:import_water_meters)",
+      "Bash(file /workspace/app/android/app/src/main/res/mipmap-*/ic_launcher.png)",
+      "Bash(identify /workspace/app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)",
+      "Bash(node seed-canvas.mjs --template /tmp/claude-1001/bundled-skills/2.1.235/1508cde1fd1628ceb75f0f9ffc2389a4/design/payload.template.html --out acal-feature-graphic.html --title 'ACAL - Feature Graphic' --artboard FeatureGraphic.dc.html)",
+      "Bash(python3 -c \"from PIL import Image, ImageDraw\")"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

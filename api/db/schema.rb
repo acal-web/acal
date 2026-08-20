@@ -107,6 +107,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_005001) do
     t.index ["user_id"], name: "index_invoices_on_user_id"
   end
 
+  create_table "legacy_hidrometro", primary_key: "idhidrometro", id: :integer, default: nil, force: :cascade do |t|
+    t.float "consumo"
+    t.float "consumo_final"
+    t.float "consumo_inicial"
+    t.integer "idconta"
+  end
+
   create_table "quality_analyses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.integer "analyzed", null: false
     t.integer "compliant", null: false

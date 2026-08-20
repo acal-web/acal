@@ -46,7 +46,9 @@ namespace :db do
 
     def extract_and_import_data(sql_content)
       conn = ActiveRecord::Base.connection
-      count = 0
+      batch = []
+      batch_size = 5000
+      total_count = 0
 
       # Extract all INSERT statements
       # Format: INSERT INTO `hidrometro` VALUES (id,consumo,idconta,consumo_inicial,consumo_final),...;
@@ -65,20 +67,49 @@ namespace :db do
             consumo_inicial = parts[3].strip == "NULL" ? nil : parts[3].strip.to_f
             consumo_final = parts[4].strip == "NULL" ? nil : parts[4].strip.to_f
 
-            conn.execute(
-              "INSERT INTO legacy_hidrometro (idhidrometro, Consumo, idconta, consumo_inicial, consumo_final) " \
-              "VALUES ($1, $2, $3, $4, $5) " \
-              "ON CONFLICT (idhidrometro) DO NOTHING",
-              [ id, consumo, idconta, consumo_inicial, consumo_final ]
-            )
-            count += 1
+            batch << {
+              idhidrometro: id,
+              consumo: consumo,
+              idconta: idconta,
+              consumo_inicial: consumo_inicial,
+              consumo_final: consumo_final
+            }
+
+            if batch.size >= batch_size
+              import_batch(conn, batch)
+              total_count += batch.size
+              puts "  ✓ #{total_count} records imported..."
+              batch = []
+            end
           rescue StandardError => e
-            # Silently skip errors on individual rows
+            puts "  ⚠ Erro ao processar linha: #{e.message}"
           end
         end
       end
 
-      count
+      # Import remaining batch
+      if batch.any?
+        import_batch(conn, batch)
+        total_count += batch.size
+      end
+
+      total_count
+    end
+
+    def import_batch(conn, batch)
+      values_clause = batch.map do |row|
+        "(#{row[:idhidrometro]}, #{row[:consumo].nil? ? 'NULL' : row[:consumo]}, #{row[:idconta]}, #{row[:consumo_inicial].nil? ? 'NULL' : row[:consumo_inicial]}, #{row[:consumo_final].nil? ? 'NULL' : row[:consumo_final]})"
+      end.join(",\n")
+
+      sql = <<~SQL
+        INSERT INTO legacy_hidrometro (idhidrometro, Consumo, idconta, consumo_inicial, consumo_final)
+        VALUES #{values_clause}
+        ON CONFLICT (idhidrometro) DO NOTHING
+      SQL
+
+      conn.execute(sql)
+    rescue StandardError => e
+      puts "  ❌ Erro ao importar batch: #{e.message}"
     end
   end
 end
