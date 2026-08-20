@@ -275,11 +275,19 @@
       "Bash(file /workspace/app/android/app/src/main/res/mipmap-*/ic_launcher.png)",
       "Bash(identify /workspace/app/android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png)",
       "Bash(node seed-canvas.mjs --template /tmp/claude-1001/bundled-skills/2.1.235/1508cde1fd1628ceb75f0f9ffc2389a4/design/payload.template.html --out acal-feature-graphic.html --title 'ACAL - Feature Graphic' --artboard FeatureGraphic.dc.html)",
-      "Bash(python3 -c \"from PIL import Image, ImageDraw\")"
+      "Bash(python3 -c \"from PIL import Image, ImageDraw\")",
+      "Bash(python3 -c \"from PIL import Image; print\\('PIL disponível'\\)\")",
+      "Bash(apt-get update *)",
+      "Bash(apt-get install *)",
+      "Bash(dart pub *)",
+      "Bash(node seed-canvas.mjs --template /tmp/claude-1001/bundled-skills/2.1.237/c4b50b2c4427127f3b3b5e6b7798fb43/design/payload.template.html --out android-app-icons.html --title 'Android App Icons - Drop' --artboard Main.dc.html)",
+      "Bash(cat ~/keystore-base64.txt 2>/dev/null || echo \"Arquivo não encontrado\")",
+      "Bash(rm /workspace/app/android/app/src/main/res/mipmap-*/ic_launcher.png *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
-      "/workspace/app/lib/features/addresses/widget"
+      "/workspace/app/lib/features/addresses/widget",
+      "/workspace/app/android/app/src/main/res/mipmap-*"
     ]
   }
 }
