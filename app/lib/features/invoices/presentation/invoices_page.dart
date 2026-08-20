@@ -17,6 +17,46 @@ import 'package:printing/printing.dart';
 
 const columnSpacing = 12.0;
 
+class _SlideTransitionRoute extends PageRoute<void> {
+  _SlideTransitionRoute({required this.child});
+
+  final Widget child;
+
+  @override
+  Color? get barrierColor => null;
+
+  @override
+  String? get barrierLabel => null;
+
+  @override
+  bool get maintainState => true;
+
+  @override
+  bool get opaque => true;
+
+  @override
+  Duration get transitionDuration => const Duration(milliseconds: 300);
+
+  @override
+  Widget buildPage(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation) {
+    return SlideTransition(
+      position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(animation),
+      child: child,
+    );
+  }
+
+  @override
+  Widget buildTransitions(BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
+    return SlideTransition(
+      position: Tween<Offset>(begin: Offset.zero, end: const Offset(-1.0, 0.0)).animate(secondaryAnimation),
+      child: SlideTransition(
+        position: Tween<Offset>(begin: const Offset(1.0, 0.0), end: Offset.zero).animate(animation),
+        child: child,
+      ),
+    );
+  }
+}
+
 class InvoicesPage extends StatefulWidget {
   const InvoicesPage({super.key, this.invoiceService});
 
@@ -479,16 +519,8 @@ class _InvoiceRowState extends State<_InvoiceRow> {
     if (!mounted) return;
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (_, _, _) => InvoiceDetailPage(invoiceId: invoiceId),
-        transitionsBuilder: (context, animation, _, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          final tween = Tween(begin: begin, end: end);
-          final offsetAnimation = animation.drive(tween);
-          return SlideTransition(position: offsetAnimation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 300),
+      _SlideTransitionRoute(
+        child: InvoiceDetailPage(invoiceId: invoiceId),
       ),
     );
   }
@@ -748,16 +780,8 @@ class _InvoiceCardState extends State<_InvoiceCard> {
     if (!mounted) return;
     Navigator.push(
       context,
-      PageRouteBuilder(
-        pageBuilder: (_, _, _) => InvoiceDetailPage(invoiceId: invoiceId),
-        transitionsBuilder: (context, animation, _, child) {
-          const begin = Offset(1.0, 0.0);
-          const end = Offset.zero;
-          final tween = Tween(begin: begin, end: end);
-          final offsetAnimation = animation.drive(tween);
-          return SlideTransition(position: offsetAnimation, child: child);
-        },
-        transitionDuration: const Duration(milliseconds: 300),
+      _SlideTransitionRoute(
+        child: InvoiceDetailPage(invoiceId: invoiceId),
       ),
     );
   }
