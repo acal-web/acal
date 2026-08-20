@@ -17,86 +17,106 @@ class InvoiceDetailsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final isMobile = screenWidth < 600;
+    final maxWidth = isMobile ? double.infinity : screenWidth * 0.8;
 
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Card(
-          elevation: 0,
-          color: Colors.transparent,
-          surfaceTintColor: Colors.transparent,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.zero,
-            side: BorderSide(color: cs.outlineVariant, width: 1),
-          ),
+    return Center(
+      child: ConstrainedBox(
+        constraints: BoxConstraints(maxWidth: maxWidth),
+        child: SingleChildScrollView(
           child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                // Row 1 - Title
-                InvoiceTitle(
-                  icon: Icon(
-                    Icons.business,
-                    size: 80,
-                    color: cs.primary,
-                  ),
-                ),
+            padding: const EdgeInsets.all(16),
+            child: Card(
+              elevation: 0,
+              color: Colors.transparent,
+              surfaceTintColor: Colors.transparent,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.zero,
+                side: BorderSide(color: cs.outlineVariant, width: 1),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    // Page 1 Header
+                    InvoiceTitle(
+                      icon: Icon(
+                        Icons.business,
+                        size: 80,
+                        color: cs.primary,
+                      ),
+                    ),
 
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: InvoiceCustomerSection(invoice: invoice),
-                      ),
-                      const SizedBox(width: 32),
-                      Expanded(
-                        child: InvoicePaymentSection(invoice: invoice),
-                      ),
-                      const SizedBox(width: 32),
-                      Expanded(
-                        child: InvoiceSummarySection(invoice: invoice),
-                      ),
+                    // Page 1 Sections
+                    _buildColumnsLayout(isMobile, cs),
+
+                    const SizedBox(height: 32),
+
+                    InvoiceWaterQualitySection(invoice: invoice),
+
+                    const SizedBox(height: 32),
+
+                    CustomPaint(
+                      painter: DashedLinePainter(color: cs.outlineVariant),
+                      size: Size(double.infinity, 1),
+                    ),
+
+                    // Page 2 (Desktop only)
+                    if (!isMobile) ...[
+                      const SizedBox(height: 32),
+                      _buildColumnsLayout(isMobile, cs),
                     ],
-                  ),
+                  ],
                 ),
-
-                const SizedBox(height: 32),
-
-                InvoiceWaterQualitySection(invoice: invoice),
-
-                const SizedBox(height: 32),
-
-                CustomPaint(
-                  painter: DashedLinePainter(color: cs.outlineVariant),
-                  size: Size(double.infinity, 1),
-                ),
-
-                IntrinsicHeight(
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Expanded(
-                        child: InvoiceCustomerSection(invoice: invoice),
-                      ),
-                      const SizedBox(width: 32),
-                      Expanded(
-                        child: InvoicePaymentSection(invoice: invoice),
-                      ),
-                      const SizedBox(width: 32),
-                      Expanded(
-                        child: InvoiceSummarySection(invoice: invoice),
-                      ),
-                    ],
-                  ),
-                )
-
-              ],
+              ),
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildColumnsLayout(bool isMobile, ColorScheme cs) {
+    if (isMobile) {
+      return _buildMobileLayout(cs);
+    } else {
+      return _buildDesktopLayout(cs);
+    }
+  }
+
+  Widget _buildDesktopLayout(ColorScheme cs) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(
+            child: InvoiceCustomerSection(invoice: invoice),
+          ),
+          const SizedBox(width: 32),
+          Expanded(
+            child: InvoicePaymentSection(invoice: invoice),
+          ),
+          const SizedBox(width: 32),
+          Expanded(
+            child: InvoiceSummarySection(invoice: invoice),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMobileLayout(ColorScheme cs) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        InvoiceCustomerSection(invoice: invoice),
+        const SizedBox(height: 24),
+        InvoicePaymentSection(invoice: invoice),
+        const SizedBox(height: 24),
+        InvoiceSummarySection(invoice: invoice),
+      ],
     );
   }
 }
