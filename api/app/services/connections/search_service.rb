@@ -10,7 +10,7 @@ module Connections
 
       if status.present?
         connection_scope = connection_scope.filter_by_status(status)
-      elsif active.present?
+      elsif !active.nil?
         connection_scope = connection_scope.filter_by_active(active)
       end
 
