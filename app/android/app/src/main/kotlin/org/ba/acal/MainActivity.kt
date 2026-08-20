@@ -1,4 +1,4 @@
-package com.example.acalapp
+package org.ba.acal
 
 import io.flutter.embedding.android.FlutterActivity
 
