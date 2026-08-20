@@ -479,8 +479,16 @@ class _InvoiceRowState extends State<_InvoiceRow> {
     if (!mounted) return;
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => InvoiceDetailPage(invoiceId: invoiceId),
+      PageRouteBuilder(
+        pageBuilder: (_, _, _) => InvoiceDetailPage(invoiceId: invoiceId),
+        transitionsBuilder: (context, animation, _, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end);
+          final offsetAnimation = animation.drive(tween);
+          return SlideTransition(position: offsetAnimation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
@@ -735,8 +743,16 @@ class _InvoiceCardState extends State<_InvoiceCard> {
     if (!mounted) return;
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (_) => InvoiceDetailPage(invoiceId: invoiceId),
+      PageRouteBuilder(
+        pageBuilder: (_, _, _) => InvoiceDetailPage(invoiceId: invoiceId),
+        transitionsBuilder: (context, animation, _, child) {
+          const begin = Offset(1.0, 0.0);
+          const end = Offset.zero;
+          final tween = Tween(begin: begin, end: end);
+          final offsetAnimation = animation.drive(tween);
+          return SlideTransition(position: offsetAnimation, child: child);
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }
