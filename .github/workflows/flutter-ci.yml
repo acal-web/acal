@@ -118,6 +118,8 @@ jobs:
     needs: test
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+    env:
+      HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
     defaults:
       run:
         working-directory: app
@@ -139,7 +141,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Create key.properties
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        if: ${{ env.HAS_KEYSTORE == 'true' }}
         run: |
           mkdir -p android
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore.jks

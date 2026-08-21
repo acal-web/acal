@@ -317,7 +317,10 @@
       "Bash(pdftoppm -png -r 130 preview.pdf preview_page)",
       "Bash(pdftoppm -png -r 150 preview.pdf preview_page)",
       "Bash(cd /workspace/api && bundle exec rspec spec/services/invoices/_tmp_preview_spec.rb spec/services/invoices/boleto_pdf_service_spec.rb 2>&1 | tail -60 && cd /tmp/claude-1001/-workspace/e6834f73-a9fa-412c-86ed-7c4783e0d82b/scratchpad && pdfinfo preview.pdf | grep Pages && rm -f preview_page*.png && pdftoppm -png -r 150 preview.pdf preview_page)",
-      "Bash(cat > *)"
+      "Bash(cat > *)",
+      "Bash(RAILS_ENV=test bin/rails runner 'c = Category.unscoped.where\\(name: \"Residente\"\\); puts c.count; c.each { |x| puts x.attributes }')",
+      "Bash(RAILS_ENV=test bin/rails runner 'cat = Category.unscoped.find\\(\"339e251c-8184-4926-a238-e738d64e642a\"\\); puts Connection.unscoped.where\\(category_id: cat.id\\).count')",
+      "Bash(RAILS_ENV=test bin/rails runner 'Category.unscoped.find\\(\"339e251c-8184-4926-a238-e738d64e642a\"\\).delete; puts \"deleted\"; puts Category.unscoped.where\\(name: \"Residente\"\\).count')"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
