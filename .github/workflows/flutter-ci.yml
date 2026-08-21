@@ -146,7 +146,7 @@ jobs:
           mkdir -p android
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore.jks
           cat > android/key.properties << EOF
-          storeFile=keystore.jks
+          storeFile=../keystore.jks
           storePassword=${{ secrets.KEYSTORE_PASSWORD }}
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
