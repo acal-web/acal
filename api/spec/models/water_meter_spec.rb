@@ -124,9 +124,9 @@ RSpec.describe WaterMeter, type: :model do
   end
 
   describe '#water_consumed_value' do
-    it 'calculates value at R$ 0.01 per 4 liters' do
+    it 'calculates value at R$ 4 per 1000 liters' do
       water_meter = create(:water_meter, invoice: invoice, initial_reading: 0, final_reading: 15000)
-      expect(water_meter.water_consumed_value).to be_within(0.01).of(12.5)
+      expect(water_meter.water_consumed_value).to be_within(0.01).of(20.0)
     end
 
     it 'returns zero when consumption is within free tier' do
@@ -136,12 +136,17 @@ RSpec.describe WaterMeter, type: :model do
 
     it 'handles large consumption values' do
       water_meter = create(:water_meter, invoice: invoice, initial_reading: 1000000, final_reading: 1050000)
-      expect(water_meter.water_consumed_value).to be_within(0.01).of(100.0)
+      expect(water_meter.water_consumed_value).to be_within(0.01).of(160.0)
     end
 
     it 'calculates correctly with varying initial readings' do
       water_meter = create(:water_meter, invoice: invoice, initial_reading: 5000, final_reading: 18000)
-      expect(water_meter.water_consumed_value).to be_within(0.01).of(7.5)
+      expect(water_meter.water_consumed_value).to be_within(0.01).of(12.0)
+    end
+
+    it 'never returns a negative value' do
+      water_meter = create(:water_meter, invoice: invoice, initial_reading: 100, final_reading: 200)
+      expect(water_meter.water_consumed_value).to be >= 0
     end
   end
 end

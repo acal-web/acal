@@ -44,7 +44,7 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
   late final CustomerService _customerService;
   late final AddressService _addressService;
 
-  late MonthYear _period;
+  MonthYear? _period;
   Customer? _customer;
   Address? _address;
   _InvoiceStatus _status = _InvoiceStatus.all;
@@ -90,13 +90,19 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
       builder: (context, constraints) {
         final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
-        final periodField = PeriodFilterButton(
-          period: _period,
-          onChanged: (p) {
-            if (p != null) {
-              setState(() => _period = p);
-            }
-          },
+        final periodField = Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Período', style: Theme.of(context).textTheme.labelSmall),
+            const SizedBox(height: 4),
+            SizedBox(
+              width: double.infinity,
+              child: PeriodFilterButton(
+                period: _period,
+                onChanged: (p) => setState(() => _period = p),
+              ),
+            ),
+          ],
         );
 
         final customerField = CustomerSelectField(
@@ -169,54 +175,30 @@ class _InvoiceFilterBarState extends State<InvoiceFilterBar> {
             : Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        SizedBox(
-                          width: 200,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Período',
-                                style: Theme.of(context).textTheme.labelSmall,
-                              ),
-                              const SizedBox(height: 4),
-                              Align(
-                                alignment: Alignment.topLeft,
-                                child: periodField,
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 300,
-                          child: customerField,
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 300,
-                          child: addressField,
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 200,
-                          child: statusField,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Divider(),
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      SizedBox(width: 110, child: clearButton),
+                      Expanded(flex: 2, child: periodField),
                       const SizedBox(width: 8),
-                      SizedBox(width: 110, child: searchButton),
+                      Expanded(flex: 8, child: customerField),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(flex: 2, child: addressField),
+                      const SizedBox(width: 8),
+                      Expanded(child: statusField),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Spacer(flex: 8),
+                      Expanded(flex: 2, child: clearButton),
+                      const SizedBox(width: 8),
+                      Expanded(flex: 2, child: searchButton),
                     ],
                   ),
                 ],

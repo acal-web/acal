@@ -20,7 +20,7 @@ class WaterMeter < ApplicationRecord
   alias_method :total_consumption, :real_consumption
 
   def water_consumed_value
-    (consumption / 4.0) * 0.01
+    (consumption / 1000.0) * 4
   end
 
   private

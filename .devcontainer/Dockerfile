@@ -7,6 +7,7 @@ FROM docker.io/library/ruby:${RUBY_VERSION}-slim
 
 # Keep in sync with the Flutter version used to develop app/ (see `flutter --version`)
 ARG FLUTTER_VERSION=3.44.4
+ARG ANDROID_SDK_ROOT=/opt/android-sdk
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=1000
@@ -15,6 +16,12 @@ ARG USER_GID=1000
 # libpq-dev/libyaml-dev/libvips/postgresql-client: Rails (pg, psych, image_processing)
 # chromium: headless browser for `flutter run -d chrome` / web debugging — no X server in the
 # container, so it's always driven with --headless=new (see .vscode/launch.json).
+# Android SDK dependencies: libstdc++6, gradle (via sdkmanager)
+# openjdk-21-jre-headless: sdkmanager needs `java` on PATH below (17 isn't packaged for this
+# base image's Debian release, but sdkmanager only needs *a* JVM here, not a specific version).
+# The devcontainer.json "java" feature separately installs JDK 17 for Gradle/runtime use, but
+# devcontainer CLI layers features in *after* this Dockerfile's own instructions, so it isn't
+# available yet when sdkmanager runs during build.
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
     build-essential \
@@ -23,6 +30,8 @@ RUN apt-get update -qq && \
     chromium \
     chromium-driver \
     chromium-sandbox \
+    libstdc++6 \
+    openjdk-21-jre-headless \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
 # Flutter looks for `google-chrome` by default; point it at the Debian chromium package instead.
@@ -45,13 +54,30 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
     && chown ${USERNAME}:${USERNAME} /home/${USERNAME}/.ssh \
     && chmod 0700 /home/${USERNAME}/.ssh
 
+# Install Android SDK
+RUN mkdir -p ${ANDROID_SDK_ROOT} && \
+    curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip && \
+    unzip -q /tmp/cmdline-tools.zip -d ${ANDROID_SDK_ROOT} && \
+    rm /tmp/cmdline-tools.zip && \
+    mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools/latest && \
+    mv ${ANDROID_SDK_ROOT}/cmdline-tools/* ${ANDROID_SDK_ROOT}/cmdline-tools/latest || true && \
+    chown -R ${USERNAME}:${USERNAME} ${ANDROID_SDK_ROOT}
+ENV ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}
+ENV PATH="${ANDROID_SDK_ROOT}/cmdline-tools/latest/bin:${ANDROID_SDK_ROOT}/platform-tools:${PATH}"
+
+# Accept Android SDK licenses and install components
+USER ${USERNAME}
+RUN yes | sdkmanager --licenses > /dev/null 2>&1 || true && \
+    sdkmanager "platform-tools" "build-tools;35.0.0" "platforms;android-35" "platforms;android-34"
+
+USER root
 RUN git clone --depth 1 --branch ${FLUTTER_VERSION} https://github.com/flutter/flutter.git /opt/flutter \
     && chown -R ${USERNAME}:${USERNAME} /opt/flutter \
     && git config --global --add safe.directory /opt/flutter
 ENV PATH="/opt/flutter/bin:/opt/flutter/bin/cache/dart-sdk/bin:${PATH}"
 
 USER ${USERNAME}
-RUN flutter config --no-analytics --enable-web \
+RUN flutter config --no-analytics --enable-web --android-sdk ${ANDROID_SDK_ROOT} \
     && flutter precache --web
 
 WORKDIR /workspace

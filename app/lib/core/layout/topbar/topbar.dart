@@ -21,19 +21,22 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: cs.outlineVariant)),
         ),
-        child: SizedBox(
-          height: kToolbarHeight,
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              TopBarLogo(onMenuTap: onMenuTap),
-              Expanded(child: TopBarBody()),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 12),
-                child: TopBarHelpers(),
-              ),
-              const TopBarUserMenu(),
-            ],
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: kToolbarHeight,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                TopBarLogo(onMenuTap: onMenuTap),
+                Expanded(child: TopBarBody()),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: TopBarHelpers(),
+                ),
+                const TopBarUserMenu(),
+              ],
+            ),
           ),
         ),
       ),

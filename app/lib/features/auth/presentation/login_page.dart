@@ -14,6 +14,7 @@ class _LoginPageState extends State<LoginPage> {
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
+  bool _obscurePassword = true;
   String? _errorMessage;
   late AuthService _authService;
 
@@ -184,7 +185,7 @@ class _LoginPageState extends State<LoginPage> {
                       const SizedBox(height: 20),
                       TextField(
                         controller: _passwordController,
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         enabled: !_isLoading,
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _handleLogin(),
@@ -192,6 +193,19 @@ class _LoginPageState extends State<LoginPage> {
                           labelText: 'Senha',
                           hintText: '••••••••',
                           prefixIcon: Icon(Icons.lock_outline, color: cs.outline),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility_off_outlined
+                                  : Icons.visibility_outlined,
+                              color: cs.outline,
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),

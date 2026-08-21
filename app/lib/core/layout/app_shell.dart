@@ -40,29 +40,31 @@ class _AppShellState extends State<AppShell> {
         // Desktop: the menu pushes the body over, sharing the row. Mobile:
         // the body keeps full width and the menu floats above it instead,
         // to avoid squeezing the content into an overflow.
-        body: Stack(
-          children: [
-            Row(
-              children: [
-                if (_menuVisible && !isNarrow) const SideMenu(),
-                Expanded(child: widget.body),
-              ],
-            ),
-            if (_menuVisible && isNarrow) ...[
-              Positioned.fill(
-                child: GestureDetector(
-                  onTap: _closeMenu,
-                  child: Container(color: Colors.black.withValues(alpha: 0.4)),
+        body: SafeArea(
+          child: Stack(
+            children: [
+              Row(
+                children: [
+                  if (_menuVisible && !isNarrow) const SideMenu(),
+                  Expanded(child: widget.body),
+                ],
+              ),
+              if (_menuVisible && isNarrow) ...[
+                Positioned.fill(
+                  child: GestureDetector(
+                    onTap: _closeMenu,
+                    child: Container(color: Colors.black.withValues(alpha: 0.4)),
+                  ),
                 ),
-              ),
-              Positioned(
-                top: 0,
-                bottom: 0,
-                left: 0,
-                child: SideMenu(onNavigate: _closeMenu),
-              ),
+                Positioned(
+                  top: 0,
+                  bottom: 0,
+                  left: 0,
+                  child: SideMenu(onNavigate: _closeMenu),
+                ),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );

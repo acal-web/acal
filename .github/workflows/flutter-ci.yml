@@ -139,9 +139,7 @@ jobs:
           distribution: 'temurin'
 
       - name: Create key.properties
-        if: env.KEYSTORE_BASE64 != ''
-        env:
-          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         run: |
           mkdir -p android
           echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore.jks
@@ -151,7 +149,6 @@ jobs:
           keyAlias=${{ secrets.KEY_ALIAS }}
           keyPassword=${{ secrets.KEY_PASSWORD }}
           EOF
-        working-directory: .
 
       - name: Get Flutter dependencies
         run: flutter pub get
