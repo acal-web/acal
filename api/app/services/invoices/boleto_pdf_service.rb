@@ -239,20 +239,29 @@ module Invoices
       ], width, value_align: :right)
 
       pdf.move_down 8
+      draw_total_box(pdf, width, 32, "Valor total", PdfDocument.currency(invoice.amount))
+    end
+
+    def draw_total_box(pdf, width, height, label, value)
       y = pdf.cursor
+
       pdf.stroke_color BORDER_COLOR
-      pdf.rounded_rectangle([ 0, y ], width, 30, 6)
+      pdf.rounded_rectangle([ 0, y ], width, height, 6)
       pdf.stroke
       pdf.stroke_color "000000"
 
-      pdf.bounding_box([ 0, y ], width: width, height: 30) do
-        pdf.move_down 8
-        pdf.table([ [ "Valor total", PdfDocument.currency(invoice.amount) ] ],
-                  column_widths: [ width * 0.5, width * 0.5 ],
+      content_height = 14
+      top_pad = [ (height - content_height) / 2.0, 4 ].max
+
+      pdf.bounding_box([ 0, y ], width: width, height: height) do
+        pdf.move_down top_pad
+        pdf.table([ [ label, value ] ], column_widths: [ width * 0.5, width * 0.5 ],
                   cell_style: { borders: [], padding: [ 0, 4, 0, 4 ], size: 12, font_style: :bold }) do
           column(1).align = :right
         end
       end
+
+      pdf.move_down height
     end
 
     # Label/value rows — label left, value either immediately after (identity
