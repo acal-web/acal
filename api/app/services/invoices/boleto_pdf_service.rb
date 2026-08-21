@@ -20,7 +20,16 @@ module Invoices
     GAP = 8
 
     def self.call(invoice)
-      new(invoice).call
+      pdf = PdfDocument.build(margin: 22)
+      new(invoice).draw(pdf)
+      pdf.render
+    end
+
+    # Draws one invoice's boleto onto an existing document, so callers that
+    # print multiple invoices (e.g. Invoices::PrintFilteredPdfService) can
+    # reuse this exact layout instead of maintaining a second template.
+    def self.draw(pdf, invoice)
+      new(invoice).draw(pdf)
     end
 
     def initialize(invoice)
@@ -28,9 +37,7 @@ module Invoices
       @connection = invoice.connection
     end
 
-    def call
-      pdf = PdfDocument.build(margin: 22)
-
+    def draw(pdf)
       draw_letterhead(pdf)
 
       # The water quality summary is shared account-wide for the reference
@@ -42,8 +49,6 @@ module Invoices
       draw_divider(pdf)
 
       draw_columns(pdf)
-
-      pdf.render
     end
 
     private
