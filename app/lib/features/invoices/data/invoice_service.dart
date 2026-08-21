@@ -99,6 +99,8 @@ class InvoiceService {
     String? customerId,
     String? addressId,
     String? status,
+    String? sortBy,
+    bool? sortAscending,
   }) => _http.getBytes(
         '/invoices/print_filtered',
         query: {
@@ -107,6 +109,8 @@ class InvoiceService {
           'customer_id': ?customerId,
           'address_id': ?addressId,
           'status': ?status,
+          'sort_by': ?sortBy,
+          if (sortAscending != null) 'sort_ascending': '$sortAscending',
         },
       );
 

@@ -200,6 +200,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
           customerId: _customerId,
           addressId: _addressId,
           status: _status,
+          sortBy: _sortBy,
+          sortAscending: _sortAscending,
         ),
       );
     } catch (_) {
