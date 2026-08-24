@@ -27,6 +27,12 @@ ENV RAILS_ENV="production" \
     BUNDLE_WITHOUT="development" \
     LD_PRELOAD="/usr/local/lib/libjemalloc.so"
 
+# Thruster (the proxy in front of Puma, started via bin/thrust below) defaults
+# to a 30s read/write timeout, which is too short for long-running requests
+# like /invoices/print_filtered generating a PDF for a large filtered batch.
+ENV HTTP_READ_TIMEOUT="180" \
+    HTTP_WRITE_TIMEOUT="180"
+
 # Throw-away build stage to reduce size of final image
 FROM base AS build
 

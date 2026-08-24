@@ -324,7 +324,15 @@
       "Bash(gh run *)",
       "Bash(RAILS_ENV=test bin/rails runner ' *)",
       "Bash(RAILS_ENV=test bin/rails runner 'puts Category.unscoped.count; Category.unscoped.order\\(:created_at\\).each { |c| puts [c.id, c.name, c.created_at, c.deleted_at].inspect }')",
-      "Bash(RAILS_ENV=test bin/rails runner 'puts Category.unscoped.count')"
+      "Bash(RAILS_ENV=test bin/rails runner 'puts Category.unscoped.count')",
+      "Bash(curl -s -i --max-time 90 --url 'https://api.acalapp.site/invoices/print_filtered?year=2026&month=7&sort_by=reference_date&sort_ascending=false' -H 'accept: */*' -H 'authorization: Bearer ***REMOVED-JWT***' -H 'content-type: application/json' -o /tmp/claude-1001/-workspace/94c8f7a4-a304-46f1-a3df-d5d002837513/scratchpad/print_filtered_response.bin -D - -w '\\\\nTIME_TOTAL=%{time_total}s HTTP_CODE=%{http_code}\\\\n')",
+      "Bash(RAILS_ENV=development bin/rails runner 'puts Invoice.count')",
+      "Bash(RAILS_ENV=development bin/rails runner ' *)",
+      "Bash(find / -iname \"*thruster*\" -path \"*gems*\" -maxdepth 8)",
+      "Bash(find /usr/local/bundle/gems/thruster-0.1.20-x86_64-linux -type f | head -50)",
+      "Read(//usr/local/bundle/gems/thruster-0.1.20-x86_64-linux/**)",
+      "Bash(gh api *)",
+      "WebFetch(domain:raw.githubusercontent.com)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
