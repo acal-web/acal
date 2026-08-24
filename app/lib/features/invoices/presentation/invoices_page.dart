@@ -258,29 +258,31 @@ class _InvoicesPageState extends State<InvoicesPage> {
             const Divider(),
             InvoiceFilterBar(onSearch: _search),
             const SizedBox(height: 12),
-            Align(
-              alignment: Alignment.centerRight,
-              child: FButton(
-                variant: FButtonVariant.outline,
-                mainAxisSize: MainAxisSize.min,
-                onPress: _allInvoices.isEmpty || _printingAll || _allInvoices.length > 3000 ? null : _printAll,
-                child: Row(
+            if (narrow) ...[
+              Align(
+                alignment: Alignment.centerRight,
+                child: FButton(
+                  variant: FButtonVariant.outline,
                   mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.print_outlined, size: 18),
-                    const SizedBox(width: 8),
-                    Text(
-                      _printingAll
-                          ? 'Gerando...'
-                          : _allInvoices.length > 3000
-                              ? 'Máximo 3000 itens'
-                              : 'Imprimir Filtrados',
-                    ),
-                  ],
+                  onPress: _allInvoices.isEmpty || _printingAll || _allInvoices.length > 3000 ? null : _printAll,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.print_outlined, size: 18),
+                      const SizedBox(width: 8),
+                      Text(
+                        _printingAll
+                            ? 'Gerando...'
+                            : _allInvoices.length > 3000
+                                ? 'Máximo 3000 itens'
+                                : 'Imprimir Filtrados',
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-            const SizedBox(height: 8),
+              const SizedBox(height: 8),
+            ],
             Expanded(
               child: _errorMessage != null
                   ? _buildErrorView()
@@ -326,6 +328,8 @@ class _InvoicesPageState extends State<InvoicesPage> {
             sortBy: _sortBy,
             sortAscending: _sortAscending,
             onSort: _sort,
+            onPrint: _allInvoices.isEmpty || _printingAll || _allInvoices.length > 3000 ? null : _printAll,
+            printTooltip: _allInvoices.length > 3000 ? 'Máximo 3000 itens' : null,
           ),
           const Divider(height: 1),
         ],
@@ -378,11 +382,15 @@ class _TableHeader extends StatelessWidget {
     required this.sortBy,
     required this.sortAscending,
     required this.onSort,
+    required this.onPrint,
+    this.printTooltip,
   });
 
   final String sortBy;
   final bool sortAscending;
   final Function(String) onSort;
+  final VoidCallback? onPrint;
+  final String? printTooltip;
 
   @override
   Widget build(BuildContext context) {
@@ -457,7 +465,32 @@ class _TableHeader extends StatelessWidget {
           ),
           SizedBox(
             width: 88,
-            child: Text('Ações', style: headerStyle),
+            child: PopupMenuButton<String>(
+              enabled: onPrint != null,
+              tooltip: printTooltip ?? '',
+              onSelected: (value) {
+                if (value == 'print') onPrint?.call();
+              },
+              itemBuilder: (context) => [
+                PopupMenuItem<String>(
+                  value: 'print',
+                  child: const Row(
+                    children: [
+                      Icon(Icons.print_outlined, size: 18),
+                      SizedBox(width: 12),
+                      Text('Imprimir'),
+                    ],
+                  ),
+                ),
+              ],
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Ações', style: headerStyle),
+                  const Icon(Icons.arrow_drop_down, size: 16),
+                ],
+              ),
+            ),
           ),
         ],
       ),

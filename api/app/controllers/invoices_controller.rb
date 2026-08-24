@@ -85,7 +85,7 @@ class InvoicesController < ApplicationController
       .filter_by_status(params[:status])
       .includes(connection: %i[customer address category], water_meter: {})
 
-    invoices = apply_sort(invoices, params[:sort_by], params[:sort_ascending] == "true")
+    invoices = apply_sort(invoices, params[:sort_by], params[:sort_ascending] == "true").to_a
 
     return head :no_content if invoices.empty?
 

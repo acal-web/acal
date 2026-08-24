@@ -322,7 +322,9 @@
       "Bash(RAILS_ENV=test bin/rails runner 'cat = Category.unscoped.find\\(\"339e251c-8184-4926-a238-e738d64e642a\"\\); puts Connection.unscoped.where\\(category_id: cat.id\\).count')",
       "Bash(RAILS_ENV=test bin/rails runner 'Category.unscoped.find\\(\"339e251c-8184-4926-a238-e738d64e642a\"\\).delete; puts \"deleted\"; puts Category.unscoped.where\\(name: \"Residente\"\\).count')",
       "Bash(gh run *)",
-      "Bash(RAILS_ENV=test bin/rails runner ' *)"
+      "Bash(RAILS_ENV=test bin/rails runner ' *)",
+      "Bash(RAILS_ENV=test bin/rails runner 'puts Category.unscoped.count; Category.unscoped.order\\(:created_at\\).each { |c| puts [c.id, c.name, c.created_at, c.deleted_at].inspect }')",
+      "Bash(RAILS_ENV=test bin/rails runner 'puts Category.unscoped.count')"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

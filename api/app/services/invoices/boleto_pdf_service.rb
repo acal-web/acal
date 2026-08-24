@@ -28,13 +28,18 @@ module Invoices
     # Draws one invoice's boleto onto an existing document, so callers that
     # print multiple invoices (e.g. Invoices::PrintFilteredPdfService) can
     # reuse this exact layout instead of maintaining a second template.
-    def self.draw(pdf, invoice)
-      new(invoice).draw(pdf)
+    #
+    # quality_analyses: lets batch callers pass in a preloaded set (shared
+    # across every invoice from the same reference month) instead of each
+    # invoice re-querying for it individually.
+    def self.draw(pdf, invoice, quality_analyses: nil)
+      new(invoice, quality_analyses: quality_analyses).draw(pdf)
     end
 
-    def initialize(invoice)
+    def initialize(invoice, quality_analyses: nil)
       @invoice = invoice
       @connection = invoice.connection
+      @quality_analyses = quality_analyses
     end
 
     def draw(pdf)
@@ -283,7 +288,7 @@ module Invoices
     # -- Water quality table + legend ---------------------------------------
 
     def draw_water_quality(pdf)
-      analyses = invoice.quality_analyses.to_a
+      analyses = @quality_analyses || invoice.quality_analyses.to_a
 
       pdf.font(PdfDocument::FONT_NAME, style: :bold) { pdf.text "PADRÃO DA PORTARIA MS 2914/2011", size: 10, align: :center }
       pdf.move_down 4

@@ -213,7 +213,7 @@ void main() {
     await _pump(tester, service);
 
     // PopupMenuButton opens to show menu items with icons
-    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await tester.tap(find.byType(PopupMenuButton<String>).last);
     await tester.pumpAndSettle();
 
     // Should show "Marcar como Paga" option
@@ -243,7 +243,7 @@ void main() {
     await _pump(tester, service);
 
     // PopupMenuButton opens to show menu items
-    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await tester.tap(find.byType(PopupMenuButton<String>).last);
     await tester.pumpAndSettle();
 
     // Should show "Paga" status instead of mark-paid option
@@ -256,7 +256,7 @@ void main() {
     await _pump(tester, service);
 
     // PopupMenuButton opens to show menu items
-    await tester.tap(find.byType(PopupMenuButton<String>).first);
+    await tester.tap(find.byType(PopupMenuButton<String>).last);
     await tester.pumpAndSettle();
 
     // Should show "Visualizar" option as first item

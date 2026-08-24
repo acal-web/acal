@@ -15,7 +15,10 @@ class QualityAnalysis < ApplicationRecord
     presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
   scope :filter_by_period, ->(year, month) {
-    where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month) if year.present? && month.present?
+    if year.present? && month.present?
+      start_date = Date.new(year.to_i, month.to_i, 1)
+      where(reference_date: start_date..start_date.end_of_month)
+    end
   }
 
   scope :ordered, -> { order(reference_date: :desc, param_name: :asc) }

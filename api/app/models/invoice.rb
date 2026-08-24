@@ -12,7 +12,10 @@ class Invoice < ApplicationRecord
   before_save :update_last_updated_at
 
   scope :filter_by_period, ->(year, month) {
-    where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", year, month) if year.present? && month.present?
+    if year.present? && month.present?
+      start_date = Date.new(year.to_i, month.to_i, 1)
+      where(reference_date: start_date..start_date.end_of_month)
+    end
   }
 
   scope :filter_by_customer, ->(customer_id) {
@@ -45,7 +48,7 @@ class Invoice < ApplicationRecord
   end
 
   def quality_analyses
-    QualityAnalysis.where("EXTRACT(YEAR FROM reference_date) = ? AND EXTRACT(MONTH FROM reference_date) = ?", reference_date.year, reference_date.month)
+    QualityAnalysis.where(reference_date: reference_date.beginning_of_month..reference_date.end_of_month)
   end
 
   private
