@@ -15,7 +15,7 @@ import 'package:acalapp/features/invoices/presentation/generate_invoices_page.da
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/features/quality/presentation/quality_page.dart';
 import 'package:acalapp/features/customer/presentation/customer_page.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import 'package:go_router/go_router.dart';
 
 late GoRouter appRouter;
@@ -81,7 +81,18 @@ void initializeRouter(Listenable currentUser) {
         ),
         GoRoute(
           path: '/invoices',
-          pageBuilder: (context, state) => const NoTransitionPage(child: InvoicesPage()),
+          pageBuilder: (context, state) => CustomTransitionPage(
+            key: state.pageKey,
+            transitionDuration: const Duration(milliseconds: 300),
+            reverseTransitionDuration: const Duration(milliseconds: 300),
+            child: const InvoicesPage(),
+            transitionsBuilder: (context, animation, secondaryAnimation, child) {
+              return SlideTransition(
+                position: Tween<Offset>(begin: Offset.zero, end: const Offset(-1.0, 0.0)).animate(secondaryAnimation),
+                child: child,
+              );
+            },
+          ),
         ),
         GoRoute(
           path: '/cashbox',

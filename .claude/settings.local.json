@@ -332,7 +332,9 @@
       "Bash(find /usr/local/bundle/gems/thruster-0.1.20-x86_64-linux -type f | head -50)",
       "Read(//usr/local/bundle/gems/thruster-0.1.20-x86_64-linux/**)",
       "Bash(gh api *)",
-      "WebFetch(domain:raw.githubusercontent.com)"
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(grep -n \"class NoTransitionPage\" -A 25 /home/vscode/.pub-cache/hosted/pub.dev/go_router-17.4.0/lib/src/pages/custom_transition_page.dart)",
+      "Read(//home/vscode/.pub-cache/hosted/pub.dev/go_router-17.4.0/lib/src/pages/**)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",
