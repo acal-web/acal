@@ -127,6 +127,11 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
   }
 
   Future<void> _generate() async {
+    // Guards against a fast double-click/double-tap firing this twice: the
+    // button only disables on the next rebuild, so both taps can still hit
+    // the old (enabled) widget if they land before that repaint.
+    if (_generating) return;
+
     final dueDate = _dueDate;
     if (_selected.isEmpty || dueDate == null) return;
 
