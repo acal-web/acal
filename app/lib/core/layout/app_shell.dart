@@ -34,37 +34,42 @@ class _AppShellState extends State<AppShell> {
   Widget build(BuildContext context) {
     final isNarrow = MediaQuery.sizeOf(context).width < LayoutConfig.menuBreakpoint;
 
-    return SelectionArea(
-      child: Scaffold(
-        appBar: TopBar(onMenuTap: _toggleMenu),
-        // Desktop: the menu pushes the body over, sharing the row. Mobile:
-        // the body keeps full width and the menu floats above it instead,
-        // to avoid squeezing the content into an overflow.
-        body: SafeArea(
-          child: Stack(
-            children: [
-              Row(
-                children: [
-                  if (_menuVisible && !isNarrow) const SideMenu(),
-                  Expanded(child: widget.body),
-                ],
-              ),
-              if (_menuVisible && isNarrow) ...[
-                Positioned.fill(
-                  child: GestureDetector(
-                    onTap: _closeMenu,
-                    child: Container(color: Colors.black.withValues(alpha: 0.4)),
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  bottom: 0,
-                  left: 0,
-                  child: SideMenu(onNavigate: _closeMenu),
-                ),
+    return Scaffold(
+      appBar: TopBar(onMenuTap: _toggleMenu),
+      // Desktop: the menu pushes the body over, sharing the row. Mobile:
+      // the body keeps full width and the menu floats above it instead,
+      // to avoid squeezing the content into an overflow.
+      //
+      // SelectionArea wraps only the body, not the menu/topbar: it installs
+      // its own gesture recognizers, and Flutter has long-standing bugs where
+      // those can end up swallowing InkWell/onTap events elsewhere in the
+      // same SelectionArea after selectable content nearby is interacted
+      // with or rebuilt (https://github.com/flutter/flutter/issues/141151) —
+      // keeping nav chrome outside it means that failure mode can't reach it.
+      body: SafeArea(
+        child: Stack(
+          children: [
+            Row(
+              children: [
+                if (_menuVisible && !isNarrow) const SideMenu(),
+                Expanded(child: SelectionArea(child: widget.body)),
               ],
+            ),
+            if (_menuVisible && isNarrow) ...[
+              Positioned.fill(
+                child: GestureDetector(
+                  onTap: _closeMenu,
+                  child: Container(color: Colors.black.withValues(alpha: 0.4)),
+                ),
+              ),
+              Positioned(
+                top: 0,
+                bottom: 0,
+                left: 0,
+                child: SideMenu(onNavigate: _closeMenu),
+              ),
             ],
-          ),
+          ],
         ),
       ),
     );
