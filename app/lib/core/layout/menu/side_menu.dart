@@ -1,9 +1,11 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/core/services/version_service.dart';
 import 'package:acalapp/features/auth/domain/permissions.dart';
 import 'package:acalapp/features/auth/domain/user_role.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 
 typedef _MenuItemData = ({
   IconData icon,
@@ -94,13 +96,21 @@ class SideMenu extends StatelessWidget {
         color: theme.scaffoldBackgroundColor,
         border: Border(right: BorderSide(color: cs.outlineVariant)),
       ),
-      child: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            for (final section in _menuSections) ..._buildSection(context, section, userRole, location),
-          ],
-        ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final section in _menuSections) ..._buildSection(context, section, userRole, location),
+                ],
+              ),
+            ),
+          ),
+          const _VersionFooter(),
+        ],
       ),
     );
   }
@@ -217,6 +227,52 @@ class _MenuItem extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _VersionFooter extends StatefulWidget {
+  const _VersionFooter();
+
+  @override
+  State<_VersionFooter> createState() => _VersionFooterState();
+}
+
+class _VersionFooterState extends State<_VersionFooter> {
+  String? _appVersion;
+  String? _apiVersion;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadVersions();
+  }
+
+  Future<void> _loadVersions() async {
+    final appVersion = (await PackageInfo.fromPlatform()).version;
+    if (mounted) setState(() => _appVersion = appVersion);
+
+    try {
+      final apiVersion = await VersionService().apiVersion();
+      if (mounted) setState(() => _apiVersion = apiVersion);
+    } catch (_) {
+      if (mounted) setState(() => _apiVersion = '—');
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final style = TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant, fontSize: 11);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('App versão ${_appVersion ?? '—'}', style: style),
+          Text('API versão ${_apiVersion ?? '—'}', style: style),
+        ],
       ),
     );
   }

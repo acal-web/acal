@@ -1,6 +1,7 @@
 Rails.application.routes.draw do
   resource :session, only: [ :create, :destroy ]
   get "me", to: "me#show"
+  get "version", to: "version#show"
   resources :users do
     member do
       patch :restore
