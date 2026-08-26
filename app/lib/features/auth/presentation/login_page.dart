@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:acalapp/features/auth/data/auth_service.dart';
 import 'package:acalapp/features/auth/data/token_storage.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
+import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -261,6 +262,13 @@ class _LoginPageState extends State<LoginPage> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
+                      ),
+                      const SizedBox(height: 16),
+                      Center(
+                        child: TextButton(
+                          onPressed: _isLoading ? null : () => context.go('/portal/login'),
+                          child: const Text('Sou associado — ver minhas faturas'),
+                        ),
                       ),
                       const SizedBox(height: 16),
                       Center(

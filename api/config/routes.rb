@@ -47,6 +47,17 @@ Rails.application.routes.draw do
     end
   end
 
+  namespace :portal do
+    post "session", to: "sessions#create"
+    delete "session", to: "sessions#destroy"
+    get "me", to: "sessions#me"
+    resources :invoices, only: [ :index, :show ] do
+      member do
+        get :pdf
+      end
+    end
+  end
+
   # Test-only reset endpoint for the Maestro E2E suite — the block below is
   # never evaluated outside RAILS_ENV=test, so the route doesn't exist in
   # dev/production.

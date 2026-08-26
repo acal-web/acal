@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_17_005001) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_26_231445) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -64,9 +64,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_005001) do
 
   create_table "customers", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.string "customer_code", limit: 10
     t.datetime "deleted_at"
     t.string "document"
+    t.integer "failed_login_attempts", default: 0, null: false
     t.integer "legacy_id"
+    t.datetime "locked_until"
     t.integer "membership_number"
     t.string "name"
     t.jsonb "tags", default: [], null: false
@@ -74,6 +77,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_17_005001) do
     t.boolean "voter", default: false, null: false
     t.index "lower((document)::text) varchar_pattern_ops", name: "index_customers_document_lower"
     t.index "lower((name)::text) varchar_pattern_ops", name: "index_customers_name_lower"
+    t.index ["customer_code"], name: "index_customers_on_customer_code", unique: true
     t.index ["document"], name: "index_customers_on_document", unique: true
     t.index ["membership_number"], name: "index_customers_on_membership_number"
     t.index ["name"], name: "index_customers_on_name"

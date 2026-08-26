@@ -4,6 +4,11 @@ module AuthenticationHelper
     @auth_headers = { "Authorization" => "Bearer #{token}" }
   end
 
+  def sign_in_as_customer(customer)
+    token = JwtToken.encode(customer.id, key: :customer_id)
+    @auth_headers = { "Authorization" => "Bearer #{token}" }
+  end
+
   def auth_headers
     @auth_headers || {}
   end

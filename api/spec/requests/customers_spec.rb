@@ -161,6 +161,9 @@ RSpec.describe "Customers", type: :request do
           "voter" => true,
           "legacy_id" => nil,
           "tags" => [],
+          "customer_code" => customer.customer_code,
+          "failed_login_attempts" => 0,
+          "locked_until" => nil,
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil
@@ -205,6 +208,9 @@ RSpec.describe "Customers", type: :request do
           "voter" => true,
           "legacy_id" => nil,
           "tags" => [],
+          "customer_code" => customer.customer_code,
+          "failed_login_attempts" => 0,
+          "locked_until" => nil,
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil
@@ -352,6 +358,9 @@ RSpec.describe "Customers", type: :request do
           "voter" => false,
           "legacy_id" => nil,
           "tags" => [],
+          "customer_code" => customer.customer_code,
+          "failed_login_attempts" => 0,
+          "locked_until" => nil,
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil

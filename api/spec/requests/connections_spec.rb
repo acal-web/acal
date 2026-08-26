@@ -10,6 +10,9 @@ RSpec.describe "Connections", type: :request do
       "voter" => customer.voter,
       "legacy_id" => customer.legacy_id,
       "tags" => customer.tags,
+      "customer_code" => customer.customer_code,
+      "failed_login_attempts" => customer.failed_login_attempts,
+      "locked_until" => customer.locked_until,
       "created_at" => customer.created_at.as_json,
       "updated_at" => customer.updated_at.as_json,
       "deleted_at" => customer.deleted_at
