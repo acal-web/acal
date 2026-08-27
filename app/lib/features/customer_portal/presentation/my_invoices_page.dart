@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
-import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
+import 'package:acalapp/core/layout/topbar/topbar_fragments/topbar_helpers.dart';
+import 'package:acalapp/core/layout/topbar/topbar_fragments/topbar_user_menu.dart';
 import 'package:acalapp/features/customer_portal/data/customer_invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
@@ -82,19 +83,9 @@ class _MyInvoicesPageState extends State<MyInvoicesPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final user = CurrentUserScope.of(context).user;
 
     return Scaffold(
-      appBar: AppBar(
-        title: Text(user != null ? 'Faturas de ${user.name}' : 'Minhas Faturas'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            tooltip: 'Sair',
-            onPressed: () => CurrentUserScope.of(context).logout(),
-          ),
-        ],
-      ),
+      appBar: const _PortalTopBar(),
       body: _errorMessage != null && _invoices.isEmpty
           ? _buildErrorView(theme, cs)
           : _invoices.isEmpty && !_isLoading
@@ -142,6 +133,48 @@ class _MyInvoicesPageState extends State<MyInvoicesPage> {
   }
 }
 
+/// Same toolbar as the staff [TopBar], minus the hamburger/[SideMenu] toggle
+/// — the portal has no side menu to open, but keeps the same bell and user
+/// avatar (with its logout action) for a consistent look.
+class _PortalTopBar extends StatelessWidget implements PreferredSizeWidget {
+  const _PortalTopBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Material(
+      color: Theme.of(context).scaffoldBackgroundColor,
+      elevation: 0,
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          border: Border(bottom: BorderSide(color: cs.outlineVariant)),
+        ),
+        child: SafeArea(
+          bottom: false,
+          child: SizedBox(
+            height: kToolbarHeight,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Expanded(child: SizedBox()),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 12),
+                  child: TopBarHelpers(),
+                ),
+                const TopBarUserMenu(),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+}
+
 class _InvoiceCard extends StatefulWidget {
   const _InvoiceCard({required this.invoice, required this.service, required this.formatDate});
 
@@ -175,57 +208,87 @@ class _InvoiceCardState extends State<_InvoiceCard> {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
     final invoice = widget.invoice;
+    final connection = invoice.connection;
 
     return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      margin: const EdgeInsets.only(bottom: 12),
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(color: cs.outlineVariant),
+      ),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: _loadingPdf ? null : _viewPdf,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                spacing: 8,
                 children: [
-                  Text(
-                    'Referência ${formatMonthReference(invoice.referenceDate)}',
-                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+                  Expanded(
+                    child: Text(
+                      invoice.number ?? '—',
+                      style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                    ),
                   ),
-                  const SizedBox(height: 4),
                   Text(
-                    'Vencimento ${widget.formatDate(invoice.dueDate)}',
-                    style: theme.textTheme.bodySmall?.copyWith(color: cs.outline),
+                    formatMonthReference(invoice.referenceDate),
+                    style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
                   ),
-                  const SizedBox(height: 8),
-                  Row(
+                ],
+              ),
+              const SizedBox(height: 8),
+              Text(connection?.customer?.name ?? '—', style: theme.textTheme.bodyMedium),
+              if (connection != null) ...[
+                const SizedBox(height: 4),
+                Text(
+                  '${connection.address?.name ?? '—'}, ${connection.number}${connection.letter ?? ''}',
+                  style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant),
+                ),
+              ],
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(formatBRL(invoice.amount), style: theme.textTheme.titleMedium),
-                      const SizedBox(width: 12),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: cs.error.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          'Pendente',
-                          style: theme.textTheme.bodySmall?.copyWith(
-                            color: cs.error,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
+                      Text('Vencimento:', style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                      Text(
+                        widget.formatDate(invoice.dueDate),
+                        style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
                       ),
+                    ],
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    spacing: 8,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Text('Valor:', style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
+                          Text(
+                            formatBRL(invoice.amount),
+                            style: theme.textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w500),
+                          ),
+                        ],
+                      ),
+                      if (_loadingPdf)
+                        const SizedBox(
+                          width: 16,
+                          height: 16,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
                     ],
                   ),
                 ],
               ),
-            ),
-            IconButton(
-              icon: _loadingPdf
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-                  : const Icon(Icons.picture_as_pdf_outlined),
-              tooltip: 'Ver fatura',
-              onPressed: _loadingPdf ? null : _viewPdf,
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
