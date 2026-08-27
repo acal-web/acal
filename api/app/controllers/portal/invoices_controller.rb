@@ -1,12 +1,15 @@
 class Portal::InvoicesController < Portal::ApplicationController
+  requires_permission "portal_invoices:read", only: %i[ index show pdf ]
+
   INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] }, water_meter: {}, quality_analyses: {} }
 
   # GET /portal/invoices
   def index
     invoices = Invoice
       .filter_by_customer(current_customer.id)
+      .unpaid
       .includes(connection: %i[customer address category], water_meter: {})
-      .order(reference_date: :desc)
+      .order(due_date: :asc)
 
     render json: paginate(invoices), include: INVOICE_INCLUDES
   end

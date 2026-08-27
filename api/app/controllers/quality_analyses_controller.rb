@@ -1,4 +1,7 @@
 class QualityAnalysesController < ApplicationController
+  requires_permission "quality_analyses:read", only: %i[ index show ]
+  requires_permission "quality_analyses:manage", only: %i[ create update destroy ]
+
   before_action :set_quality_analysis, only: %i[ show update destroy ]
 
   # GET /quality_analyses

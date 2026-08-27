@@ -1,4 +1,6 @@
 class DashboardController < ApplicationController
+  requires_permission "dashboard:read", only: :summary
+
   INVOICE_INCLUDES = { connection: { include: %i[customer address category] } }
 
   def summary

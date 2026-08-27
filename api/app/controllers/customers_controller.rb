@@ -1,4 +1,7 @@
 class CustomersController < ApplicationController
+  requires_permission "customers:read", only: %i[ index show ]
+  requires_permission "customers:manage", only: %i[ create update destroy restore ]
+
   before_action :set_customer, only: %i[ show update destroy ]
   before_action :set_deleted_customer, only: %i[ restore ]
 

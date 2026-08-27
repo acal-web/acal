@@ -1,5 +1,7 @@
 class Portal::SessionsController < Portal::ApplicationController
-  skip_before_action :authenticate_customer!, only: :create
+  skip_authentication only: :create
+  requires_permission "portal_me:read", only: :me
+  allow_any_group only: :destroy
 
   INVALID_CREDENTIALS_MESSAGE = "CPF ou código do cliente inválidos"
 
@@ -15,7 +17,7 @@ class Portal::SessionsController < Portal::ApplicationController
 
     if customer.customer_code == customer_code
       customer.reset_login_attempts!
-      token = JwtToken.encode(customer.id, key: :customer_id)
+      token = JwtToken.encode(customer.id, key: :customer_id, group: "customer")
       render json: { token: token, customer: customer_json(customer) }, status: :created
     else
       customer.register_failed_login!

@@ -1,4 +1,7 @@
 class AddressesController < ApplicationController
+  requires_permission "addresses:read", only: %i[ index show ]
+  requires_permission "addresses:manage", only: %i[ create update destroy restore ]
+
   before_action :set_address, only: %i[ show update destroy ]
   before_action :set_address_unscoped, only: %i[ restore ]
 

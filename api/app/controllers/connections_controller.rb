@@ -1,4 +1,7 @@
 class ConnectionsController < ApplicationController
+  requires_permission "connections:read", only: %i[ index show ]
+  requires_permission "connections:manage", only: %i[ create update destroy ]
+
   before_action :set_connection, only: %i[ show update destroy ]
 
   CONNECTION_INCLUDES = %i[ customer address category ]

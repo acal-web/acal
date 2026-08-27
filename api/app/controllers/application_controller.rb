@@ -1,7 +1,8 @@
 class ApplicationController < ActionController::API
   include Paginatable
+  include Permittable
 
-  before_action :authenticate_user!
+  before_action :authenticate_token!
   before_action :authorize_action!
 
   rescue_from ActiveRecord::RecordInvalid, with: :render_invalid
@@ -10,29 +11,28 @@ class ApplicationController < ActionController::API
 
   private
 
-  def current_user
-    @current_user ||= begin
-      token_payload = JwtToken.decode(bearer_token)
-      return nil unless token_payload
-
-      User.find_by(id: token_payload[:user_id])
-    end
+  def token_payload
+    @token_payload ||= JwtToken.decode(bearer_token)
   end
 
-  def authenticate_user!
-    # Skip auth for session creation (login)
-    return if controller_name == "sessions" && action_name == "create"
+  def current_group
+    token_payload && token_payload[:group]
+  end
 
-    raise UnauthenticatedError unless current_user
+  def current_user
+    @current_user ||= token_payload&.dig(:user_id) && User.find_by(id: token_payload[:user_id])
+  end
+
+  def authenticate_token!
+    return if required_permission == :public
+
+    raise UnauthenticatedError unless token_payload && current_group
   end
 
   def authorize_action!
-    # Skip authorization for session creation (login) and if no user authenticated
-    return if controller_name == "sessions" && action_name == "create"
-    return unless current_user
+    return if required_permission == :public
 
-    return if Permissions.allowed?(current_user, controller_name, action_name)
-    raise ForbiddenError
+    raise ForbiddenError unless Rbac.can?(current_group, required_permission)
   end
 
   def bearer_token

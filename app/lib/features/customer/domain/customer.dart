@@ -4,6 +4,7 @@ class Customer {
   final String name;
   final String document;
   final int? membershipNumber;
+  final String? customerCode;
   final bool voter;
   final bool active;
   final List<String> tags;
@@ -13,6 +14,7 @@ class Customer {
     required this.name,
     required this.document,
     this.membershipNumber,
+    this.customerCode,
     required this.voter,
     this.active = true,
     this.tags = const [],
@@ -27,6 +29,7 @@ class Customer {
       name: json['name'] as String,
       document: json['document'] as String,
       membershipNumber: json['membership_number'] as int?,
+      customerCode: json['customer_code'] as String?,
       voter: json['voter'] as bool,
       active: json['deleted_at'] == null,
       tags: tags,
@@ -47,6 +50,7 @@ class Customer {
     String? name,
     String? document,
     int? membershipNumber,
+    String? customerCode,
     bool? voter,
     bool? active,
     List<String>? tags,
@@ -56,6 +60,7 @@ class Customer {
         name: name ?? this.name,
         document: document ?? this.document,
         membershipNumber: membershipNumber ?? this.membershipNumber,
+        customerCode: customerCode ?? this.customerCode,
         voter: voter ?? this.voter,
         active: active ?? this.active,
         tags: tags ?? this.tags,

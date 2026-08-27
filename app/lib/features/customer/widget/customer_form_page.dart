@@ -28,6 +28,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
   late final TextEditingController _nameController;
   late final TextEditingController _documentController;
   late final TextEditingController _membershipNumberController;
+  late final TextEditingController _customerCodeController;
   late final TextEditingController _newTagController;
   late DocumentKind _documentKind;
   late bool _voter;
@@ -49,6 +50,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     _nameController = TextEditingController(text: customer?.name ?? '');
     _documentController = TextEditingController(text: maskDocument(documentDigits, _documentKind));
     _membershipNumberController = TextEditingController(text: customer?.membershipNumber?.toString() ?? '');
+    _customerCodeController = TextEditingController(text: customer?.customerCode ?? '');
     _newTagController = TextEditingController();
     _voter = customer?.voter ?? true;
     _tags = List.from(customer?.tags ?? []);
@@ -73,6 +75,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     _nameController.dispose();
     _documentController.dispose();
     _membershipNumberController.dispose();
+    _customerCodeController.dispose();
     _newTagController.dispose();
     super.dispose();
   }
@@ -163,6 +166,15 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
             readOnly: widget.readOnly,
             validator: _validateMembershipNumber,
           ),
+          if (_isEditing) ...[
+            const SizedBox(height: 12),
+            FTextFormField(
+              control: FTextFieldControl.managed(controller: _customerCodeController),
+              label: const Text('Código do Cliente'),
+              hint: 'Usado pelo sócio para entrar na área do sócio',
+              readOnly: true,
+            ),
+          ],
           const SizedBox(height: 12),
           FCheckbox(
             value: _voter,

@@ -17,18 +17,62 @@ class MyInvoicesPage extends StatefulWidget {
 
 class _MyInvoicesPageState extends State<MyInvoicesPage> {
   late final CustomerInvoiceService _service;
-  late Future<List<Invoice>> _invoicesFuture;
+  final _scrollController = ScrollController();
+  final List<Invoice> _invoices = [];
+
+  static const _pageSize = 20;
+  int _currentPage = 0;
+  bool _isLoading = false;
+  bool _hasMorePages = true;
+  String? _errorMessage;
 
   @override
   void initState() {
     super.initState();
     _service = widget._service ?? CustomerInvoiceService();
-    _invoicesFuture = _load();
+    _scrollController.addListener(_onScroll);
+    _loadNextPage();
   }
 
-  Future<List<Invoice>> _load() async {
-    final result = await _service.findAll(size: 100);
-    return result.data;
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (_scrollController.position.pixels >= _scrollController.position.maxScrollExtent - 500) {
+      _loadNextPage();
+    }
+  }
+
+  Future<void> _loadNextPage() async {
+    if (_isLoading || !_hasMorePages) return;
+
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final result = await _service.findAll(page: _currentPage, size: _pageSize);
+
+      if (mounted) {
+        setState(() {
+          _invoices.addAll(result.data);
+          _hasMorePages = result.pagination.nextPage != null;
+          _currentPage++;
+          _isLoading = false;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+          _errorMessage = 'Não foi possível carregar suas faturas.';
+        });
+      }
+    }
   }
 
   String _formatDate(DateTime date) =>
@@ -51,36 +95,48 @@ class _MyInvoicesPageState extends State<MyInvoicesPage> {
           ),
         ],
       ),
-      body: FutureBuilder<List<Invoice>>(
-        future: _invoicesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) {
-            return const Center(child: CircularProgressIndicator());
-          }
+      body: _errorMessage != null && _invoices.isEmpty
+          ? _buildErrorView(theme, cs)
+          : _invoices.isEmpty && !_isLoading
+              ? Center(
+                  child: Text(
+                    'Nenhuma fatura em aberto.',
+                    style: theme.textTheme.bodyMedium?.copyWith(color: cs.outline),
+                  ),
+                )
+              : ListView.separated(
+                  controller: _scrollController,
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _invoices.length + (_isLoading ? 1 : 0),
+                  separatorBuilder: (_, _) => const SizedBox(height: 12),
+                  itemBuilder: (context, index) {
+                    if (index == _invoices.length) {
+                      return const Center(
+                        child: Padding(
+                          padding: EdgeInsets.all(16),
+                          child: CircularProgressIndicator(),
+                        ),
+                      );
+                    }
 
-          if (snapshot.hasError) {
-            return Center(
-              child: Text(
-                'Não foi possível carregar suas faturas.',
-                style: theme.textTheme.bodyMedium?.copyWith(color: cs.error),
-              ),
-            );
-          }
+                    return _InvoiceCard(invoice: _invoices[index], service: _service, formatDate: _formatDate);
+                  },
+                ),
+    );
+  }
 
-          final invoices = snapshot.data ?? [];
-          if (invoices.isEmpty) {
-            return Center(
-              child: Text('Nenhuma fatura encontrada.', style: theme.textTheme.bodyMedium?.copyWith(color: cs.outline)),
-            );
-          }
-
-          return ListView.separated(
-            padding: const EdgeInsets.all(16),
-            itemCount: invoices.length,
-            separatorBuilder: (_, _) => const SizedBox(height: 12),
-            itemBuilder: (context, index) => _InvoiceCard(invoice: invoices[index], service: _service, formatDate: _formatDate),
-          );
-        },
+  Widget _buildErrorView(ThemeData theme, ColorScheme cs) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Text(_errorMessage!, style: theme.textTheme.bodyMedium?.copyWith(color: cs.error)),
+          const SizedBox(height: 16),
+          ElevatedButton(
+            onPressed: _loadNextPage,
+            child: const Text('Tentar novamente'),
+          ),
+        ],
       ),
     );
   }
@@ -146,13 +202,13 @@ class _InvoiceCardState extends State<_InvoiceCard> {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                         decoration: BoxDecoration(
-                          color: (invoice.isPaid ? Colors.green : cs.error).withValues(alpha: 0.1),
+                          color: cs.error.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text(
-                          invoice.isPaid ? 'Paga' : 'Pendente',
+                          'Pendente',
                           style: theme.textTheme.bodySmall?.copyWith(
-                            color: invoice.isPaid ? Colors.green : cs.error,
+                            color: cs.error,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

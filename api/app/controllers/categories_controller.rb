@@ -1,4 +1,7 @@
 class CategoriesController < ApplicationController
+  requires_permission "categories:read", only: %i[ index show ]
+  requires_permission "categories:manage", only: %i[ create update destroy restore ]
+
   before_action :set_category, only: %i[ show update destroy ]
   before_action :set_category_unscoped, only: %i[ restore ]
 

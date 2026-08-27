@@ -1,4 +1,8 @@
 class InvoicesController < ApplicationController
+  requires_permission "invoices:read", only: %i[ index show eligible overdue cobranca_pdf print_filtered pdf ]
+  requires_permission "invoices:generate", only: :generate
+  requires_permission "invoices:pay", only: :pay
+
   INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] }, water_meter: {}, quality_analyses: {} }
 
   # GET /invoices

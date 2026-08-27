@@ -100,7 +100,7 @@ RSpec.describe "Portal::Sessions", type: :request do
 
     it "returns 401 for a staff token", :skip_auth do
       user = create(:user)
-      token = JwtToken.encode(user.id)
+      token = JwtToken.encode(user.id, group: user.role)
 
       get "/portal/me", headers: { "Authorization" => "Bearer #{token}" }
 

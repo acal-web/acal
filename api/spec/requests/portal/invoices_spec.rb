@@ -18,6 +18,37 @@ RSpec.describe "Portal::Invoices", type: :request do
       ids = response.parsed_body["content"].map { |i| i["id"] }
       expect(ids).to contain_exactly(my_invoice.id)
     end
+
+    it "excludes paid invoices, including overdue ones already paid" do
+      paid_invoice = create(:invoice, :paid, connection: connection, reference_date: 2.months.ago.beginning_of_month)
+
+      get "/portal/invoices"
+
+      ids = response.parsed_body["content"].map { |i| i["id"] }
+      expect(ids).to contain_exactly(my_invoice.id)
+      expect(ids).not_to include(paid_invoice.id)
+    end
+
+    it "includes overdue unpaid invoices, not just upcoming ones" do
+      overdue_invoice = create(:invoice, connection: connection, due_date: 10.days.ago, reference_date: 2.months.ago.beginning_of_month)
+
+      get "/portal/invoices"
+
+      ids = response.parsed_body["content"].map { |i| i["id"] }
+      expect(ids).to include(overdue_invoice.id)
+    end
+
+    it "orders invoices from oldest due date to most recent" do
+      oldest = create(:invoice, connection: connection, due_date: 3.months.ago, reference_date: 3.months.ago.beginning_of_month)
+      middle = create(:invoice, connection: connection, due_date: 2.months.ago, reference_date: 2.months.ago.beginning_of_month)
+      newest = create(:invoice, connection: connection, due_date: 1.month.from_now, reference_date: 1.month.from_now.beginning_of_month)
+
+      get "/portal/invoices"
+
+      ids = response.parsed_body["content"].map { |i| i["id"] }
+      expect(ids.index(oldest.id)).to be < ids.index(middle.id)
+      expect(ids.index(middle.id)).to be < ids.index(newest.id)
+    end
   end
 
   describe "GET /portal/invoices/:id" do

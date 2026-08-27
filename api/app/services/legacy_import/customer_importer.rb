@@ -19,6 +19,7 @@ module LegacyImport
       pessoas = SqlDumpParser.call(@pessoa_path).fetch("pessoa").rows
       existing_legacy_ids = Set.new(Customer.pluck(:legacy_id))
       existing_documents = Set.new(Customer.pluck(:document))
+      existing_codes = Set.new(Customer.pluck(:customer_code).compact)
 
       imported = 0
       skipped_duplicates = 0
@@ -68,6 +69,7 @@ module LegacyImport
           name:,
           document:,
           membership_number:,
+          customer_code: generate_customer_code(existing_codes),
           legacy_id:,
           tags:,
           created_at: Time.current,
@@ -133,6 +135,19 @@ end
       first_check = check_digit(base, CPF_WEIGHTS_1)
       second_check = check_digit(base + first_check.to_s, CPF_WEIGHTS_2)
       "#{base}#{first_check}#{second_check}"
+    end
+
+    # insert_all bypasses Customer's before_validation callback that would
+    # normally generate this, so it has to be filled in here — same
+    # algorithm, tracked against both pre-existing and just-generated codes.
+    def generate_customer_code(existing_codes)
+      loop do
+        code = format("%06d", rand(1_000_000))
+        next if existing_codes.include?(code)
+
+        existing_codes << code
+        break code
+      end
     end
   end
 end

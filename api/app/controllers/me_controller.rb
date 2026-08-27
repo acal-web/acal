@@ -1,6 +1,5 @@
 class MeController < ApplicationController
-  before_action :authenticate_user!
-  skip_before_action :authorize_action!
+  allow_any_group only: :show
 
   # GET /me
   def show

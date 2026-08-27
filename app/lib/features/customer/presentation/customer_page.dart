@@ -278,6 +278,10 @@ class _TableHeader extends StatelessWidget {
             child: Text('Nº Sócio', style: headerStyle),
           ),
           SizedBox(
+            width: 110,
+            child: Text('Código do Cliente', style: headerStyle),
+          ),
+          SizedBox(
             width: 90,
             child: Text('Votante', style: headerStyle),
           ),
@@ -352,6 +356,13 @@ class _CustomerRow extends StatelessWidget {
               width: 90,
               child: Text(
                 customer.membershipNumber?.toString() ?? '—',
+                style: style,
+              ),
+            ),
+            SizedBox(
+              width: 110,
+              child: Text(
+                customer.customerCode ?? '—',
                 style: style,
               ),
             ),
@@ -433,20 +444,24 @@ class _CustomerCard extends StatelessWidget {
               const SizedBox(height: 8),
               DocumentText(customer.document, style: style),
               const SizedBox(height: 8),
-              Row(
+              Wrap(
                 spacing: 16,
+                runSpacing: 4,
                 children: [
                   Text(
                     'Nº Sócio: ${customer.membershipNumber?.toString() ?? "—"}',
                     style: style?.copyWith(fontSize: 13),
                   ),
                   Text(
-                    'Votante: ',
+                    'Código do Cliente: ${customer.customerCode ?? "—"}',
                     style: style?.copyWith(fontSize: 13),
                   ),
-                  BoolText(
-                    customer.voter,
-                    style: style?.copyWith(fontSize: 13),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text('Votante: ', style: style?.copyWith(fontSize: 13)),
+                      BoolText(customer.voter, style: style?.copyWith(fontSize: 13)),
+                    ],
                   ),
                 ],
               ),

@@ -1,6 +1,6 @@
 class SessionsController < ApplicationController
-  skip_before_action :authenticate_user!, only: :create
-  skip_before_action :authorize_action!
+  skip_authentication only: :create
+  allow_any_group only: :destroy
 
   # POST /session
   def create
@@ -11,7 +11,7 @@ class SessionsController < ApplicationController
 
     user = User.find_by(username: username)
     if user&.authenticate(password)
-      token = JwtToken.encode(user.id)
+      token = JwtToken.encode(user.id, group: user.role)
       render json: {
         token: token,
         user: {
