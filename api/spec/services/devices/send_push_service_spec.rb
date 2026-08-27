@@ -7,6 +7,7 @@ RSpec.describe Devices::SendPushService do
     it "does not attempt to reach FCM" do
       create(:device, owner: customer, push_token: "token-123")
 
+      stub_const("ENV", ENV.to_hash.except("FIREBASE_SERVICE_ACCOUNT_BASE64"))
       expect(Net::HTTP).not_to receive(:post_form)
 
       expect { described_class.call(owner: customer, title: "Nova fatura", body: "oi") }.not_to raise_error
@@ -17,11 +18,12 @@ RSpec.describe Devices::SendPushService do
     let(:private_key) { OpenSSL::PKey::RSA.new(2048).to_pem }
 
     before do
-      allow(Rails.application.credentials).to receive(:firebase).and_return(
+      service_account_json = {
         project_id: "test-project",
         client_email: "svc@test-project.iam.gserviceaccount.com",
         private_key: private_key
-      )
+      }.to_json
+      stub_const("ENV", ENV.to_hash.merge("FIREBASE_SERVICE_ACCOUNT_BASE64" => Base64.strict_encode64(service_account_json)))
 
       token_response = instance_double(Net::HTTPResponse, body: { access_token: "test-access-token" }.to_json)
       allow(Net::HTTP).to receive(:post_form).and_return(token_response)

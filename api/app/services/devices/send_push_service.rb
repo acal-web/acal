@@ -1,4 +1,5 @@
 require "net/http"
+require "base64"
 
 module Devices
   # Sends a push notification to every device registered to an owner (User or
@@ -58,17 +59,14 @@ module Devices
       JSON.parse(response.body)["access_token"]
     end
 
-    # Rails credentials, added via `bin/rails credentials:edit`:
-    #   firebase:
-    #     project_id: acal-ff937
-    #     client_email: firebase-adminsdk-xxxxx@acal-ff937.iam.gserviceaccount.com
-    #     private_key: |
-    #       -----BEGIN PRIVATE KEY-----
-    #       ...
-    #       -----END PRIVATE KEY-----
-    # (from a Firebase service account: Project Settings > Service accounts > Generate new private key)
+    # FIREBASE_SERVICE_ACCOUNT_BASE64 holds the Firebase service account JSON
+    # (Project Settings > Service accounts > Generate new private key),
+    # base64-encoded, set via api/.env (and the real env in other environments).
     def credentials
-      Rails.application.credentials.firebase
+      return @credentials if defined?(@credentials)
+
+      encoded = ENV["FIREBASE_SERVICE_ACCOUNT_BASE64"]
+      @credentials = encoded.present? ? JSON.parse(Base64.decode64(encoded)).symbolize_keys : nil
     end
   end
 end

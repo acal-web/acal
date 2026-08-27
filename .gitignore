@@ -6,6 +6,7 @@
 
 # Secrets
 /.env
+*firebase-adminsdk*.json
 
 # OS / editor cruft
 .DS_Store
