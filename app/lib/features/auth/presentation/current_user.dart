@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:acalapp/core/services/device_registration_service.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/auth/data/auth_service.dart';
 import 'package:acalapp/features/auth/data/token_storage.dart';
@@ -20,6 +21,7 @@ class CurrentUser extends ChangeNotifier {
     _user = user;
     _token = token;
     notifyListeners();
+    registerDevice(post: HttpService().post, path: '/devices');
   }
 
   void clear() {

@@ -47,6 +47,8 @@ Rails.application.routes.draw do
     end
   end
 
+  resources :devices, only: [ :create ]
+
   namespace :portal do
     post "session", to: "sessions#create"
     delete "session", to: "sessions#destroy"
@@ -56,6 +58,7 @@ Rails.application.routes.draw do
         get :pdf
       end
     end
+    resources :devices, only: [ :create ]
   end
 
   # Test-only reset endpoint for the Maestro E2E suite — the block below is

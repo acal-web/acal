@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_26_231445) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_001933) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -82,6 +82,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_26_231445) do
     t.index ["membership_number"], name: "index_customers_on_membership_number"
     t.index ["name"], name: "index_customers_on_name"
     t.index ["voter"], name: "index_customers_on_voter"
+  end
+
+  create_table "devices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "app_version"
+    t.datetime "created_at", null: false
+    t.string "device_model"
+    t.datetime "last_seen_at", null: false
+    t.string "os_version"
+    t.uuid "owner_id", null: false
+    t.string "owner_type", null: false
+    t.string "platform", null: false
+    t.string "push_token"
+    t.datetime "updated_at", null: false
+    t.index ["owner_type", "owner_id"], name: "index_devices_on_owner_type_and_owner_id"
+    t.index ["push_token"], name: "index_devices_on_push_token", unique: true
   end
 
   create_table "invoices", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|

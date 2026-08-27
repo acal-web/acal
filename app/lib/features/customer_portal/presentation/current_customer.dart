@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
+import 'package:acalapp/core/services/device_registration_service.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/customer_portal/data/customer_auth_service.dart';
+import 'package:acalapp/features/customer_portal/data/portal_http_service.dart';
 import 'package:acalapp/features/customer_portal/data/portal_token_storage.dart';
 import 'package:acalapp/features/customer_portal/domain/customer_auth_user.dart';
 
@@ -20,6 +22,7 @@ class CurrentCustomer extends ChangeNotifier {
     _customer = customer;
     _token = token;
     notifyListeners();
+    registerDevice(post: PortalHttpService().post, path: '/portal/devices');
   }
 
   void clear() {

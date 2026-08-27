@@ -12,3 +12,7 @@ GeneratedPluginRegistrant.java
 key.properties
 **/*.keystore
 **/*.jks
+
+# Firebase config — environment-specific, provided locally or via the
+# GOOGLE_SERVICES_JSON_BASE64 CI secret (see .github/workflows/flutter-ci.yml).
+app/google-services.json
