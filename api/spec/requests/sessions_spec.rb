@@ -88,6 +88,17 @@ RSpec.describe "Sessions", type: :request do
 
         expect(response).to have_http_status(:unauthorized)
       end
+
+      it "returns 401 for a formatted (non-digits-only) document, since the username is stored digits-only" do
+        customer = create(:customer)
+        formatted = "#{customer.document[0..2]}.#{customer.document[3..5]}.#{customer.document[6..8]}-#{customer.document[9..10]}"
+
+        post "/session", params: {
+          session: { username: formatted, password: customer.customer_code }
+        }
+
+        expect(response).to have_http_status(:unauthorized)
+      end
     end
 
     context "after 5 failed attempts" do

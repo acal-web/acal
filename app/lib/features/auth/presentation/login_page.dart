@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:acalapp/features/auth/data/auth_service.dart';
 import 'package:acalapp/features/auth/data/token_storage.dart';
+import 'package:acalapp/features/auth/domain/login_username.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
-import 'package:acalapp/shared/formatters/document_formatter.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -46,17 +46,8 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      // Staff usernames may contain '.'/'-' (e.g. "joao.silva"), but a
-      // sócio's username is their CPF/CNPJ, stored digits-only — so a
-      // formatted CPF ("123.456.789-09") never matches unless we strip it
-      // here. Only do that when stripping actually yields a document
-      // (11/14 digits); otherwise leave the raw text alone for staff logins.
-      final rawUsername = _usernameController.text.trim();
-      final digitsOnly = rawUsername.replaceAll(RegExp(r'[^0-9]'), '');
-      final username = DocumentKind.fromDigits(digitsOnly) != null ? digitsOnly : rawUsername;
-
       final result = await _authService.login(
-        username,
+        normalizeLoginUsername(_usernameController.text),
         _passwordController.text,
       );
 
