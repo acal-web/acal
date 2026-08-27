@@ -9,10 +9,12 @@ import 'package:package_info_plus/package_info_plus.dart';
 /// portal sessions use `PortalHttpService().post` against `/portal/devices`
 /// — each already carries the right auth header for its own session).
 ///
-/// Android-only for now, and entirely best-effort: Firebase isn't
-/// configured in every build yet (no `google-services.json`), so a failure
-/// to get a push token — or any other failure here — is swallowed rather
-/// than surfaced, since this must never block login.
+/// Android-only for now, and entirely best-effort: a failure to get a push
+/// token (Firebase misconfigured, no Play Services, etc.) — or any other
+/// failure here — is swallowed rather than surfaced, since this must never
+/// block login. Firebase itself is normally already initialized by
+/// [initializePushNotifications] at app startup; the guard here just covers
+/// builds where that failed or was skipped.
 Future<void> registerDevice({
   required Future<dynamic> Function(String path, Object body) post,
   required String path,
@@ -25,7 +27,9 @@ Future<void> registerDevice({
 
     String? pushToken;
     try {
-      await Firebase.initializeApp();
+      if (Firebase.apps.isEmpty) {
+        await Firebase.initializeApp();
+      }
       pushToken = await FirebaseMessaging.instance.getToken();
     } catch (_) {
       // Firebase not configured yet — push_token stays null until it is.

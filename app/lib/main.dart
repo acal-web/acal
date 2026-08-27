@@ -1,5 +1,6 @@
 import 'package:acalapp/core/config/router.dart' show initializeRouter, appRouter;
 import 'package:acalapp/core/services/http_service.dart';
+import 'package:acalapp/core/services/push_notification_service.dart';
 import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/auth/presentation/current_user.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
@@ -18,6 +19,8 @@ void main() async {
   }
 
   _currentUser = CurrentUser();
+
+  await initializePushNotifications();
 
   setupHttpService(
     getToken: () => _currentUser.token,
