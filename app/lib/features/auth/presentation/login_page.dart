@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:acalapp/features/auth/data/auth_service.dart';
 import 'package:acalapp/features/auth/data/token_storage.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
-import 'package:go_router/go_router.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -167,8 +166,8 @@ class _LoginPageState extends State<LoginPage> {
                         textInputAction: TextInputAction.next,
                         onSubmitted: (_) => _handleLogin(),
                         decoration: InputDecoration(
-                          labelText: 'Usuário',
-                          hintText: 'Usuário',
+                          labelText: 'Usuário ou CPF',
+                          hintText: 'Usuário ou CPF',
                           prefixIcon: Icon(Icons.person_outline, color: cs.outline),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -191,7 +190,7 @@ class _LoginPageState extends State<LoginPage> {
                         textInputAction: TextInputAction.done,
                         onSubmitted: (_) => _handleLogin(),
                         decoration: InputDecoration(
-                          labelText: 'Senha',
+                          labelText: 'Senha ou código do cliente',
                           hintText: '••••••••',
                           prefixIcon: Icon(Icons.lock_outline, color: cs.outline),
                           suffixIcon: IconButton(
@@ -262,13 +261,6 @@ class _LoginPageState extends State<LoginPage> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                      ),
-                      const SizedBox(height: 16),
-                      Center(
-                        child: TextButton(
-                          onPressed: _isLoading ? null : () => context.go('/portal/login'),
-                          child: const Text('Sou associado — ver minhas faturas'),
-                        ),
                       ),
                       const SizedBox(height: 16),
                       Center(

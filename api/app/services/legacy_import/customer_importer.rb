@@ -78,7 +78,7 @@ module LegacyImport
 
         if batch.size >= batch_size
           imported += batch.size
-          Customer.insert_all(batch)
+          insert_customer_batch(batch)
           existing_documents.merge(batch.map { |b| b[:document] })
           batch = []
         end
@@ -89,7 +89,7 @@ module LegacyImport
       # Insert remaining batch
       if batch.any?
         imported += batch.size
-        Customer.insert_all(batch)
+        insert_customer_batch(batch)
       end
 
       Result.new(imported:, skipped_duplicates:, skipped_invalid:)
@@ -148,6 +148,28 @@ end
         existing_codes << code
         break code
       end
+    end
+
+    # insert_all also bypasses Customer's after_create callback that would
+    # normally provision the linked User (the customer's login) — so it's
+    # done here too, in bulk, reusing the customer_code as the password.
+    def insert_customer_batch(batch)
+      inserted = Customer.insert_all(batch, returning: %w[id name document customer_code])
+
+      now = Time.current
+      users = inserted.to_a.map do |row|
+        {
+          name: row["name"],
+          username: row["document"],
+          password_digest: BCrypt::Password.create(row["customer_code"]),
+          role: "customer",
+          customer_id: row["id"],
+          created_at: now,
+          updated_at: now
+        }
+      end
+
+      User.insert_all(users) if users.any?
     end
   end
 end

@@ -5,9 +5,9 @@ class JwtToken
   EXPIRATION_TIME = 30.days
 
   class << self
-    def encode(id, key: :user_id, group:, expires_at: EXPIRATION_TIME.from_now)
+    def encode(user_id, group:, expires_at: EXPIRATION_TIME.from_now)
       payload = {
-        key => id,
+        user_id: user_id,
         group: group,
         exp: expires_at.to_i,
         iat: Time.current.to_i

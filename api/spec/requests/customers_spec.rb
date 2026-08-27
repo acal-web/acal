@@ -162,8 +162,6 @@ RSpec.describe "Customers", type: :request do
           "legacy_id" => nil,
           "tags" => [],
           "customer_code" => customer.customer_code,
-          "failed_login_attempts" => 0,
-          "locked_until" => nil,
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil
@@ -209,8 +207,6 @@ RSpec.describe "Customers", type: :request do
           "legacy_id" => nil,
           "tags" => [],
           "customer_code" => customer.customer_code,
-          "failed_login_attempts" => 0,
-          "locked_until" => nil,
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil
@@ -359,8 +355,6 @@ RSpec.describe "Customers", type: :request do
           "legacy_id" => nil,
           "tags" => [],
           "customer_code" => customer.customer_code,
-          "failed_login_attempts" => 0,
-          "locked_until" => nil,
           "created_at" => customer.created_at.as_json,
           "updated_at" => customer.updated_at.as_json,
           "deleted_at" => nil
@@ -403,6 +397,33 @@ RSpec.describe "Customers", type: :request do
 
         expect(Customer.exists?(customer.id)).to be(false)
       end
+
+      it "deactivates the linked user's login along with the customer" do
+        post "/customers", params: valid_params
+        customer = Customer.last
+        document = customer.document
+        customer_code = customer.customer_code
+
+        delete "/customers/#{customer.id}"
+
+        post "/session", params: { session: { username: document, password: customer_code } }
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+  end
+
+  describe "PATCH /customers/:id/restore" do
+    it "reactivates the linked user's login along with the customer" do
+      post "/customers", params: valid_params
+      customer = Customer.last
+      document = customer.document
+      customer_code = customer.customer_code
+      delete "/customers/#{customer.id}"
+
+      patch "/customers/#{customer.id}/restore"
+
+      post "/session", params: { session: { username: document, password: customer_code } }
+      expect(response).to have_http_status(:created)
     end
   end
 end

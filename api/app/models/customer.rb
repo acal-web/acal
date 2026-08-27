@@ -1,8 +1,7 @@
 class Customer < ApplicationRecord
   include SoftDeletable
 
-  MAX_LOGIN_ATTEMPTS = 5
-  LOCKOUT_DURATION = 15.minutes
+  has_one :user
 
   before_validation { self.name = name.to_s.strip }
   before_validation { self.document = document.to_s.gsub(/\D/, "") }
@@ -14,6 +13,24 @@ class Customer < ApplicationRecord
   validates :customer_code, presence: true, uniqueness: true
   validate :validate_document_uniqueness
 
+  after_create :create_linked_user!
+
+  # Deactivating/reactivating a Customer must do the same to their login —
+  # otherwise a removed sócio could keep signing in to the portal.
+  def soft_delete!
+    transaction do
+      super
+      user&.soft_delete!
+    end
+  end
+
+  def restore!
+    transaction do
+      super
+      User.unscoped.find_by(customer_id: id)&.restore!
+    end
+  end
+
   scope :filter_by_name, ->(name) {
     where("LOWER(name) LIKE LOWER(:q)", q: "%#{sanitize_sql_like(name)}%") if name.present?
   }
@@ -22,19 +39,6 @@ class Customer < ApplicationRecord
     digits = document.to_s.gsub(/\D/, "")
     where("LOWER(document) LIKE LOWER(:q)", q: "%#{sanitize_sql_like(digits)}%") if digits.present?
   }
-
-  def locked?
-    locked_until.present? && locked_until.future?
-  end
-
-  def register_failed_login!
-    increment!(:failed_login_attempts)
-    update!(locked_until: LOCKOUT_DURATION.from_now) if failed_login_attempts >= MAX_LOGIN_ATTEMPTS
-  end
-
-  def reset_login_attempts!
-    update!(failed_login_attempts: 0, locked_until: nil)
-  end
 
   private
     def generate_customer_code
@@ -47,6 +51,18 @@ class Customer < ApplicationRecord
         self.customer_code = code
         break
       end
+    end
+
+    # The customer's login: username is their document, password is the
+    # customer_code — same User table and /session endpoint as staff.
+    def create_linked_user!
+      User.create!(
+        name: name,
+        username: document,
+        password: customer_code,
+        role: "customer",
+        customer: self
+      )
     end
 
     def validate_document_uniqueness

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_001933) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_27_010128) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -67,9 +67,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_001933) do
     t.string "customer_code", limit: 10
     t.datetime "deleted_at"
     t.string "document"
-    t.integer "failed_login_attempts", default: 0, null: false
     t.integer "legacy_id"
-    t.datetime "locked_until"
     t.integer "membership_number"
     t.string "name"
     t.jsonb "tags", default: [], null: false
@@ -149,12 +147,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_001933) do
 
   create_table "users", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.uuid "customer_id"
     t.datetime "deleted_at"
+    t.integer "failed_login_attempts", default: 0, null: false
+    t.datetime "locked_until"
     t.string "name", null: false
     t.string "password_digest", null: false
     t.string "role", null: false
     t.datetime "updated_at", null: false
     t.citext "username", null: false
+    t.index ["customer_id"], name: "index_users_on_customer_id", unique: true, where: "(customer_id IS NOT NULL)"
     t.index ["username"], name: "index_users_on_username", unique: true, where: "(deleted_at IS NULL)"
   end
 

@@ -19,7 +19,7 @@ class AuthUser {
       id: data['id'] as String,
       username: data['username'] as String,
       name: data['name'] as String,
-      role: UserRole.fromValue(data['role'] as String?) ?? UserRole.administrador,
+      role: UserRole.fromValue(data['role'] as String?)!,
     );
   }
 }

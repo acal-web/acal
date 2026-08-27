@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
+import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/customer_portal/data/customer_invoice_service.dart';
-import 'package:acalapp/features/customer_portal/presentation/current_customer_scope.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
@@ -82,16 +82,16 @@ class _MyInvoicesPageState extends State<MyInvoicesPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cs = theme.colorScheme;
-    final customer = CurrentCustomerScope.of(context).customer;
+    final user = CurrentUserScope.of(context).user;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(customer != null ? 'Faturas de ${customer.name}' : 'Minhas Faturas'),
+        title: Text(user != null ? 'Faturas de ${user.name}' : 'Minhas Faturas'),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Sair',
-            onPressed: () => CurrentCustomerScope.of(context).logout(),
+            onPressed: () => CurrentUserScope.of(context).logout(),
           ),
         ],
       ),

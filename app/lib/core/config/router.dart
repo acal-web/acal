@@ -1,9 +1,8 @@
 import 'package:acalapp/core/layout/app_shell.dart';
 import 'package:acalapp/features/addresses/presentation/addresses_page.dart';
+import 'package:acalapp/features/auth/domain/user_role.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/auth/presentation/login_page.dart';
-import 'package:acalapp/features/customer_portal/presentation/current_customer_scope.dart';
-import 'package:acalapp/features/customer_portal/presentation/customer_login_page.dart';
 import 'package:acalapp/features/customer_portal/presentation/my_invoices_page.dart';
 import 'package:acalapp/features/users/presentation/users_page.dart';
 import 'package:acalapp/features/cashbox/presentation/cashbox_page.dart';
@@ -23,41 +22,31 @@ import 'package:go_router/go_router.dart';
 
 late GoRouter appRouter;
 
-/// Call this from main.dart to initialize the router with CurrentUser and
-/// CurrentCustomer — the staff and customer-portal sessions are independent,
-/// so each gets its own route tree and its own redirect branch below.
-void initializeRouter(Listenable currentUser, Listenable currentCustomer) {
+/// Call this from main.dart to initialize the router with CurrentUser — the
+/// single login covers both staff and sócio accounts; which area a session
+/// lands in (and stays confined to) is decided purely by its role below.
+void initializeRouter(Listenable currentUser) {
   appRouter = GoRouter(
     initialLocation: '/dashboard',
-    refreshListenable: Listenable.merge([currentUser, currentCustomer]),
+    refreshListenable: currentUser,
     redirect: (context, state) {
+      final session = CurrentUserScope.of(context);
+      final isAuthenticated = session.isAuthenticated;
+      final isCustomer = session.user?.role == UserRole.customer;
+      final goingToLogin = state.matchedLocation == '/login';
       final isPortalRoute = state.matchedLocation.startsWith('/portal');
 
-      if (isPortalRoute) {
-        final isCustomerAuthenticated = CurrentCustomerScope.of(context).isAuthenticated;
-        final goingToPortalLogin = state.matchedLocation == '/portal/login';
-
-        if (!isCustomerAuthenticated && !goingToPortalLogin) {
-          return '/portal/login';
-        }
-
-        if (isCustomerAuthenticated && goingToPortalLogin) {
-          return '/portal/invoices';
-        }
-
-        return null;
+      if (!isAuthenticated) {
+        return goingToLogin ? null : '/login';
       }
 
-      final isAuthenticated = CurrentUserScope.of(context).isAuthenticated;
-      final goingToLogin = state.matchedLocation == '/login';
-
-      if (!isAuthenticated && !goingToLogin) {
-        return '/login';
+      if (goingToLogin) {
+        return isCustomer ? '/portal/invoices' : '/dashboard';
       }
 
-      if (isAuthenticated && goingToLogin) {
-        return '/dashboard';
-      }
+      // Sócios stay confined to the portal; staff never lands there.
+      if (isCustomer && !isPortalRoute) return '/portal/invoices';
+      if (!isCustomer && isPortalRoute) return '/dashboard';
 
       return null;
     },
@@ -65,10 +54,6 @@ void initializeRouter(Listenable currentUser, Listenable currentCustomer) {
     GoRoute(
       path: '/login',
       pageBuilder: (context, state) => const NoTransitionPage(child: LoginPage()),
-    ),
-    GoRoute(
-      path: '/portal/login',
-      pageBuilder: (context, state) => const NoTransitionPage(child: CustomerLoginPage()),
     ),
     GoRoute(
       path: '/portal/invoices',

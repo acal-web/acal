@@ -64,6 +64,46 @@ RSpec.describe "Sessions", type: :request do
         expect(body["code"]).to eq(1004)
       end
     end
+
+    context "with a customer's document and customer_code" do
+      it "logs in through the same endpoint as staff, as the customer's linked user" do
+        customer = create(:customer)
+
+        post "/session", params: {
+          session: { username: customer.document, password: customer.customer_code }
+        }
+
+        expect(response).to have_http_status(:created)
+        body = response.parsed_body
+        expect(body["user"]["role"]).to eq("customer")
+        expect(body["user"]["id"]).to eq(customer.user.id)
+      end
+
+      it "returns 401 for a wrong customer_code" do
+        customer = create(:customer)
+
+        post "/session", params: {
+          session: { username: customer.document, password: "000000" }
+        }
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
+
+    context "after 5 failed attempts" do
+      it "locks the account and rejects even the correct password" do
+        User.create!(username: "lockme", name: "Lock Me", password: "password123", role: :administrador)
+
+        5.times do
+          post "/session", params: { session: { username: "lockme", password: "wrong" } }
+        end
+        expect(User.find_by(username: "lockme")).to be_locked
+
+        post "/session", params: { session: { username: "lockme", password: "password123" } }
+
+        expect(response).to have_http_status(:unauthorized)
+      end
+    end
   end
 
   describe "DELETE /session (logout)" do

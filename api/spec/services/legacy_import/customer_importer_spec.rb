@@ -27,6 +27,21 @@ RSpec.describe LegacyImport::CustomerImporter do
       expect(codes.uniq.length).to eq(2)
     end
 
+    it "creates a linked User that can log in with the customer's document and customer_code" do
+      mock_dump_data([
+        { "id" => "1", "nome" => "Fulano", "sobrenome" => "de Tal", "cpf" => "11144477735", "numeroMatricula" => "10" }
+      ])
+
+      described_class.call(pessoa_path: "dummy.sql")
+
+      customer = Customer.find_by(legacy_id: 1)
+      user = customer.user
+      expect(user).to be_present
+      expect(user.role).to eq("customer")
+      expect(user.username).to eq(customer.document)
+      expect(user.authenticate(customer.customer_code)).to be_truthy
+    end
+
     it "never reuses a customer_code already taken by an existing customer" do
       existing = create(:customer, customer_code: "000001")
       allow_any_instance_of(described_class).to receive(:rand).with(1_000_000).and_return(1, 2)

@@ -10,7 +10,10 @@ class SessionsController < ApplicationController
     raise InvalidCredentialsError if username.blank? || password.blank?
 
     user = User.find_by(username: username)
-    if user&.authenticate(password)
+    raise InvalidCredentialsError if user.nil? || user.locked?
+
+    if user.authenticate(password)
+      user.reset_login_attempts!
       token = JwtToken.encode(user.id, group: user.role)
       render json: {
         token: token,
@@ -24,6 +27,7 @@ class SessionsController < ApplicationController
         }
       }, status: :created
     else
+      user.register_failed_login!
       raise InvalidCredentialsError
     end
   end

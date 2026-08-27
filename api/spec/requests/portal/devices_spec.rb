@@ -29,13 +29,13 @@ RSpec.describe "Portal::Devices", type: :request do
       expect(response).to have_http_status(:unauthorized)
     end
 
-    it "returns 401 for a staff token", :skip_auth do
+    it "returns 403 for a staff token (not the customer group)", :skip_auth do
       user = create(:user)
       token = JwtToken.encode(user.id, group: user.role)
 
       post "/portal/devices", params: { device: { platform: "android" } }, headers: { "Authorization" => "Bearer #{token}" }
 
-      expect(response).to have_http_status(:unauthorized)
+      expect(response).to have_http_status(:forbidden)
     end
   end
 end

@@ -141,7 +141,10 @@ class _UserFormPageState extends State<UserFormPage> {
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                 prefixIcon: const Icon(Icons.security),
               ),
+              // "customer" isn't a role staff can assign here — those accounts
+              // are only ever provisioned automatically from a Customer record.
               items: UserRole.values
+                  .where((role) => role != UserRole.customer)
                   .map((role) => DropdownMenuItem(
                         value: role,
                         child: Text(_roleLabel(role.value)),

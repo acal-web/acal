@@ -50,9 +50,6 @@ Rails.application.routes.draw do
   resources :devices, only: [ :create ]
 
   namespace :portal do
-    post "session", to: "sessions#create"
-    delete "session", to: "sessions#destroy"
-    get "me", to: "sessions#me"
     resources :invoices, only: [ :index, :show ] do
       member do
         get :pdf

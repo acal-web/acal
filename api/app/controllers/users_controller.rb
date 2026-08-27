@@ -7,7 +7,7 @@ class UsersController < ApplicationController
 
   # GET /users
   def index
-    users = User.all
+    users = User.staff
     render json: paginate(users), each_serializer: UserSerializer
   end
 
@@ -43,11 +43,11 @@ class UsersController < ApplicationController
   private
 
   def set_user
-    @user = User.find(params.expect(:id))
+    @user = User.staff.find(params.expect(:id))
   end
 
   def set_deleted_user
-    @user = User.deleted.find(params.expect(:id))
+    @user = User.staff.deleted.find(params.expect(:id))
   end
 
   def form

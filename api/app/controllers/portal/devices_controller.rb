@@ -1,5 +1,5 @@
 class Portal::DevicesController < Portal::ApplicationController
-  allow_any_group only: :create
+  requires_permission "portal_devices:manage", only: :create
 
   # POST /portal/devices
   def create

@@ -31,7 +31,7 @@ module Rbac
     ],
     "customer" => %w[
       portal_invoices:read
-      portal_me:read
+      portal_devices:manage
     ]
   }.freeze
 

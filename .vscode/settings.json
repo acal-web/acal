@@ -6,5 +6,6 @@
       "path": "/usr/local/sdkman/candidates/java/current",
       "default": true
     }
-  ]
+  ],
+  "java.configuration.updateBuildConfiguration": "interactive"
 }

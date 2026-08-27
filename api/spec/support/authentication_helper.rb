@@ -5,8 +5,7 @@ module AuthenticationHelper
   end
 
   def sign_in_as_customer(customer)
-    token = JwtToken.encode(customer.id, key: :customer_id, group: "customer")
-    @auth_headers = { "Authorization" => "Bearer #{token}" }
+    sign_in_as(customer.user)
   end
 
   def auth_headers

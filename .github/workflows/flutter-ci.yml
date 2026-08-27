@@ -144,71 +144,71 @@ jobs:
           git commit -m "chore: bump app version [skip ci]"
           git push
 
-  build-android:
-    needs: [test, bump-version]
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
-    env:
-      HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
-      HAS_GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 != '' }}
-    defaults:
-      run:
-        working-directory: app
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          ref: main
-
-      - name: Set up Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          flutter-version: 3.44.4
-          channel: stable
-          cache: true
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-
-      - name: Create key.properties
-        if: ${{ env.HAS_KEYSTORE == 'true' }}
-        run: |
-          mkdir -p android
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore.jks
-          cat > android/key.properties << EOF
-          storeFile=../keystore.jks
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          EOF
-
-      - name: Create google-services.json
-        if: ${{ env.HAS_GOOGLE_SERVICES == 'true' }}
-        run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
-
-      - name: Get Flutter dependencies
-        run: flutter pub get
-
-      - name: Build APK
-        run: flutter build apk --release
-
-      - name: Upload Android APK artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-apk
-          path: app/build/app/outputs/apk/release/app-release.apk
-
-      - name: Build AAB
-        run: flutter build appbundle --release
-
-      - name: Upload Android AAB artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-aab
-          path: app/build/app/outputs/bundle/release/app-release.aab
+  # build-android:
+  #   needs: [test, bump-version]
+  #   if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+  #   runs-on: ubuntu-latest
+  #   env:
+  #     HAS_KEYSTORE: ${{ secrets.KEYSTORE_BASE64 != '' }}
+  #     HAS_GOOGLE_SERVICES: ${{ secrets.GOOGLE_SERVICES_JSON_BASE64 != '' }}
+  #   defaults:
+  #     run:
+  #       working-directory: app
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: main
+  #
+  #     - name: Set up Flutter
+  #       uses: subosito/flutter-action@v2
+  #       with:
+  #         flutter-version: 3.44.4
+  #         channel: stable
+  #         cache: true
+  #
+  #     - name: Set up Java
+  #       uses: actions/setup-java@v3
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #
+  #     - name: Create key.properties
+  #       if: ${{ env.HAS_KEYSTORE == 'true' }}
+  #       run: |
+  #         mkdir -p android
+  #         echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > android/keystore.jks
+  #         cat > android/key.properties << EOF
+  #         storeFile=../keystore.jks
+  #         storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+  #         keyAlias=${{ secrets.KEY_ALIAS }}
+  #         keyPassword=${{ secrets.KEY_PASSWORD }}
+  #         EOF
+  #
+  #     - name: Create google-services.json
+  #       if: ${{ env.HAS_GOOGLE_SERVICES == 'true' }}
+  #       run: echo "${{ secrets.GOOGLE_SERVICES_JSON_BASE64 }}" | base64 -d > android/app/google-services.json
+  #
+  #     - name: Get Flutter dependencies
+  #       run: flutter pub get
+  #
+  #     - name: Build APK
+  #       run: flutter build apk --release
+  #
+  #     - name: Upload Android APK artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android-apk
+  #         path: app/build/app/outputs/apk/release/app-release.apk
+  #
+  #     - name: Build AAB
+  #       run: flutter build appbundle --release
+  #
+  #     - name: Upload Android AAB artifact
+  #       uses: actions/upload-artifact@v4
+  #       with:
+  #         name: android-aab
+  #         path: app/build/app/outputs/bundle/release/app-release.aab
 
   build-and-push:
     needs: [test, bump-version]

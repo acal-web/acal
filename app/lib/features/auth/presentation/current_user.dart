@@ -4,6 +4,7 @@ import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/auth/data/auth_service.dart';
 import 'package:acalapp/features/auth/data/token_storage.dart';
 import 'package:acalapp/features/auth/domain/auth_user.dart';
+import 'package:acalapp/features/auth/domain/user_role.dart';
 
 class CurrentUser extends ChangeNotifier {
   AuthUser? _user;
@@ -21,7 +22,8 @@ class CurrentUser extends ChangeNotifier {
     _user = user;
     _token = token;
     notifyListeners();
-    registerDevice(post: HttpService().post, path: '/devices');
+    final devicesPath = user.role == UserRole.customer ? '/portal/devices' : '/devices';
+    registerDevice(post: HttpService().post, path: devicesPath);
   }
 
   void clear() {

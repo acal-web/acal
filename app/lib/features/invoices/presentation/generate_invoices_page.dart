@@ -377,13 +377,7 @@ class _FilterBarState extends State<_FilterBar> {
             ],
           );
 
-    return Card(
-      elevation: 1,
-      child: Padding(
-        padding: LayoutConfig.pagePadding(widget.narrow),
-        child: fields,
-      ),
-    );
+    return fields;
   }
 }
 
@@ -502,156 +496,156 @@ class _CandidatesCardState extends State<_CandidatesCard> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    final headerStyle = Theme.of(context).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600);
     final allSelected = widget.candidates.isNotEmpty && widget.selected.length == widget.candidates.length;
 
-    return Card(
-      elevation: 1,
-      clipBehavior: Clip.antiAlias,
-      child: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 3,
-                  child: _SortableHeaderCell(
-                    label: 'SÓCIO',
-                    sortBy: 'customerName',
-                    currentSort: _sortBy,
-                    ascending: _sortAscending,
-                    onSort: _sort,
-                  ),
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 3,
+                child: _SortableHeaderCell(
+                  label: 'SÓCIO',
+                  sortBy: 'customerName',
+                  currentSort: _sortBy,
+                  ascending: _sortAscending,
+                  onSort: _sort,
+                  style: headerStyle,
                 ),
-                Expanded(
-                  flex: 3,
-                  child: _SortableHeaderCell(
-                    label: 'ENDEREÇO',
-                    sortBy: 'addressName',
-                    currentSort: _sortBy,
-                    ascending: _sortAscending,
-                    onSort: _sort,
-                  ),
+              ),
+              Expanded(
+                flex: 3,
+                child: _SortableHeaderCell(
+                  label: 'ENDEREÇO',
+                  sortBy: 'addressName',
+                  currentSort: _sortBy,
+                  ascending: _sortAscending,
+                  onSort: _sort,
+                  style: headerStyle,
                 ),
-                Expanded(
-                  flex: 2,
-                  child: _SortableHeaderCell(
-                    label: 'CATEGORIA',
-                    sortBy: 'categoryName',
-                    currentSort: _sortBy,
-                    ascending: _sortAscending,
-                    onSort: _sort,
-                  ),
+              ),
+              Expanded(
+                flex: 2,
+                child: _SortableHeaderCell(
+                  label: 'CATEGORIA',
+                  sortBy: 'categoryName',
+                  currentSort: _sortBy,
+                  ascending: _sortAscending,
+                  onSort: _sort,
+                  style: headerStyle,
                 ),
-                SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. INICIAL', style: Theme.of(context).textTheme.labelLarge)),
-                SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. FINAL', style: Theme.of(context).textTheme.labelLarge)),
-                SizedBox(
-                  width: _amountColumnWidth,
-                  child: _SortableHeaderCell(
-                    label: 'VALOR TOTAL',
-                    sortBy: 'amount',
-                    currentSort: _sortBy,
-                    ascending: _sortAscending,
-                    onSort: _sort,
-                  ),
+              ),
+              SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. INICIAL', style: headerStyle)),
+              SizedBox(width: _waterMeterColumnWidth, child: Text('HDR. FINAL', style: headerStyle)),
+              SizedBox(
+                width: _amountColumnWidth,
+                child: _SortableHeaderCell(
+                  label: 'VALOR TOTAL',
+                  sortBy: 'amount',
+                  currentSort: _sortBy,
+                  ascending: _sortAscending,
+                  onSort: _sort,
+                  style: headerStyle,
                 ),
-                SizedBox(
-                  width: _checkboxColumnWidth,
-                  child: FCheckbox(
-                    value: allSelected,
-                    onChange: widget.candidates.isEmpty ? null : widget.onToggleAll,
-                  ),
+              ),
+              SizedBox(
+                width: _checkboxColumnWidth,
+                child: FCheckbox(
+                  value: allSelected,
+                  onChange: widget.candidates.isEmpty ? null : widget.onToggleAll,
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          const Divider(height: 1),
-          if (widget.candidates.isEmpty)
-            const Expanded(child: Center(child: Text('Nenhuma conexão elegível para o período selecionado.')))
-          else
-            Expanded(
-              child: ListView.builder(
-                itemCount: _sortedCandidates.length * 2,
-                itemBuilder: (context, index) {
-                  if (index.isOdd) return const Divider(height: 1);
-                  final i = index ~/ 2;
-                  final candidate = _sortedCandidates[i];
-                  final checked = widget.selected.contains(candidate.connectionId);
+        ),
+        const Divider(height: 1),
+        if (widget.candidates.isEmpty)
+          const Expanded(child: Center(child: Text('Nenhuma conexão elegível para o período selecionado.')))
+        else
+          Expanded(
+            child: ListView.separated(
+              itemCount: _sortedCandidates.length,
+              separatorBuilder: (_, _) => const Divider(height: 1),
+              itemBuilder: (context, i) {
+                final candidate = _sortedCandidates[i];
+                final checked = widget.selected.contains(candidate.connectionId);
 
-                  return ColoredBox(
-                    color: Colors.white,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                      child: Row(
-                        children: [
-                          Expanded(flex: 3, child: Text(candidate.customerName)),
-                          Expanded(flex: 3, child: Text(candidate.fullAddress)),
-                          Expanded(flex: 2, child: Text(candidate.categoryName)),
-                          if (candidate.hasWaterMeter) ...[
-                            SizedBox(
-                              width: _waterMeterColumnWidth,
-                              child: FTextFormField(
-                                control: FTextFieldControl.managed(
-                                  controller: _getInitialController(
-                                    candidate.connectionId,
-                                    previousFinalReading: candidate.previousMeterFinalReading,
-                                  ),
-                                ),
-                                hint: '0.0',
-                                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              ),
-                            ),
-                            SizedBox(
-                              width: _waterMeterColumnWidth,
-                              child: FTextFormField(
-                                control: FTextFieldControl.managed(
-                                  controller: _getFinalController(candidate.connectionId),
-                                ),
-                                hint: '0.0',
-                                keyboardType: TextInputType.numberWithOptions(decimal: true),
-                              ),
-                            ),
-                          ] else ...[
-                            const SizedBox(
-                              width: _waterMeterColumnWidth,
-                              child: Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
-                            ),
-                            const SizedBox(
-                              width: _waterMeterColumnWidth,
-                              child: Center(child: Text('0.0', style: TextStyle(color: Colors.grey))),
-                            ),
-                          ],
+                return ColoredBox(
+                  color: cs.surfaceContainer.withValues(alpha: i.isEven ? 0.2 : 0.4),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                    child: Row(
+                      children: [
+                        Expanded(flex: 3, child: Text(candidate.customerName)),
+                        Expanded(flex: 3, child: Text(candidate.fullAddress)),
+                        Expanded(flex: 2, child: Text(candidate.categoryName)),
+                        if (candidate.hasWaterMeter) ...[
                           SizedBox(
-                            width: _amountColumnWidth,
-                            child: Text(formatBRL(candidate.amount)),
+                            width: _waterMeterColumnWidth,
+                            child: FTextFormField(
+                              control: FTextFieldControl.managed(
+                                controller: _getInitialController(
+                                  candidate.connectionId,
+                                  previousFinalReading: candidate.previousMeterFinalReading,
+                                ),
+                              ),
+                              hint: '0.0',
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
+                            ),
                           ),
                           SizedBox(
-                            width: _checkboxColumnWidth,
-                            child: FCheckbox(
-                              value: checked,
-                              onChange: (v) => widget.onToggle(candidate.connectionId, v),
+                            width: _waterMeterColumnWidth,
+                            child: FTextFormField(
+                              control: FTextFieldControl.managed(
+                                controller: _getFinalController(candidate.connectionId),
+                              ),
+                              hint: '0.0',
+                              keyboardType: TextInputType.numberWithOptions(decimal: true),
                             ),
+                          ),
+                        ] else ...[
+                          SizedBox(
+                            width: _waterMeterColumnWidth,
+                            child: Center(child: Text('0.0', style: TextStyle(color: cs.onSurfaceVariant))),
+                          ),
+                          SizedBox(
+                            width: _waterMeterColumnWidth,
+                            child: Center(child: Text('0.0', style: TextStyle(color: cs.onSurfaceVariant))),
                           ),
                         ],
-                      ),
+                        SizedBox(
+                          width: _amountColumnWidth,
+                          child: Text(formatBRL(candidate.amount)),
+                        ),
+                        SizedBox(
+                          width: _checkboxColumnWidth,
+                          child: FCheckbox(
+                            value: checked,
+                            onChange: (v) => widget.onToggle(candidate.connectionId, v),
+                          ),
+                        ),
+                      ],
                     ),
-                  );
-                },
-              ),
-            ),
-          Container(
-            color: cs.primaryContainer,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            child: Row(
-              children: [
-                Text('Total (${widget.selected.length})', style: Theme.of(context).textTheme.labelLarge),
-                const Spacer(),
-                Text(formatBRL(widget.selectedAmount), style: Theme.of(context).textTheme.titleMedium),
-              ],
+                  ),
+                );
+              },
             ),
           ),
-        ],
-      ),
+        Container(
+          color: cs.primaryContainer,
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+          child: Row(
+            children: [
+              Text('Total (${widget.selected.length})', style: Theme.of(context).textTheme.labelLarge),
+              const Spacer(),
+              Text(formatBRL(widget.selectedAmount), style: Theme.of(context).textTheme.titleMedium),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -663,6 +657,7 @@ class _SortableHeaderCell extends StatelessWidget {
     required this.currentSort,
     required this.ascending,
     required this.onSort,
+    this.style,
   });
 
   final String label;
@@ -670,9 +665,11 @@ class _SortableHeaderCell extends StatelessWidget {
   final String currentSort;
   final bool ascending;
   final Function(String) onSort;
+  final TextStyle? style;
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
     final isActive = currentSort == sortBy;
     final icon = !isActive
         ? Icons.unfold_more
@@ -687,12 +684,12 @@ class _SortableHeaderCell extends StatelessWidget {
         spacing: 4,
         children: [
           Flexible(
-            child: Text(label, style: Theme.of(context).textTheme.labelLarge),
+            child: Text(label, style: style),
           ),
           Icon(
             icon,
             size: 16,
-            color: isActive ? Theme.of(context).colorScheme.primary : Colors.grey,
+            color: isActive ? cs.primary : cs.onSurfaceVariant,
           ),
         ],
       ),
