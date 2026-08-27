@@ -54,7 +54,7 @@ class InvoicesController < ApplicationController
   def pdf
     invoice = Invoice.includes(connection: %i[ customer address category ], water_meter: {}).find(params[:id])
 
-    send_data Invoices::BoletoPdfService.call(invoice), type: "application/pdf", disposition: "inline", filename: "fatura-#{invoice.id}.pdf"
+    send_data Reports::InvoiceReportBuilder.call(invoice), type: "application/pdf", disposition: "inline", filename: "fatura-#{invoice.id}.pdf"
   end
 
   # PATCH /invoices/:id/pay
@@ -77,7 +77,7 @@ class InvoicesController < ApplicationController
 
     return head :no_content if groups.empty?
 
-    send_data Invoices::CobrancaPdfService.call(groups), type: "application/pdf", disposition: "inline", filename: "cobranca.pdf"
+    send_data Reports::DunningReportBuilder.call(groups), type: "application/pdf", disposition: "inline", filename: "cobranca.pdf"
   end
 
   # GET /invoices/print_filtered
@@ -93,7 +93,7 @@ class InvoicesController < ApplicationController
 
     return head :no_content if invoices.empty?
 
-    send_data Invoices::PrintFilteredPdfService.call(invoices), type: "application/pdf", disposition: "inline", filename: "faturas-filtradas.pdf"
+    send_data Reports::FilteredInvoicesReportBuilder.call(invoices), type: "application/pdf", disposition: "inline", filename: "faturas-filtradas.pdf"
   end
 
   private

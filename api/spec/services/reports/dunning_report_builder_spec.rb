@@ -1,6 +1,6 @@
 require "rails_helper"
 
-RSpec.describe Invoices::CobrancaPdfService do
+RSpec.describe Reports::DunningReportBuilder do
   it "renders a PDF letter, one page per connection group" do
     category = create(:category, water_price: 15, membership_price: 5)
     connection = create(:connection, customer: create(:customer), address: create(:address), category: category)

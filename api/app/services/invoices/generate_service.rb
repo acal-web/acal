@@ -1,10 +1,10 @@
 module Invoices
   class GenerateService
     def self.call(connection_ids:, reference_date:, due_date:, water_meters: nil)
-      connections = Connection.where(id: connection_ids).includes(:category, :customer)
+      connections = Connection.where(id: connection_ids).includes(:category, :customer, :address)
       water_meters_by_connection = (water_meters || {}).index_by { |m| m["connection_id"] }
 
-      invoices = ActiveRecord::Base.transaction do
+      pairs = ActiveRecord::Base.transaction do
         connections.map do |connection|
           values = EligibleConnectionsService.value_breakdown(connection)
           water_consumed_value = 0
@@ -36,23 +36,12 @@ module Invoices
             )
           end
 
-          invoice
+          [ connection, invoice ]
         end
       end
 
-      invoices.each { |invoice| notify_new_invoice(invoice) }
-      invoices
-    end
-
-    def self.notify_new_invoice(invoice)
-      customer = invoice.connection.customer
-      return unless customer
-
-      Devices::SendPushService.call(
-        owner: customer,
-        title: "Nova fatura",
-        body: "#{customer.name}, você possui uma nova fatura"
-      )
+      pairs.each { |connection, invoice| Notifications::NewInvoiceNotifier.call(connection: connection, invoice: invoice) }
+      pairs.map(&:last)
     end
   end
 end

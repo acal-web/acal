@@ -30,24 +30,19 @@ RSpec.describe Invoices::GenerateService do
     expect(Invoice.where(connection: connection_b)).to be_empty
   end
 
-  it "sends a push notification to each connection's customer" do
-    allow(Devices::SendPushService).to receive(:call)
+  it "notifies the customer for each connection once its invoice is created" do
+    allow(Notifications::NewInvoiceNotifier).to receive(:call)
 
-    described_class.call(
+    invoices = described_class.call(
       connection_ids: [ connection_a.id, connection_b.id ],
       reference_date: "2026-08-01",
       due_date: "2026-08-10"
     )
 
-    expect(Devices::SendPushService).to have_received(:call).with(
-      owner: connection_a.customer,
-      title: "Nova fatura",
-      body: "#{connection_a.customer.name}, você possui uma nova fatura"
-    )
-    expect(Devices::SendPushService).to have_received(:call).with(
-      owner: connection_b.customer,
-      title: "Nova fatura",
-      body: "#{connection_b.customer.name}, você possui uma nova fatura"
-    )
+    invoice_a = invoices.find { |invoice| invoice.connection_id == connection_a.id }
+    invoice_b = invoices.find { |invoice| invoice.connection_id == connection_b.id }
+
+    expect(Notifications::NewInvoiceNotifier).to have_received(:call).with(connection: connection_a, invoice: invoice_a)
+    expect(Notifications::NewInvoiceNotifier).to have_received(:call).with(connection: connection_b, invoice: invoice_b)
   end
 end

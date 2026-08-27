@@ -1,8 +1,8 @@
-module Invoices
-  # Shared Prawn::Document factory for invoice-related PDFs. Registers a
+module Reports
+  # Shared Prawn::Document factory for report PDFs. Registers a
   # UTF-8 TrueType font since Prawn's built-in AFM fonts (Helvetica) can't
   # render the accented Portuguese text used throughout these documents.
-  module PdfDocument
+  module PdfFactory
     FONT_DIR = Rails.root.join("app/assets/fonts")
     FONT_NAME = "DejaVuSans"
 

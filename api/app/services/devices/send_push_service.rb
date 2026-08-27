@@ -2,10 +2,6 @@ require "net/http"
 require "base64"
 
 module Devices
-  # Sends a push notification to every device registered to an owner (User or
-  # Customer) via Firebase Cloud Messaging's HTTP v1 API. Best-effort: any
-  # failure (missing credentials, FCM error, network issue) is logged and
-  # swallowed so it never interrupts the caller's flow (e.g. invoice generation).
   class SendPushService
     FCM_SCOPE = "https://www.googleapis.com/auth/firebase.messaging"
     TOKEN_URL = "https://oauth2.googleapis.com/token"
@@ -59,9 +55,6 @@ module Devices
       JSON.parse(response.body)["access_token"]
     end
 
-    # FIREBASE_SERVICE_ACCOUNT_BASE64 holds the Firebase service account JSON
-    # (Project Settings > Service accounts > Generate new private key),
-    # base64-encoded, set via api/.env (and the real env in other environments).
     def credentials
       return @credentials if defined?(@credentials)
 

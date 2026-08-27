@@ -23,7 +23,7 @@ class Portal::InvoicesController < Portal::ApplicationController
   def pdf
     invoice = customer_invoice(params[:id])
 
-    send_data Invoices::BoletoPdfService.call(invoice), type: "application/pdf", disposition: "inline", filename: "fatura-#{invoice.id}.pdf"
+    send_data Reports::InvoiceReportBuilder.call(invoice), type: "application/pdf", disposition: "inline", filename: "fatura-#{invoice.id}.pdf"
   end
 
   private

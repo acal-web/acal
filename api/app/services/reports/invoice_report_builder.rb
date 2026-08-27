@@ -1,52 +1,26 @@
-module Invoices
-  # Renders a single A4 page with two stacked copies ("Nº de Associado" block
-  # onward, separated by a dashed rule) under one shared letterhead — mirrors
-  # the legacy printed layout while using the current field set (membership/
-  # water/excess values) from the Flutter invoice detail card.
-  class BoletoPdfService
-    MONTH_NAMES = %w[janeiro fevereiro março abril maio junho julho agosto setembro outubro novembro dezembro].freeze
-    MONTH_ABBR = %w[jan fev mar abr mai jun jul ago set out nov dez].freeze
-
-    LEGEND = [
-      [ "Coliformes Totais", "Indicador que mensura contaminação bacteriológica, do tipo: bacilos gram-negativos, aeróbios ou anaeróbios facultativos não esporogênicos, oxidase-negativos." ],
-      [ "E.coli", "Indicador que mensura contaminação bacteriológica de origem fecal." ],
-      [ "Cloro Residual", "Indicador de Poder Desinfetante oriundo do Cloro (Agente de Desinfecção)." ],
-      [ "Turbidez", "Indicador do espalhamento de luz produzido pela presença de partículas em suspensão ou coloidais." ],
-      [ "Cor Aparente", "Indicador que mensura a cor em amostras com turbidez." ]
-    ].freeze
-
+module Reports
+  class InvoiceReportBuilder
     BORDER_COLOR = "999999"
     BOX_HEIGHT = 56
     GAP = 8
 
     def self.call(invoice)
-      pdf = PdfDocument.build(margin: 22)
+      pdf = PdfFactory.build(margin: 22)
       new(invoice).draw(pdf)
       pdf.render
     end
 
-    # Draws one invoice's boleto onto an existing document, so callers that
-    # print multiple invoices (e.g. Invoices::PrintFilteredPdfService) can
-    # reuse this exact layout instead of maintaining a second template.
-    #
-    # quality_analyses: lets batch callers pass in a preloaded set (shared
-    # across every invoice from the same reference month) instead of each
-    # invoice re-querying for it individually.
     def self.draw(pdf, invoice, quality_analyses: nil)
       new(invoice, quality_analyses: quality_analyses).draw(pdf)
     end
 
     def initialize(invoice, quality_analyses: nil)
-      @invoice = invoice
-      @connection = invoice.connection
-      @quality_analyses = quality_analyses
+      @report = InvoiceReport.new(invoice, quality_analyses: quality_analyses)
     end
 
     def draw(pdf)
       draw_letterhead(pdf)
 
-      # The water quality summary is shared account-wide for the reference
-      # month, so it's only printed once — not duplicated per copy.
       draw_columns(pdf)
       pdf.move_down 6
       draw_water_quality(pdf)
@@ -58,7 +32,7 @@ module Invoices
 
     private
 
-    attr_reader :invoice, :connection
+    attr_reader :report
 
     def draw_divider(pdf)
       pdf.move_down 6
@@ -69,8 +43,6 @@ module Invoices
       pdf.stroke_color "000000"
       pdf.move_down 6
     end
-
-    # -- Letterhead (once per page) -----------------------------------------
 
     def draw_letterhead(pdf)
       icon_size = 34
@@ -161,22 +133,19 @@ module Invoices
       pdf.move_down top_pad
       pdf.text label, size: 9, style: :bold, color: "666666", align: :center
       pdf.move_down 3
-      pdf.font(PdfDocument::FONT_NAME, style: :bold) { pdf.text value, size: value_size, align: :center }
+      pdf.font(PdfFactory::FONT_NAME, style: :bold) { pdf.text value, size: value_size, align: :center }
 
       pdf.move_down(height - top_pad - content_height)
     end
 
     def draw_identity_column(pdf, width)
-      customer = connection.customer
-      category = connection.category
-
-      draw_box(pdf, width, BOX_HEIGHT, "Nº de Associado", connection.legacy_id&.to_s || "—", value_size: 14)
+      draw_box(pdf, width, BOX_HEIGHT, "Nº de Associado", report.associate_number, value_size: 14)
       pdf.move_down GAP
 
       draw_rows(pdf, [
-        [ "Sócio", customer.name ],
-        [ "Endereço", connection.full_location ],
-        [ "Categoria", category.name ]
+        [ "Sócio", report.customer_name ],
+        [ "Endereço", report.address ],
+        [ "Categoria", report.category_name ]
       ], width)
 
       pdf.move_down 6
@@ -186,7 +155,6 @@ module Invoices
     def draw_meter_box(pdf, width, height)
       return if height < 20
 
-      meter = invoice.water_meter
       y = pdf.cursor
 
       pdf.stroke_color BORDER_COLOR
@@ -195,12 +163,9 @@ module Invoices
       pdf.stroke_color "000000"
 
       col_width = width / 3.0
+      labels = [ "Leitura anterior:", "Leitura atual:", "Consumo:" ]
 
-      [
-        [ "Leitura anterior:", meter ? "#{number_with_thousands(meter.initial_reading.to_i)} L" : "—" ],
-        [ "Leitura atual:", meter ? "#{number_with_thousands(meter.final_reading.to_i)} L" : "—" ],
-        [ "Consumo:", meter ? "#{number_with_thousands(meter.real_consumption.to_i)} L" : "—" ]
-      ].each_with_index do |(label, value), index|
+      labels.zip(report.meter_readings).each_with_index do |(label, value), index|
         x = index * col_width
 
         pdf.text_box label, at: [ x + 5, y - 8 ], width: col_width - 8, height: 16,
@@ -211,7 +176,7 @@ module Invoices
     end
 
     def draw_payment_column(pdf, width)
-      draw_box(pdf, width, BOX_HEIGHT, "Boleto nº", invoice.number || "—", value_size: 14)
+      draw_box(pdf, width, BOX_HEIGHT, "Boleto nº", report.boleto_number, value_size: 14)
       pdf.move_down GAP
 
       height = pdf.cursor
@@ -225,31 +190,31 @@ module Invoices
 
       # Left blank when the invoice hasn't been paid yet — mirrors the app,
       # which renders an empty box in that case instead of a placeholder.
-      return unless invoice.paid_at.present?
+      return unless report.paid?
 
       pdf.text_box "Pago em", at: [ 0, y - 14 ], width: width, height: 12, size: 9, color: "666666", align: :center
-      pdf.text_box short_date(invoice.paid_at.to_date), at: [ 0, y - 30 ], width: width, height: 18, size: 13, style: :bold, align: :center
+      pdf.text_box report.paid_at_label, at: [ 0, y - 30 ], width: width, height: 18, size: 13, style: :bold, align: :center
     end
 
     def draw_values_column(pdf, width)
-      draw_box(pdf, width, BOX_HEIGHT, "Conta referente", month_year_label(invoice.reference_date), value_size: 13)
+      draw_box(pdf, width, BOX_HEIGHT, "Conta referente", report.reference_label, value_size: 13)
       pdf.move_down GAP
 
       draw_rows(pdf, [
-        [ "Data de Emissão", short_date(invoice.reference_date) ],
-        [ "Vencimento", short_date(invoice.due_date) ]
+        [ "Data de Emissão", report.issued_at_label ],
+        [ "Vencimento", report.due_date_label ]
       ], width, value_align: :right)
 
       pdf.move_down 4
 
       draw_rows(pdf, [
-        [ "Valor Societario", PdfDocument.currency(invoice.membership_value) ],
-        [ "Valor Água", PdfDocument.currency(invoice.water_value) ],
-        [ "Água excedente", PdfDocument.currency(invoice.water_consumed_value || 0) ]
+        [ "Valor Societario", report.membership_value_label ],
+        [ "Valor Água", report.water_value_label ],
+        [ "Água excedente", report.excess_water_value_label ]
       ], width, value_align: :right)
 
       pdf.move_down 8
-      draw_total_box(pdf, width, 32, "Valor total", PdfDocument.currency(invoice.amount))
+      draw_total_box(pdf, width, 32, "Valor total", report.total_value_label)
     end
 
     def draw_total_box(pdf, width, height, label, value)
@@ -288,9 +253,9 @@ module Invoices
     # -- Water quality table + legend ---------------------------------------
 
     def draw_water_quality(pdf)
-      analyses = @quality_analyses || invoice.quality_analyses.to_a
+      analyses = report.quality_analyses
 
-      pdf.font(PdfDocument::FONT_NAME, style: :bold) { pdf.text "PADRÃO DA PORTARIA MS 2914/2011", size: 10, align: :center }
+      pdf.font(PdfFactory::FONT_NAME, style: :bold) { pdf.text "PADRÃO DA PORTARIA MS 2914/2011", size: 10, align: :center }
       pdf.move_down 4
 
       if analyses.empty?
@@ -323,27 +288,15 @@ module Invoices
     end
 
     def draw_legend(pdf)
-      pdf.font(PdfDocument::FONT_NAME, style: :bold) { pdf.text "Parâmetros de Qualidade da Água", size: 9 }
+      pdf.font(PdfFactory::FONT_NAME, style: :bold) { pdf.text "Parâmetros de Qualidade da Água", size: 9 }
       pdf.move_down 3
 
-      LEGEND.each do |title, description|
+      InvoiceReport::LEGEND.each do |title, description|
         pdf.formatted_text [
           { text: "#{title}: ", styles: [ :bold ], size: 7 },
           { text: description, size: 7 }
         ], leading: 0
       end
-    end
-
-    def month_year_label(date)
-      "#{MONTH_NAMES[date.month - 1]}, #{date.year}"
-    end
-
-    def short_date(date)
-      "#{date.strftime('%d')} #{MONTH_ABBR[date.month - 1]}. #{date.year}"
-    end
-
-    def number_with_thousands(value)
-      ActiveSupport::NumberHelper.number_to_delimited(value, delimiter: ".")
     end
   end
 end
