@@ -7,6 +7,7 @@ import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/features/invoices/domain/invoice_candidate.dart';
 import 'package:acalapp/features/invoices/presentation/generate_invoices_page.dart';
+import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:forui/forui.dart';
@@ -115,5 +116,61 @@ void main() {
 
     expect(find.text('Confirmar Geração'), findsOneWidget);
     expect(find.byKey(const Key('due-date-field')), findsOneWidget);
+  });
+
+  testWidgets('tapping anywhere on a row toggles its selection, same as the checkbox', (tester) async {
+    final service = _FakeInvoiceService(candidates: [_candidateA, _candidateB]);
+    await _pump(tester, invoiceService: service);
+
+    expect(find.text('Total (0)'), findsOneWidget);
+
+    await tester.tap(find.text('Fulano de Tal'));
+    await tester.pumpAndSettle();
+    expect(find.text('Total (1)'), findsOneWidget);
+
+    await tester.tap(find.text('Fulano de Tal'));
+    await tester.pumpAndSettle();
+    expect(find.text('Total (0)'), findsOneWidget);
+  });
+
+  testWidgets('tapping/typing in the water meter fields does not toggle row selection', (tester) async {
+    final service = _FakeInvoiceService(candidates: [_candidateA]);
+    await _pump(tester, invoiceService: service);
+
+    // Field order in the tree: the period filter's reference field, then this
+    // row's initial/final meter readings (candidate A is the only row and has
+    // a water meter), then the generate bar's due-date field.
+    final initialReadingField = find.byType(FTextFormField).at(1);
+
+    await tester.tap(initialReadingField);
+    await tester.pumpAndSettle();
+    expect(find.text('Total (0)'), findsOneWidget);
+
+    await tester.enterText(initialReadingField, '1500');
+    await tester.pumpAndSettle();
+    expect(find.text('Total (0)'), findsOneWidget);
+  });
+
+  testWidgets('previews the excess-water charge live as meter readings are typed', (tester) async {
+    final service = _FakeInvoiceService(candidates: [_candidateA]);
+    await _pump(tester, invoiceService: service);
+
+    // Base amount (membership 15 + water 5), no readings yet.
+    expect(find.text(formatBRL(20)), findsOneWidget);
+
+    final initialReadingField = find.byType(FTextFormField).at(1);
+    final finalReadingField = find.byType(FTextFormField).at(2);
+
+    // 11000 - 0 = 1000L over the 10000L free tier -> R$4,00 preview extra.
+    await tester.enterText(initialReadingField, '0');
+    await tester.enterText(finalReadingField, '11000');
+    await tester.pumpAndSettle();
+
+    expect(find.text(formatBRL(24)), findsOneWidget);
+
+    await tester.enterText(finalReadingField, '');
+    await tester.pumpAndSettle();
+
+    expect(find.text(formatBRL(20)), findsOneWidget);
   });
 }
