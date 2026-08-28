@@ -15,6 +15,7 @@ import 'package:acalapp/features/elections/presentation/elections_page.dart';
 import 'package:acalapp/features/invoices/presentation/cobranca_page.dart';
 import 'package:acalapp/features/invoices/presentation/generate_invoices_page.dart';
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
+import 'package:acalapp/features/notifications/presentation/notifications_page.dart';
 import 'package:acalapp/features/quality/presentation/quality_page.dart';
 import 'package:acalapp/features/customer/presentation/customer_page.dart';
 import 'package:flutter/widgets.dart';
@@ -112,6 +113,10 @@ void initializeRouter(Listenable currentUser) {
         GoRoute(
           path: '/cashbox',
           pageBuilder: (context, state) => const NoTransitionPage(child: CashboxPage()),
+        ),
+        GoRoute(
+          path: '/notifications',
+          pageBuilder: (context, state) => const NoTransitionPage(child: NotificationsPage()),
         ),
         GoRoute(
           path: '/users',

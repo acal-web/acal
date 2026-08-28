@@ -43,6 +43,12 @@ const _menuSections = [
     ),
     (icon: Icons.receipt_long, label: 'Faturas', route: '/invoices', requiredRole: null),
     (icon: Icons.point_of_sale, label: 'Caixa', route: '/cashbox', requiredRole: null),
+    (
+      icon: Icons.campaign_outlined,
+      label: 'Notificações',
+      route: '/notifications',
+      requiredRole: Permissions.canSendNotifications
+    ),
   ]),
   _MenuSection(title: 'ADMINISTRAÇÃO', items: [
     (

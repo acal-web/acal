@@ -33,6 +33,7 @@ Rails.application.routes.draw do
       get :overdue
       get :cobranca_pdf
       get :print_filtered
+      get :cashbox
     end
 
     member do
@@ -48,6 +49,12 @@ Rails.application.routes.draw do
   end
 
   resources :devices, only: [ :create ]
+
+  resources :notifications, only: [ :index, :create ] do
+    collection do
+      get :recipients_count
+    end
+  end
 
   namespace :portal do
     resources :invoices, only: [ :index, :show ] do

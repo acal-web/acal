@@ -1,5 +1,5 @@
 class InvoicesController < ApplicationController
-  requires_permission "invoices:read", only: %i[ index show eligible overdue cobranca_pdf print_filtered pdf ]
+  requires_permission "invoices:read", only: %i[ index show eligible overdue cobranca_pdf print_filtered pdf cashbox ]
   requires_permission "invoices:generate", only: :generate
   requires_permission "invoices:pay", only: :pay
 
@@ -63,6 +63,19 @@ class InvoicesController < ApplicationController
     invoice.update!(paid_at: Time.current, user_id: current_user.id)
 
     render json: invoice, include: INVOICE_INCLUDES
+  end
+
+  # GET /invoices/cashbox
+  def cashbox
+    invoices = Invoice
+      .filter_by_status("paid")
+      .filter_by_paid_between(params[:start_date], params[:end_date])
+      .includes(connection: %i[customer address category], water_meter: {})
+      .order(paid_at: :desc)
+
+    total_amount = invoices.sum("membership_value + water_value + COALESCE(water_consumed_value, 0)")
+
+    render json: paginate(invoices).merge(totalAmount: total_amount), include: INVOICE_INCLUDES
   end
 
   # GET /invoices/overdue

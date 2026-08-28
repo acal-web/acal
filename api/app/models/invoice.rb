@@ -34,6 +34,12 @@ class Invoice < ApplicationRecord
     end
   }
 
+  scope :filter_by_paid_between, ->(start_date, end_date) {
+    if start_date.present? && end_date.present?
+      where(paid_at: Date.parse(start_date).beginning_of_day..Date.parse(end_date).end_of_day)
+    end
+  }
+
   scope :ordered, -> { order(reference_date: :desc, created_at: :desc) }
 
   scope :unpaid, -> { where(paid_at: nil) }

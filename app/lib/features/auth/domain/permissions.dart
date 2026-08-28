@@ -13,6 +13,10 @@ class Permissions {
     return role == UserRole.administrador || role == UserRole.financeiroSecretaria;
   }
 
+  static bool canSendNotifications(UserRole? role) {
+    return role == UserRole.administrador || role == UserRole.financeiroSecretaria;
+  }
+
   static bool canPayInvoices(UserRole? role) {
     return role == UserRole.administrador ||
         role == UserRole.financeiroSecretaria ||
@@ -58,6 +62,10 @@ class Permissions {
       // Gerar faturas - só admin + financeiro
       case '/invoices/generate':
         return canGenerateInvoices(role);
+
+      // Notificações - só admin + financeiro
+      case '/notifications':
+        return canSendNotifications(role);
 
       // Admin - só admin
       case '/elections':

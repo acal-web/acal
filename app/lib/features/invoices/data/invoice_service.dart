@@ -79,6 +79,25 @@ class InvoiceService {
     return Invoice.fromJson(data);
   }
 
+  Future<({PagedResult<Invoice> page, double totalAmount})> cashbox({
+    int page = 0,
+    int size = 10,
+    DateTime? startDate,
+    DateTime? endDate,
+  }) async {
+    final query = <String, String>{
+      'page': '$page',
+      'size': '$size',
+      if (startDate != null) 'start_date': _formatDate(startDate),
+      if (endDate != null) 'end_date': _formatDate(endDate),
+    };
+    final data = await _http.get('/invoices/cashbox', query: query) as Map<String, dynamic>;
+    return (
+      page: PagedResult.fromJson(data, Invoice.fromJson),
+      totalAmount: double.parse(data['totalAmount'].toString()),
+    );
+  }
+
   Future<List<OverdueConnection>> overdue({int? days}) async {
     final query = {if (days != null) 'days': '$days'};
     final data = await _http.get('/invoices/overdue', query: query) as List;

@@ -13,6 +13,7 @@ module Rbac
       quality_analyses:read quality_analyses:manage
       invoices:read invoices:generate invoices:pay
       dashboard:read
+      notifications:read notifications:send
       test:reset
     ],
     "financeiro_secretaria" => %w[
@@ -23,6 +24,7 @@ module Rbac
       quality_analyses:read quality_analyses:manage
       invoices:read invoices:generate invoices:pay
       dashboard:read
+      notifications:read notifications:send
     ],
     "tesoureiro" => %w[
       customers:read addresses:read categories:read connections:read quality_analyses:read

@@ -193,6 +193,39 @@ RSpec.describe "Invoices", type: :request do
     end
   end
 
+  describe "GET /invoices/cashbox" do
+    it "lists only paid invoices" do
+      paid = create(:invoice, :paid, connection: connection, reference_date: "2026-08-01")
+      create(:invoice, connection: connection, reference_date: "2026-07-01")
+
+      get "/invoices/cashbox"
+
+      ids = response.parsed_body["content"].map { |i| i["id"] }
+      expect(ids).to eq([ paid.id ])
+    end
+
+    it "filters by paid_at within the given range" do
+      matching = create(:invoice, connection: connection, reference_date: "2026-08-01", paid_at: Time.zone.parse("2026-08-15 10:00"))
+      create(:invoice, connection: connection, reference_date: "2026-07-01", paid_at: Time.zone.parse("2026-07-31 23:59"))
+
+      get "/invoices/cashbox", params: { start_date: "2026-08-01", end_date: "2026-08-31" }
+
+      ids = response.parsed_body["content"].map { |i| i["id"] }
+      expect(ids).to eq([ matching.id ])
+    end
+
+    it "returns the total amount of the filtered invoices, across all pages" do
+      create(:invoice, :paid, connection: connection, membership_value: 15, water_value: 5)
+      other_connection = create(:connection, customer: create(:customer), address: create(:address), category: category)
+      create(:invoice, :paid, connection: other_connection, membership_value: 10, water_value: 2)
+
+      get "/invoices/cashbox", params: { size: 1 }
+
+      expect(response.parsed_body["content"].length).to eq(1)
+      expect(response.parsed_body["totalAmount"].to_f).to eq(32.0)
+    end
+  end
+
   describe "GET /invoices/cobranca_pdf" do
     it "returns a PDF letter when there are overdue connections" do
       create(:invoice, connection: connection, due_date: Date.current - 45.days)

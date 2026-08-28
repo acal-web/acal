@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_08_27_010128) do
+ActiveRecord::Schema[8.1].define(version: 2026_08_28_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "citext"
   enable_extension "pg_catalog.plpgsql"
@@ -129,6 +129,21 @@ ActiveRecord::Schema[8.1].define(version: 2026_08_27_010128) do
     t.float "consumo_final"
     t.float "consumo_inicial"
     t.integer "idconta"
+  end
+
+  create_table "notifications", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.uuid "address_id"
+    t.string "body", null: false
+    t.uuid "category_id"
+    t.datetime "created_at", null: false
+    t.integer "recipient_count", default: 0, null: false
+    t.uuid "sent_by_id", null: false
+    t.string "status"
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.index ["address_id"], name: "index_notifications_on_address_id"
+    t.index ["category_id"], name: "index_notifications_on_category_id"
+    t.index ["sent_by_id"], name: "index_notifications_on_sent_by_id"
   end
 
   create_table "quality_analyses", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
