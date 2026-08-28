@@ -39,20 +39,13 @@ class _AppShellState extends State<AppShell> {
       // Desktop: the menu pushes the body over, sharing the row. Mobile:
       // the body keeps full width and the menu floats above it instead,
       // to avoid squeezing the content into an overflow.
-      //
-      // SelectionArea wraps only the body, not the menu/topbar: it installs
-      // its own gesture recognizers, and Flutter has long-standing bugs where
-      // those can end up swallowing InkWell/onTap events elsewhere in the
-      // same SelectionArea after selectable content nearby is interacted
-      // with or rebuilt (https://github.com/flutter/flutter/issues/141151) —
-      // keeping nav chrome outside it means that failure mode can't reach it.
       body: SafeArea(
         child: Stack(
           children: [
             Row(
               children: [
                 if (_menuVisible && !isNarrow) const SideMenu(),
-                Expanded(child: SelectionArea(child: widget.body)),
+                Expanded(child: widget.body),
               ],
             ),
             if (_menuVisible && isNarrow) ...[

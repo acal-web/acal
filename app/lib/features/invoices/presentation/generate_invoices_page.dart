@@ -249,43 +249,34 @@ class _GenerateInvoicesPageState extends State<GenerateInvoicesPage> {
                       .where((c) => _selected.contains(c.connectionId))
                       .fold<double>(0, (sum, c) => sum + c.amount);
 
-                  // Disabled because this subtree is torn down and rebuilt
-                  // wholesale on every _fetch() (candidates list swaps for a
-                  // spinner and back) — under an ancestor SelectionArea
-                  // (app_shell.dart), that mount/unmount of many Text nodes
-                  // can leave a gesture recognizer stuck, silently eating
-                  // taps app-wide until a full page reload
-                  // (https://github.com/flutter/flutter/issues/141151).
-                  return SelectionContainer.disabled(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: _CandidatesCard(
-                            key: _candidatesCardKey,
-                            candidates: candidates,
-                            selected: _selected,
-                            selectedAmount: selectedAmount,
-                            onToggleAll: (v) => _toggleAll(v, candidates),
-                            onToggle: _toggle,
-                          ),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Expanded(
+                        child: _CandidatesCard(
+                          key: _candidatesCardKey,
+                          candidates: candidates,
+                          selected: _selected,
+                          selectedAmount: selectedAmount,
+                          onToggleAll: (v) => _toggleAll(v, candidates),
+                          onToggle: _toggle,
                         ),
-                        const SizedBox(height: 12),
-                        _GenerateBar(
-                          foundCount: _selected.length,
-                          amount: selectedAmount,
-                          dueDate: _dueDate,
-                          generating: _generating,
-                          onDueDateTap: _pickDueDate,
-                          onConfirm:
-                              _selected.isEmpty ||
-                                  _dueDate == null ||
-                                  _generating
-                              ? null
-                              : _generate,
-                        ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(height: 12),
+                      _GenerateBar(
+                        foundCount: _selected.length,
+                        amount: selectedAmount,
+                        dueDate: _dueDate,
+                        generating: _generating,
+                        onDueDateTap: _pickDueDate,
+                        onConfirm:
+                            _selected.isEmpty ||
+                                _dueDate == null ||
+                                _generating
+                            ? null
+                            : _generate,
+                      ),
+                    ],
                   );
                 },
               ),
