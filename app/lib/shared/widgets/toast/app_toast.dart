@@ -4,9 +4,16 @@ import 'package:forui/forui.dart';
 enum AppToastType { error, warning, success }
 
 /// Global floating toast — shows error/warning/confirmation messages docked
-/// to the top-right of the screen, above dialogs, auto-dismissing after
+/// to the bottom-right of the screen, above dialogs, auto-dismissing after
 /// [duration]. Call from anywhere with a [BuildContext] under the app's
 /// [FToaster] (mounted once in `main.dart`).
+///
+/// Bottom-right, not top-right: forui's toast hit-tests a region sized for
+/// its enter/exit animation, not just the visible pill, and that region can
+/// outlive/outsize the pill and swallow taps on whatever sits underneath.
+/// Top-right is exactly where [TopBarUserMenu] lives, so every toast made
+/// the user menu unresponsive while showing. Bottom-right has no persistent
+/// interactive chrome under it.
 abstract final class AppToast {
   static void error(BuildContext context, String message) =>
       show(context, message: message, type: AppToastType.error);
@@ -44,7 +51,7 @@ abstract final class AppToast {
         onPress: entry.dismiss,
         child: const Icon(Icons.close, size: 16),
       ),
-      alignment: FToastAlignment.topRight,
+      alignment: FToastAlignment.bottomRight,
       duration: duration,
     );
   }
