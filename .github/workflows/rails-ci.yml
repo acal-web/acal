@@ -121,6 +121,9 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Trigger Coolify deploy
+        env:
+          COOLIFY_DEPLOY_URL: ${{ secrets.COOLIFY_DEPLOY_URL }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
         run: |
-          curl --fail-with-body --request POST "${{ secrets.COOLIFY_DEPLOY_URL }}" \
-            --header "Authorization: Bearer ${{ secrets.COOLIFY_TOKEN }}"
+          curl --fail-with-body --request POST "$COOLIFY_DEPLOY_URL" \
+            --header "Authorization: Bearer $COOLIFY_TOKEN"

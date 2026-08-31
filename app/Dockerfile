@@ -8,12 +8,12 @@
 # written into config.js, loaded by web/index.html before the Flutter bundle.
 #
 # Build: docker build -t app .
-# Run:   docker run -d -p 80:80 -e API_BASE_URL=https://api.acalapp.site --name app app
+# Run:   docker run -d -p 80:8080 -e API_BASE_URL=https://api.acalapp.site --name app app
 
 # Keep in sync with .devcontainer/Dockerfile's FLUTTER_VERSION
 ARG FLUTTER_VERSION=3.44.4
 
-FROM debian:bookworm-slim AS build
+FROM debian:bookworm-slim@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171 AS build
 ARG FLUTTER_VERSION
 
 RUN apt-get update -qq && \
@@ -40,10 +40,13 @@ RUN flutter pub get
 COPY --chown=flutter:flutter . .
 RUN flutter build web --release
 
-FROM nginx:1.27-alpine
+# nginx-unprivileged runs the whole process tree (master and workers) as the
+# non-root "nginx" user on port 8080, unlike the stock nginx image whose
+# master process needs root to bind port 80.
+FROM nginxinc/nginx-unprivileged:1.27-alpine@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0
 COPY --from=build /app/build/web /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY docker/docker-entrypoint.d/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
 RUN chmod +x /docker-entrypoint.d/40-runtime-config.sh
 
-EXPOSE 80
+EXPOSE 8080

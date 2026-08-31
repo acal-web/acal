@@ -56,7 +56,7 @@ RUN groupadd --gid ${USER_GID} ${USERNAME} \
 
 # Install Android SDK
 RUN mkdir -p ${ANDROID_SDK_ROOT} && \
-    curl -fsSL https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip && \
+    curl -fsSL --proto '=https' --tlsv1.2 https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -o /tmp/cmdline-tools.zip && \
     unzip -q /tmp/cmdline-tools.zip -d ${ANDROID_SDK_ROOT} && \
     rm /tmp/cmdline-tools.zip && \
     mkdir -p ${ANDROID_SDK_ROOT}/cmdline-tools/latest && \

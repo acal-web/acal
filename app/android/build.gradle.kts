@@ -19,6 +19,12 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+allprojects {
+    dependencyLocking {
+        lockAllConfigurations()
+    }
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
