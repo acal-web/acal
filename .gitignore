@@ -8,6 +8,10 @@
 /.env
 *firebase-adminsdk*.json
 
+# Claude Code local settings — personal permission allowlist, accumulates
+# command history that can include secrets pasted during debugging.
+/.claude/settings.local.json
+
 # OS / editor cruft
 .DS_Store
 *.swp
