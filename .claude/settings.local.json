@@ -335,7 +335,10 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(grep -n \"class NoTransitionPage\" -A 25 /home/vscode/.pub-cache/hosted/pub.dev/go_router-17.4.0/lib/src/pages/custom_transition_page.dart)",
       "Read(//home/vscode/.pub-cache/hosted/pub.dev/go_router-17.4.0/lib/src/pages/**)",
-      "Bash(bin/rubocop app/models/rbac.rb app/models/jwt_token.rb app/controllers/concerns/permittable.rb app/controllers/application_controller.rb app/controllers/portal/application_controller.rb app/controllers/portal/sessions_controller.rb app/controllers/portal/invoices_controller.rb app/controllers/customers_controller.rb app/controllers/addresses_controller.rb app/controllers/categories_controller.rb app/controllers/connections_controller.rb app/controllers/quality_analyses_controller.rb app/controllers/dashboard_controller.rb app/controllers/users_controller.rb app/controllers/invoices_controller.rb app/controllers/me_controller.rb app/controllers/version_controller.rb app/controllers/sessions_controller.rb app/controllers/test/resets_controller.rb spec/support/authentication_helper.rb spec/requests/portal/sessions_spec.rb)"
+      "Bash(bin/rubocop app/models/rbac.rb app/models/jwt_token.rb app/controllers/concerns/permittable.rb app/controllers/application_controller.rb app/controllers/portal/application_controller.rb app/controllers/portal/sessions_controller.rb app/controllers/portal/invoices_controller.rb app/controllers/customers_controller.rb app/controllers/addresses_controller.rb app/controllers/categories_controller.rb app/controllers/connections_controller.rb app/controllers/quality_analyses_controller.rb app/controllers/dashboard_controller.rb app/controllers/users_controller.rb app/controllers/invoices_controller.rb app/controllers/me_controller.rb app/controllers/version_controller.rb app/controllers/sessions_controller.rb app/controllers/test/resets_controller.rb spec/support/authentication_helper.rb spec/requests/portal/sessions_spec.rb)",
+      "Bash(pg_lsclusters)",
+      "Bash(service postgresql *)",
+      "Bash(bundle check *)"
     ],
     "additionalDirectories": [
       "/workspace/.legacy ",

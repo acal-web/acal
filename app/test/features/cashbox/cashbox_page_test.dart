@@ -107,6 +107,8 @@ void main() {
     final service = _FakeInvoiceService(invoices: []);
     await _pump(tester, service);
 
+    await tester.tap(find.text('Filtros'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('Essa semana'));
     await tester.pumpAndSettle();
 

@@ -40,6 +40,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Ruby
         uses: ruby/setup-ruby@v1
@@ -49,6 +51,14 @@ jobs:
 
       - name: Run CI (setup, style, security, tests)
         run: bin/ci
+
+      - name: SonarCloud Scan
+        if: ${{ success() && secrets.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v7
+        with:
+          projectBaseDir: api
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   bump-version:
     needs: test

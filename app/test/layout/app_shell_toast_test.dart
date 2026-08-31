@@ -26,7 +26,7 @@ class _StubPage extends StatelessWidget {
 }
 
 // Mirrors production setup exactly: MaterialApp.router's builder installs
-// FTheme + FToaster around the routed content, same as main.dart.
+// FTheme around the routed content, same as main.dart.
 GoRouter _router() => GoRouter(
       initialLocation: '/test',
       routes: [
@@ -58,7 +58,7 @@ Future<void> _pump(WidgetTester tester) async {
         routerConfig: _router(),
         builder: (context, child) => FTheme(
           data: fThemeLight,
-          child: FToaster(child: FTooltipGroup(child: child!)),
+          child: FTooltipGroup(child: child!),
         ),
       ),
     ),

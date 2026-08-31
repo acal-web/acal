@@ -31,6 +31,7 @@ dev_dependencies:
     sdk: flutter
   integration_test:
     sdk: flutter
+  patrol: ^4.9.0
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
 
@@ -40,6 +41,13 @@ flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"
   adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: "assets/icon/app_icon.png"
+
+patrol:
+  app_name: acalapp
+  android:
+    package_name: org.ba.acal
+  ios:
+    bundle_id: org.ba.acal
 
 flutter:
   uses-material-design: true

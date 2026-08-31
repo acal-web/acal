@@ -100,6 +100,7 @@ class _UserFormPageState extends State<UserFormPage> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             TextField(
+              key: const Key('user_form_username_field'),
               controller: _usernameController,
               enabled: _isCreating && !_isLoading,
               decoration: InputDecoration(
@@ -111,6 +112,7 @@ class _UserFormPageState extends State<UserFormPage> {
             ),
             const SizedBox(height: 16),
             TextField(
+              key: const Key('user_form_name_field'),
               controller: _nameController,
               enabled: !_isLoading,
               decoration: InputDecoration(
@@ -122,6 +124,7 @@ class _UserFormPageState extends State<UserFormPage> {
             ),
             const SizedBox(height: 16),
             TextField(
+              key: const Key('user_form_password_field'),
               controller: _passwordController,
               obscureText: true,
               enabled: !_isLoading,
@@ -134,6 +137,7 @@ class _UserFormPageState extends State<UserFormPage> {
             ),
             const SizedBox(height: 16),
             DropdownButtonFormField<UserRole>(
+              key: const Key('user_form_role_dropdown'),
               initialValue: _selectedRole,
               onChanged: _isLoading ? null : (value) => setState(() => _selectedRole = value!),
               decoration: InputDecoration(
@@ -153,6 +157,7 @@ class _UserFormPageState extends State<UserFormPage> {
             ),
             const SizedBox(height: 32),
             FilledButton(
+              key: const Key('user_form_submit_button'),
               onPressed: _isLoading ? null : _handleSave,
               child: _isLoading
                   ? const SizedBox(

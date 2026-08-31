@@ -162,6 +162,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 32),
                       TextField(
+                        key: const Key('login_username_field'),
                         controller: _usernameController,
                         enabled: !_isLoading,
                         textInputAction: TextInputAction.next,
@@ -185,6 +186,7 @@ class _LoginPageState extends State<LoginPage> {
                       ),
                       const SizedBox(height: 20),
                       TextField(
+                        key: const Key('login_password_field'),
                         controller: _passwordController,
                         obscureText: _obscurePassword,
                         enabled: !_isLoading,
@@ -240,6 +242,7 @@ class _LoginPageState extends State<LoginPage> {
                       ],
                       const SizedBox(height: 32),
                       FilledButton(
+                        key: const Key('login_submit_button'),
                         onPressed: _isLoading ? null : _handleLogin,
                         style: FilledButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 14),

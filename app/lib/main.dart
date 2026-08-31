@@ -55,7 +55,7 @@ class MainApp extends StatelessWidget {
         localizationsDelegates: GlobalMaterialLocalizations.delegates,
         builder: (context, child) => FTheme(
           data: fThemeLight,
-          child: FToaster(child: FTooltipGroup(child: child!)),
+          child: FTooltipGroup(child: child!),
         ),
       ),
     );

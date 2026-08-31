@@ -27,6 +27,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
@@ -42,7 +44,15 @@ jobs:
         run: flutter analyze
 
       - name: Run tests
-        run: flutter test
+        run: flutter test --coverage
+
+      - name: SonarCloud Scan
+        if: ${{ success() && secrets.SONAR_TOKEN != '' }}
+        uses: SonarSource/sonarqube-scan-action@v7
+        with:
+          projectBaseDir: app
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # build-linux:
   #   needs: test

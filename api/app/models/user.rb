@@ -42,4 +42,12 @@ class User < ApplicationRecord
   def reset_login_attempts!
     update!(failed_login_attempts: 0, locked_until: nil)
   end
+
+  # render json: @user (and any other bare AS JSON call) must never leak the
+  # bcrypt hash — UserSerializer's declared attribute list isn't actually
+  # wired up (jsonapi-serializer doesn't hook into render json:/each_serializer:),
+  # so this is the only thing standing between password_digest and the wire.
+  def as_json(options = {})
+    super(options.merge(except: [ *options[:except], :password_digest ]))
+  end
 end

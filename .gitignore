@@ -52,6 +52,9 @@
 # Ignore key files for decrypting credentials and more.
 /api/config/*.key
 
+# SonarCloud coverage report
+/api/coverage/
+
 ##########################
 # app/ (Flutter)
 ##########################
@@ -64,6 +67,9 @@
 /app/.pub-cache/
 /app/.pub/
 /app/build/
+
+# SonarCloud coverage report
+/app/coverage/
 
 # Platform build ephemerals (each platform folder also has its own .gitignore)
 /app/android/.gradle/

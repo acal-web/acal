@@ -36,6 +36,8 @@ android {
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
+        // Required by Patrol to run integration_test/*_test.dart as instrumented tests.
+        testInstrumentationRunner = "pl.leancode.patrol.PatrolJUnitRunner"
     }
 
     signingConfigs {

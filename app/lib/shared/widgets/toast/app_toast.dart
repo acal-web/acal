@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
-import 'package:forui/forui.dart';
 
 enum AppToastType { error, warning, success }
 
-/// Global floating toast — shows error/warning/confirmation messages docked
-/// to the bottom-right of the screen, above dialogs, auto-dismissing after
-/// [duration]. Call from anywhere with a [BuildContext] under the app's
-/// [FToaster] (mounted once in `main.dart`).
+/// Global floating toast — shows error/warning/confirmation messages via a
+/// standard Material [SnackBar], anchored to the nearest [ScaffoldMessenger].
+/// Call from anywhere with a [BuildContext] under a [Scaffold].
 ///
-/// Bottom-right, not top-right: forui's toast hit-tests a region sized for
-/// its enter/exit animation, not just the visible pill, and that region can
-/// outlive/outsize the pill and swallow taps on whatever sits underneath.
-/// Top-right is exactly where [TopBarUserMenu] lives, so every toast made
-/// the user menu unresponsive while showing. Bottom-right has no persistent
-/// interactive chrome under it.
+/// This used to be built on forui's `FToaster`/`showFToast`, which renders
+/// its own floating overlay on top of the app. That overlay's hit-testable
+/// area didn't match its visible size, and repeatedly ended up swallowing
+/// clicks on menus underneath it — moving the toast around the screen never
+/// fully fixed it, so it was replaced outright with the plain SnackBar,
+/// which has no overlay of its own and lives inside the Scaffold.
 abstract final class AppToast {
   static void error(BuildContext context, String message) =>
       show(context, message: message, type: AppToastType.error);
@@ -30,29 +28,28 @@ abstract final class AppToast {
     AppToastType type = AppToastType.error,
     Duration duration = const Duration(seconds: 4),
   }) {
-    // Forui's toast variants only cover primary/destructive — warning and
-    // success reuse primary and lean on the icon to carry the distinction.
-    final (variant, icon) = switch (type) {
-      AppToastType.error => (FToastVariant.destructive, Icons.error_outline),
-      AppToastType.warning => (FToastVariant.primary, Icons.warning_amber_outlined),
-      AppToastType.success => (FToastVariant.primary, Icons.check_circle_outline),
+    final cs = Theme.of(context).colorScheme;
+    final (icon, color) = switch (type) {
+      AppToastType.error => (Icons.error_outline, cs.error),
+      AppToastType.warning => (Icons.warning_amber_outlined, Colors.amber.shade800),
+      AppToastType.success => (Icons.check_circle_outline, Colors.green.shade700),
     };
 
-    showFToast(
-      context: context,
-      variant: variant,
-      icon: Icon(icon),
-      title: Text(message),
-      suffixBuilder: (context, entry) => FButton(
-        variant: FButtonVariant.ghost,
-        size: FButtonSizeVariant.sm,
-        mainAxisSize: MainAxisSize.min,
-        semanticsTooltip: 'Fechar',
-        onPress: entry.dismiss,
-        child: const Icon(Icons.close, size: 16),
-      ),
-      alignment: FToastAlignment.bottomRight,
-      duration: duration,
-    );
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(icon, color: Colors.white, size: 20),
+              const SizedBox(width: 12),
+              Expanded(child: Text(message)),
+            ],
+          ),
+          backgroundColor: color,
+          duration: duration,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
   }
 }

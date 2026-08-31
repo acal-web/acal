@@ -8,7 +8,7 @@ class UsersController < ApplicationController
   # GET /users
   def index
     users = User.staff
-    render json: paginate(users), each_serializer: UserSerializer
+    render json: paginate(users)
   end
 
   # GET /users/:id

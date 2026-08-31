@@ -70,4 +70,7 @@ group :development, :test do
 
   # Test data factories [https://github.com/thoughtbot/factory_bot_rails]
   gem "factory_bot_rails"
+
+  # Coverage report for SonarCloud [https://github.com/simplecov-ruby/simplecov]
+  gem "simplecov", require: false
 end
