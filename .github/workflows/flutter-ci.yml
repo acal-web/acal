@@ -47,7 +47,7 @@ jobs:
         run: flutter test --coverage
 
       - name: SonarCloud Scan
-        if: ${{ success() && secrets.SONAR_TOKEN != '' }}
+        if: ${{ success() }}
         uses: SonarSource/sonarqube-scan-action@v7
         with:
           projectBaseDir: app
