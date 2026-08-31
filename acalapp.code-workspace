@@ -1,0 +1,35 @@
+{
+  "folders": [
+    // Top level of the repo (docs, root configs, etc.)
+    {
+      "name": "acalapp",
+      "path": "."
+    },
+    // Rails API — has its own Gemfile, so Ruby LSP needs this as a workspace root
+    {
+      "name": "api",
+      "path": "api"
+    },
+    // Flutter app
+    {
+      "name": "app",
+      "path": "app"
+    }
+  ],
+  "settings": {
+    // Avoid seeing api/ and app/ twice (once under "acalapp", once as their own workspace)
+    "files.exclude": {
+      "api": true,
+      "app": true
+    },
+    "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current",
+    "java.configuration.runtimes": [
+      {
+        "name": "JavaSE-17",
+        "path": "/usr/local/sdkman/candidates/java/current",
+        "default": true
+      }
+    ],
+    "java.configuration.updateBuildConfiguration": "interactive"
+  }
+}

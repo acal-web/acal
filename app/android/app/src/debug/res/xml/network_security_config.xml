@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Debug-only: allows plain HTTP so the app can reach a Rails server running
+  on the host machine during local development and E2E tests (10.0.2.2 is
+  the Android emulator's alias for the host loopback). Never bundled into
+  release/profile builds.
+-->
+<network-security-config>
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">10.0.2.2</domain>
+        <domain includeSubdomains="true">localhost</domain>
+    </domain-config>
+</network-security-config>
