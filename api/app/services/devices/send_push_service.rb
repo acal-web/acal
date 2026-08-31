@@ -58,7 +58,7 @@ module Devices
     def credentials
       return @credentials if defined?(@credentials)
 
-      encoded = ENV["FIREBASE_SERVICE_ACCOUNT_BASE64"]
+      encoded = ENV.fetch("FIREBASE_SERVICE_ACCOUNT_BASE64", nil)
       @credentials = encoded.present? ? JSON.parse(Base64.decode64(encoded)).symbolize_keys : nil
     end
   end
