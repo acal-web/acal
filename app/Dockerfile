@@ -36,7 +36,7 @@ WORKDIR /app
 
 # Install dependencies first so this layer is cached unless pubspec changes.
 COPY --chown=flutter:flutter pubspec.yaml pubspec.lock ./
-RUN flutter pub get
+RUN flutter pub get --enforce-lockfile
 
 COPY --chown=flutter:flutter . .
 RUN flutter build web --release
@@ -46,7 +46,7 @@ RUN flutter build web --release
 # master process needs root to bind port 80.
 # nginxinc/nginx-unprivileged:1.27-alpine
 FROM nginxinc/nginx-unprivileged@sha256:65e3e85dbaed8ba248841d9d58a899b6197106c23cb0ff1a132b7bfe0547e4c0
-COPY --from=build /app/build/web /usr/share/nginx/html
+COPY --from=build --chown=nginx:nginx /app/build/web /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 COPY --chmod=755 docker/docker-entrypoint.d/40-runtime-config.sh /docker-entrypoint.d/40-runtime-config.sh
 
