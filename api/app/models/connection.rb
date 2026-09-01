@@ -90,9 +90,12 @@ class Connection < ApplicationRecord
   def address_not_already_active
     return unless address_id
 
-    # Only one active connection per (address, number, letter) combination
-    letter_value = letter.presence || ""
-    conflicting = Connection.where(address_id: address_id, number: number, letter: letter_value, active: true)
+    # Only one active connection per (address, number, letter) combination.
+    # Matches the DB unique index's COALESCE(letter, '') so a nil letter here
+    # correctly conflicts with an existing row whose letter is NULL — `where
+    # (letter: "")` would not, since NULL <> '' in Postgres.
+    conflicting = Connection.where(address_id: address_id, number: number, active: true)
+      .where("COALESCE(letter, '') = ?", letter.to_s)
     conflicting = conflicting.where.not(id: id) if persisted?
     errors.add(:address_id, "already has an active connection for this address number") if conflicting.exists?
   end

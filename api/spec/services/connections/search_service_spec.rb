@@ -51,4 +51,12 @@ RSpec.describe Connections::SearchService do
 
     expect(result).to contain_exactly(match)
   end
+
+  it "sorts by the given field and direction" do
+    low = create(:connection, customer: customer, address: address, category: category, number: 10)
+    high = create(:connection, customer: create(:customer), address: create(:address), category: category, number: 20)
+
+    expect(described_class.call(sort_by: "number")).to eq([ low, high ])
+    expect(described_class.call(sort_by: "number", sort_direction: "desc")).to eq([ high, low ])
+  end
 end
