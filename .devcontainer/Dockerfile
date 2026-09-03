@@ -6,7 +6,7 @@ ARG RUBY_VERSION=3.4.10
 FROM docker.io/library/ruby:${RUBY_VERSION}-slim
 
 # Keep in sync with the Flutter version used to develop app/ (see `flutter --version`)
-ARG FLUTTER_VERSION=3.44.4
+ARG FLUTTER_VERSION=3.47.2
 ARG ANDROID_SDK_ROOT=/opt/android-sdk
 ARG USERNAME=vscode
 ARG USER_UID=1000
