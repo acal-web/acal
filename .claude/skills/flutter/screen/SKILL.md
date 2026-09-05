@@ -1,6 +1,6 @@
 ---
 name: screen
-description: Use when creating or reviewing Flutter screens/pages in app/ (Flutter web). Conventions for reusing existing widgets, making screens accessible/semantic for Maestro, and responsive layout.
+description: Use when creating or reviewing Flutter screens/pages in app/ (Flutter web). Conventions for reusing existing widgets, making screens accessible/semantic, and responsive layout.
 ---
 
 Conventions for building screens ("telas") in this repo's Flutter app (`app/`). Follow these when adding a new feature screen or reviewing an existing one. `addresses` (`lib/features/addresses/`) is the canonical reference feature — model new screens after it.
@@ -32,15 +32,14 @@ To make a new screen reachable:
 1. Add a `GoRoute` + `pageBuilder: (context, state) => const NoTransitionPage(child: YourPage())` in `lib/core/config/router.dart`.
 2. Add an entry (`icon`, `label`, `route`) to the matching section in `lib/core/layout/menu/side_menu.dart` (or a new `_MenuSection` if it's a new area).
 
-## 3. Accessible and semantic for Maestro
+## 3. Accessible and semantic
 
-Maestro flows (`app/maestro/flows/`) drive the app almost entirely by matching **visible text** (`tapOn: "Novo Endereço"`, `assertVisible: "..."`) — this is also what makes the screen accessible to screen readers, since Flutter derives semantics labels from the same text/tooltip. Concretely:
+Flutter derives semantics labels for screen readers from the same text/tooltip a control shows visually. Concretely:
 
 - Every interactive control needs a real, human-readable Portuguese label: `Text`/button `label:`/`hintText`, not an icon alone. Use real semantic widgets (`FilledButton`, `TextButton`, `IconButton`, `TextFormField`) — never a bare `GestureDetector`/`InkWell` around a `Container`, since those don't expose a role+label to the semantics tree.
-- Icon-only buttons (e.g. table row actions) must set `tooltip:` — that's what gives Maestro and screen readers a label to match on. See `RowActions` (`tooltip: 'Editar'` / `'Excluir'`).
-- When a control's visible text isn't unique/stable enough for Maestro to target reliably (e.g. a confirm button whose label repeats elsewhere on screen), wrap it in `Semantics(identifier: 'kebab-case-id', child: ...)` and target it in the flow via `tapOn: { id: "kebab-case-id" }`. See `delete_confirm_dialog.dart`'s `confirm-delete-button`.
-- Keep visible strings unique per screen — `tapOn`/`assertVisible` match by text, so two controls with the same label on one screen make flows ambiguous/flaky.
-- Every new screen's create/update/delete paths should get a Maestro flow under `app/maestro/flows/<feature>/` (`create.yaml`, `update.yaml`, `delete.yaml`), following the addresses flows: assert the durable state (e.g. the row landing in the table) rather than transient things like toasts.
+- Icon-only buttons (e.g. table row actions) must set `tooltip:` — that's what gives screen readers a label. See `RowActions` (`tooltip: 'Editar'` / `'Excluir'`).
+- When a control's visible text isn't unique/stable (e.g. a confirm button whose label repeats elsewhere on screen), wrap it in `Semantics(identifier: 'kebab-case-id', child: ...)` so it has a stable identifier in the semantics tree. See `delete_confirm_dialog.dart`'s `confirm-delete-button`.
+- Keep visible strings unique per screen where practical — two controls with the same label on one screen make assistive-technology navigation ambiguous.
 
 ## 4. Responsive layout
 
@@ -53,4 +52,4 @@ Screens run as Flutter web at a range of viewport widths (the app shell's side m
 
 ## Reference example
 
-`lib/features/addresses/` end-to-end — `presentation/addresses_page.dart` (responsive list + filter bar), `widget/address_form_page.dart` (form dialog), `widget/delete_address.dart` + `shared/widgets/delete_confirm_dialog.dart` (accessible confirm dialog with a Maestro `id`), and `app/maestro/flows/address/*.yaml` (the flows exercising all of it) — is the template for new screens.
+`lib/features/addresses/` end-to-end — `presentation/addresses_page.dart` (responsive list + filter bar), `widget/address_form_page.dart` (form dialog), `widget/delete_address.dart` + `shared/widgets/delete_confirm_dialog.dart` (accessible confirm dialog with a stable `Semantics` id) — is the template for new screens.

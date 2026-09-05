@@ -1,4 +1,6 @@
 {
+  "coverage-gutters.watchOnActivate": true,
+  "coverage-gutters.coverageBaseDir": "app/coverage",
   "java.jdt.ls.java.home": "/usr/local/sdkman/candidates/java/current",
   "java.configuration.runtimes": [
     {

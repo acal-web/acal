@@ -14,7 +14,6 @@ module Rbac
       invoices:read invoices:generate invoices:pay
       dashboard:read
       notifications:read notifications:send
-      test:reset
     ],
     "financeiro_secretaria" => %w[
       customers:read customers:manage

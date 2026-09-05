@@ -22,6 +22,8 @@ ARG USER_GID=1000
 # The devcontainer.json "java" feature separately installs JDK 17 for Gradle/runtime use, but
 # devcontainer CLI layers features in *after* this Dockerfile's own instructions, so it isn't
 # available yet when sdkmanager runs during build.
+# lcov: genhtml/lcov CLI for turning `flutter test --coverage`'s lcov.info into an HTML
+# report or a per-file summary; also what Coverage Gutters reads in-editor.
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
     build-essential \
@@ -32,6 +34,7 @@ RUN apt-get update -qq && \
     chromium-sandbox \
     libstdc++6 \
     openjdk-21-jre-headless \
+    lcov \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives
 
 # Flutter looks for `google-chrome` by default; point it at the Debian chromium package instead.

@@ -17,11 +17,12 @@
       "program": "cd api && bin/rails server"
     },
     {
-      "name": "Maestro: customers tests",
-      "type": "node-terminal",
+      "name": "flutter test (coverage)",
       "request": "launch",
-      "command": "xvfb-run --auto-servernum maestro test flows/customers",
-      "cwd": "${workspaceFolder}/app/maestro"
+      "type": "dart",
+      "cwd": "app",
+      "program": "test",
+      "toolArgs": [ "--coverage" ]
     }
   ],
   "compounds": [
@@ -32,6 +33,3 @@
     }
   ]
 }
-
-
-

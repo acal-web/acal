@@ -19,19 +19,20 @@
   },
 
   "remoteEnv": {
-    "PATH": "${containerEnv:PATH}:/home/vscode/.maestro/bin",
     "CHROME_EXECUTABLE": "/usr/bin/chromium"
   },
 
   "forwardPorts": [3000, 5432, 8080],
 
-  "postCreateCommand": "cd api && bin/setup --skip-server && cd ../app && flutter pub get && curl -Ls \"https://get.maestro.mobile.dev\" | bash",
+  "postCreateCommand": "cd api && bin/setup --skip-server && cd ../app && flutter pub get",
 
   "customizations": {
     "vscode": {
       "settings": {
         "workbench.colorTheme": "Dark Modern",
-        "dart.flutterSdkPath": "/opt/flutter"
+        "dart.flutterSdkPath": "/opt/flutter",
+        "coverage-gutters.watchOnActivate": true,
+        "coverage-gutters.coverageBaseDir": "app/coverage"
       },
       "extensions": [
         "Shopify.ruby-lsp",
@@ -41,7 +42,8 @@
         "ms-azuretools.vscode-docker",
         "mtxr.sqltools",
         "mtxr.sqltools-driver-pg",
-        "anthropic.claude-code"
+        "anthropic.claude-code",
+        "ryanluker.vscode-coverage-gutters"
       ]
     }
   }

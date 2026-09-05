@@ -91,11 +91,6 @@
 /app/legacy/**/target/
 
 ##########################
-# app/maestro/ (E2E test reports)
-##########################
-/app/maestro/report/
-
-##########################
 # .devcontainer/
 ##########################
 /.devcontainer/.env
