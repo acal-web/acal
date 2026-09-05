@@ -2,16 +2,6 @@ import 'package:flutter/material.dart';
 
 enum AppToastType { error, warning, success }
 
-/// Global floating toast — shows error/warning/confirmation messages via a
-/// standard Material [SnackBar], anchored to the nearest [ScaffoldMessenger].
-/// Call from anywhere with a [BuildContext] under a [Scaffold].
-///
-/// This used to be built on forui's `FToaster`/`showFToast`, which renders
-/// its own floating overlay on top of the app. That overlay's hit-testable
-/// area didn't match its visible size, and repeatedly ended up swallowing
-/// clicks on menus underneath it — moving the toast around the screen never
-/// fully fixed it, so it was replaced outright with the plain SnackBar,
-/// which has no overlay of its own and lives inside the Scaffold.
 abstract final class AppToast {
   static void error(BuildContext context, String message) =>
       show(context, message: message, type: AppToastType.error);

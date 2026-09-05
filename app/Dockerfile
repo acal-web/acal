@@ -11,7 +11,7 @@
 # Run:   docker run -d -p 80:8080 -e API_BASE_URL=https://api.acalapp.site --name app app
 
 # Keep in sync with .devcontainer/Dockerfile's FLUTTER_VERSION
-ARG FLUTTER_VERSION=3.47.2
+ARG FLUTTER_VERSION=3.44.4
 
 # debian:bookworm-slim
 FROM debian@sha256:88200866dfff7ea7f5cbcb6ec7c8a701889efe6fe859fe64d6990e4b07ea4171 AS build
