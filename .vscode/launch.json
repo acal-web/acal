@@ -23,6 +23,13 @@
       "cwd": "app",
       "program": "test",
       "toolArgs": [ "--coverage" ]
+    },
+    {
+      "name": "rspec (coverage)",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "COVERAGE=1 bundle exec rspec",
+      "cwd": "${workspaceFolder}/api"
     }
   ],
   "compounds": [

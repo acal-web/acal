@@ -32,7 +32,7 @@
         "workbench.colorTheme": "Dark Modern",
         "dart.flutterSdkPath": "/opt/flutter",
         "coverage-gutters.watchOnActivate": true,
-        "coverage-gutters.coverageBaseDir": "app/coverage"
+        "coverage-gutters.coverageBaseDir": "{app,api}/coverage"
       },
       "extensions": [
         "Shopify.ruby-lsp",

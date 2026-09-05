@@ -1,10 +1,15 @@
 # This file is copied to spec/ when you run 'rails generate rspec:install'
 require 'spec_helper'
 
-if ENV['CI']
+if ENV['CI'] || ENV['COVERAGE']
   require 'simplecov'
+  require 'simplecov-cobertura'
   SimpleCov.start 'rails' do
-    formatter SimpleCov::Formatter::JSONFormatter
+    formatter SimpleCov::Formatter::MultiFormatter.new([
+      SimpleCov::Formatter::JSONFormatter, # consumed by sonar.ruby.coverage.reportPaths
+      SimpleCov::Formatter::CoberturaFormatter, # read by the VS Code Coverage Gutters extension
+      SimpleCov::Formatter::HTMLFormatter
+    ])
   end
 end
 

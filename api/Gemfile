@@ -73,4 +73,6 @@ group :development, :test do
 
   # Coverage report for SonarCloud [https://github.com/simplecov-ruby/simplecov]
   gem "simplecov", require: false
+  # Cobertura XML output — same format the Flutter side's Coverage Gutters setup reads
+  gem "simplecov-cobertura", require: false
 end
