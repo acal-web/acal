@@ -54,7 +54,7 @@ class InvoicesController < ApplicationController
   def pdf
     invoice = Invoice.includes(connection: %i[ customer address category ], water_meter: {}).find(params[:id])
 
-    send_data Reports::InvoiceReportBuilder.call(invoice), type: "application/pdf", disposition: "inline", filename: "fatura-#{invoice.id}.pdf"
+    send_data Reports::InvoiceReportBuilder.call(invoice), type: PDF_CONTENT_TYPE, disposition: "inline", filename: "fatura-#{invoice.id}.pdf"
   end
 
   # PATCH /invoices/:id/pay
@@ -73,7 +73,7 @@ class InvoicesController < ApplicationController
       .includes(connection: %i[customer address category], water_meter: {})
       .order(paid_at: :desc)
 
-    total_amount = invoices.sum("membership_value + water_value + COALESCE(water_consumed_value, 0)")
+    total_amount = invoices.sum(Invoice::TOTAL_AMOUNT_SQL)
 
     render json: paginate(invoices).merge(totalAmount: total_amount), include: INVOICE_INCLUDES
   end
@@ -90,7 +90,7 @@ class InvoicesController < ApplicationController
 
     return head :no_content if groups.empty?
 
-    send_data Reports::DunningReportBuilder.call(groups), type: "application/pdf", disposition: "inline", filename: "cobranca.pdf"
+    send_data Reports::DunningReportBuilder.call(groups), type: PDF_CONTENT_TYPE, disposition: "inline", filename: "cobranca.pdf"
   end
 
   # GET /invoices/print_filtered
@@ -106,7 +106,7 @@ class InvoicesController < ApplicationController
 
     return head :no_content if invoices.empty?
 
-    send_data Reports::FilteredInvoicesReportBuilder.call(invoices), type: "application/pdf", disposition: "inline", filename: "faturas-filtradas.pdf"
+    send_data Reports::FilteredInvoicesReportBuilder.call(invoices), type: PDF_CONTENT_TYPE, disposition: "inline", filename: "faturas-filtradas.pdf"
   end
 
   private

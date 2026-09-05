@@ -1,6 +1,8 @@
 class Invoice < ApplicationRecord
   include SoftDeletable
 
+  TOTAL_AMOUNT_SQL = "membership_value + water_value + COALESCE(water_consumed_value, 0)"
+
   belongs_to :connection, -> { unscope(where: :deleted_at) }
   belongs_to :user, optional: true
   has_one :water_meter, dependent: :destroy

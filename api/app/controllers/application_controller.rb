@@ -2,6 +2,8 @@ class ApplicationController < ActionController::API
   include Paginatable
   include Permittable
 
+  PDF_CONTENT_TYPE = "application/pdf"
+
   before_action :authenticate_token!
   before_action :authorize_action!
 

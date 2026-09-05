@@ -12,5 +12,7 @@ if Gem.loaded_specs["dotenv"]
     Dotenv.load(".env.test")
   when "production"
     Dotenv.load(".env.production") if File.exist?(".env.production")
+  else
+    # No environment-specific .env file for this Rails.env.
   end
 end
