@@ -10,6 +10,7 @@ on:
     paths:
       - "api/**"
       - ".github/workflows/rails-ci.yml"
+  workflow_dispatch:
 
 jobs:
   test:
