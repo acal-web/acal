@@ -30,6 +30,25 @@ RSpec.describe Invoices::GenerateService do
     expect(Invoice.where(connection: connection_b)).to be_empty
   end
 
+  it "creates a WaterMeter and charges for excess consumption when readings are given" do
+    invoices = described_class.call(
+      connection_ids: [ connection_a.id ],
+      reference_date: "2026-08-01",
+      due_date: "2026-08-10",
+      water_meters: [
+        { "connection_id" => connection_a.id, "initial_reading" => 1000, "final_reading" => 12000 }
+      ]
+    )
+
+    invoice = invoices.first
+    expect(invoice.water_consumed_value).to eq(4.0) # (11000 - 10000 free tier) / 1000 * 4
+    water_meter = WaterMeter.find_by(invoice: invoice)
+    expect(water_meter).to be_present
+    expect(water_meter.initial_reading).to eq(1000)
+    expect(water_meter.final_reading).to eq(12000)
+    expect(water_meter.measured_at).to eq(Date.new(2026, 8, 1))
+  end
+
   it "notifies the customer for each connection once its invoice is created" do
     allow(Notifications::NewInvoiceNotifier).to receive(:call)
 

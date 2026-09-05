@@ -67,6 +67,14 @@ RSpec.describe "Portal::Invoices", type: :request do
   end
 
   describe "GET /portal/invoices/:id/pdf" do
+    it "returns a PDF document for the customer's own invoice" do
+      get "/portal/invoices/#{my_invoice.id}/pdf"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to eq("application/pdf")
+      expect(response.body).to start_with("%PDF")
+    end
+
     it "returns 404 for another customer's invoice" do
       get "/portal/invoices/#{other_invoice.id}/pdf"
 

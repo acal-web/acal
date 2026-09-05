@@ -32,6 +32,32 @@ RSpec.describe "Users", type: :request do
     end
   end
 
+  describe "GET /users/:id" do
+    context "as admin" do
+      before { sign_in_as(admin) }
+
+      it "returns the user" do
+        target_user = create(:user, name: "Fulano")
+
+        get "/users/#{target_user.id}"
+
+        expect(response).to have_http_status(:ok)
+        expect(response.parsed_body["id"]).to eq(target_user.id)
+        expect(response.parsed_body["name"]).to eq("Fulano")
+      end
+    end
+
+    context "as non-admin" do
+      before { sign_in_as(create(:user, :tesoureiro)) }
+
+      it "returns 403 Forbidden" do
+        get "/users/#{admin.id}"
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
+  end
+
   describe "POST /users (create)" do
     let(:user_params) do
       {
@@ -46,6 +72,17 @@ RSpec.describe "Users", type: :request do
 
     context "as admin" do
       before { sign_in_as(admin) }
+
+      context "with valid params" do
+        it "creates the user" do
+          post "/users", params: user_params
+
+          expect(response).to have_http_status(:created)
+          created = User.find(response.parsed_body["id"])
+          expect(created.username).to eq("newuser")
+          expect(created.role).to eq("financeiro_secretaria")
+        end
+      end
 
       context "with invalid params" do
         it "returns unprocessable_content on validation errors" do

@@ -67,5 +67,29 @@ RSpec.describe "Notifications", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["content"].map { |n| n["title"] }).to contain_exactly("Antiga")
     end
+
+    it "includes the address, category and sender names when the notification targets them" do
+      sender = create(:user, name: "Fulano")
+      sign_in_as(sender)
+      create(:notification, address: address, category: category, sent_by: sender)
+
+      get "/notifications"
+
+      notification = response.parsed_body["content"].first
+      expect(notification["address_name"]).to eq(address.name)
+      expect(notification["category_name"]).to eq(category.name)
+      expect(notification["sent_by_name"]).to eq("Fulano")
+    end
+
+    it "leaves address_name/category_name blank for a broadcast to everyone" do
+      sign_in_as(create(:user))
+      create(:notification, address: nil, category: nil)
+
+      get "/notifications"
+
+      notification = response.parsed_body["content"].first
+      expect(notification["address_name"]).to be_nil
+      expect(notification["category_name"]).to be_nil
+    end
   end
 end

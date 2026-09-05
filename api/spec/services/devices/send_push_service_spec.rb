@@ -63,5 +63,21 @@ RSpec.describe Devices::SendPushService do
       expect(Rails.logger).to receive(:error).with(/FCM error/)
       expect { described_class.call(owner: customer, title: "Nova fatura", body: "oi") }.not_to raise_error
     end
+
+    it "logs and continues without raising when delivering to one device raises" do
+      create(:device, owner: customer, push_token: "token-1")
+      allow(Net::HTTP).to receive(:start).and_raise(SocketError, "connection refused")
+
+      expect(Rails.logger).to receive(:error).with(/SocketError/)
+      expect { described_class.call(owner: customer, title: "Nova fatura", body: "oi") }.not_to raise_error
+    end
+
+    it "logs and continues without raising when fetching the access token raises" do
+      create(:device, owner: customer, push_token: "token-1")
+      allow(Net::HTTP).to receive(:post_form).and_raise(SocketError, "connection refused")
+
+      expect(Rails.logger).to receive(:error).with(/SocketError/)
+      expect { described_class.call(owner: customer, title: "Nova fatura", body: "oi") }.not_to raise_error
+    end
   end
 end

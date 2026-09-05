@@ -34,6 +34,16 @@ RSpec.describe "Invoices", type: :request do
       expect(ids).to eq([ newer.id, older.id ])
     end
 
+    it "filters by status=unpaid" do
+      unpaid = create(:invoice, connection: connection)
+      create(:invoice, :paid, connection: connection, reference_date: "2026-07-01")
+
+      get "/invoices", params: { status: "unpaid" }
+
+      ids = response.parsed_body["content"].map { |i| i["id"] }
+      expect(ids).to eq([ unpaid.id ])
+    end
+
     it "filters by reference period" do
       other_connection = create(:connection, customer: create(:customer), address: create(:address), category: category)
       matching = create(:invoice, connection: connection, reference_date: "2026-08-01")
@@ -159,6 +169,15 @@ RSpec.describe "Invoices", type: :request do
       expect(response.content_type).to eq("application/pdf")
       expect(response.body).to start_with("%PDF")
     end
+
+    it "returns a PDF document for an already-paid invoice" do
+      invoice = create(:invoice, :paid, connection: connection)
+
+      get "/invoices/#{invoice.id}/pdf"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to start_with("%PDF")
+    end
   end
 
   describe "PATCH /invoices/:id/pay" do
@@ -250,6 +269,86 @@ RSpec.describe "Invoices", type: :request do
       get "/invoices/cobranca_pdf", params: { connection_id: other_connection.id }
 
       expect(response).to have_http_status(:no_content)
+    end
+  end
+
+  describe "GET /invoices/print_filtered" do
+    it "returns a PDF document for the filtered invoices" do
+      create(:invoice, connection: connection, reference_date: "2026-08-01")
+
+      get "/invoices/print_filtered", params: { year: 2026, month: 8 }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to eq("application/pdf")
+      expect(response.body).to start_with("%PDF")
+    end
+
+    it "returns no content when the filters match nothing" do
+      get "/invoices/print_filtered", params: { year: 2020, month: 1 }
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "includes that month's quality analyses in the report" do
+      create(:invoice, connection: connection, reference_date: "2026-08-01")
+      create(:quality_analysis, reference_date: "2026-08-15", param_name: "Turbidez")
+
+      get "/invoices/print_filtered", params: { year: 2026, month: 8 }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to eq("application/pdf")
+    end
+  end
+
+  describe "GET /invoices sorting" do
+    let(:other_connection) { create(:connection, customer: create(:customer, name: "Alice"), address: address, category: category) }
+
+    it "sorts by number ascending" do
+      first = create(:invoice, connection: connection, reference_date: "2026-08-01")
+      second = create(:invoice, connection: other_connection, reference_date: "2026-07-01")
+      lower, higher = [ first, second ].sort_by(&:number)
+
+      get "/invoices", params: { sort_by: "number", sort_ascending: "true" }
+
+      expect(response.parsed_body["content"].map { |i| i["id"] }).to eq([ lower.id, higher.id ])
+    end
+
+    it "sorts by reference_date explicitly" do
+      earlier = create(:invoice, connection: connection, reference_date: "2026-06-01")
+      later = create(:invoice, connection: other_connection, reference_date: "2026-07-01")
+
+      get "/invoices", params: { sort_by: "reference_date", sort_ascending: "true" }
+
+      expect(response.parsed_body["content"].map { |i| i["id"] }).to eq([ earlier.id, later.id ])
+    end
+
+    it "sorts by due_date" do
+      earlier = create(:invoice, connection: connection, due_date: "2026-08-10")
+      later = create(:invoice, connection: other_connection, due_date: "2026-08-20")
+
+      get "/invoices", params: { sort_by: "due_date", sort_ascending: "true" }
+
+      expect(response.parsed_body["content"].map { |i| i["id"] }).to eq([ earlier.id, later.id ])
+    end
+
+    it "sorts by amount" do
+      cheaper = create(:invoice, connection: connection, membership_value: 5, water_value: 0)
+      pricier = create(:invoice, connection: other_connection, membership_value: 50, water_value: 0)
+
+      get "/invoices", params: { sort_by: "amount", sort_ascending: "true" }
+
+      expect(response.parsed_body["content"].map { |i| i["id"] }).to eq([ cheaper.id, pricier.id ])
+    end
+
+    it "sorts by customer_name" do
+      other_connection # Alice
+      z_connection = create(:connection, customer: create(:customer, name: "Zeca"), address: address, category: category)
+      alice_invoice = create(:invoice, connection: other_connection)
+      zeca_invoice = create(:invoice, connection: z_connection)
+
+      get "/invoices", params: { sort_by: "customer_name", sort_ascending: "true" }
+
+      expect(response.parsed_body["content"].map { |i| i["id"] }).to eq([ alice_invoice.id, zeca_invoice.id ])
     end
   end
 end

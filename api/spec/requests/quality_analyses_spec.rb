@@ -59,6 +59,18 @@ RSpec.describe "QualityAnalyses", type: :request do
     end
   end
 
+  describe "GET /quality_analyses/:id" do
+    it "returns a single quality analysis" do
+      post "/quality_analyses", params: valid_params
+      id = response.parsed_body["id"]
+
+      get "/quality_analyses/#{id}"
+
+      expect(response).to have_http_status(:ok)
+      expect(response.parsed_body["id"]).to eq(id)
+    end
+  end
+
   describe "POST /quality_analyses" do
     context "when successful" do
       it "creates a quality analysis" do

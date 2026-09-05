@@ -5,7 +5,15 @@ class NotificationsController < ApplicationController
   # GET /notifications
   def index
     notifications = Notification.order(created_at: :desc)
-    render json: paginate(notifications), each_serializer: NotificationSerializer
+    paged = paginate(notifications)
+    paged[:content] = paged[:content].map do |notification|
+      notification.as_json.merge(
+        "address_name" => notification.address&.name,
+        "category_name" => notification.category&.name,
+        "sent_by_name" => notification.sent_by&.name
+      )
+    end
+    render json: paged
   end
 
   # GET /notifications/recipients_count

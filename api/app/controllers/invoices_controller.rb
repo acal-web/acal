@@ -127,10 +127,12 @@ class InvoicesController < ApplicationController
 
     direction = ascending ? "ASC" : "DESC"
 
+    order_sql = Arel.sql("#{sort_column} #{direction}")
+
     if sort_by == "customer_name"
-      invoices.joins(connection: :customer).order("#{sort_column} #{direction}")
+      invoices.joins(connection: :customer).order(order_sql)
     else
-      invoices.order("#{sort_column} #{direction}")
+      invoices.order(order_sql)
     end
   end
 end
