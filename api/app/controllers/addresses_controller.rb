@@ -9,7 +9,7 @@ class AddressesController < ApplicationController
 
   # GET /addresses
   def index
-    addresses = active_scope.filter_by_name(params[:name]).order(:name)
+    addresses = active_scope.filter_by_name(params[:name])
     render json: paginate(sort(addresses))
   end
 
@@ -52,9 +52,8 @@ class AddressesController < ApplicationController
     end
 
     def sort(collection)
-      return collection unless SORTABLE_COLUMNS.include?(params[:sort])
-
-      collection.order(params[:sort] => params[:direction] == "desc" ? :desc : :asc)
+      column = SORTABLE_COLUMNS.include?(params[:sort]) ? params[:sort] : "name"
+      collection.order(column => params[:direction] == "desc" ? :desc : :asc)
     end
 
     def set_address

@@ -24,5 +24,24 @@ RSpec.describe "Addresses", type: :request do
 
       expect(Address.exists?(address.id)).to be(false)
     end
+
+    it "returns not found for a nonexistent address" do
+      delete "/addresses/00000000-0000-0000-0000-000000000000"
+
+      expect(response).to have_http_status(:not_found)
+    end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without addresses:manage" do
+        post "/addresses", params: valid_params
+        address = Address.last
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        delete "/addresses/#{address.id}"
+
+        expect(response).to have_http_status(:forbidden)
+        expect(address.reload.deleted_at).to be_nil
+      end
+    end
   end
 end

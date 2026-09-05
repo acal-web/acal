@@ -90,5 +90,17 @@ RSpec.describe "Addresses", type: :request do
         expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without addresses:manage" do
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        expect {
+          post "/addresses", params: valid_params
+        }.not_to change(Address, :count)
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 end

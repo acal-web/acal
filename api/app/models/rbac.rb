@@ -16,7 +16,7 @@ module Rbac
 
   # Grupo de acesso → lista de permissões nomeadas ("recurso:ação") concedidas a esse grupo.
   GROUPS = {
-    "administrador" => (%w[users:read users:manage] + STAFF_PERMISSIONS).freeze,
+    "administrador" => (%w[users:read users:manage test:reset] + STAFF_PERMISSIONS).freeze,
     "financeiro_secretaria" => STAFF_PERMISSIONS,
     "tesoureiro" => %w[
       customers:read addresses:read categories:read connections:read quality_analyses:read

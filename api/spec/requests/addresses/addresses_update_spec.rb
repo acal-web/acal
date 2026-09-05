@@ -35,6 +35,12 @@ RSpec.describe "Addresses", type: :request do
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body).to eq("name" => [ "can't be blank", "is too short (minimum is 3 characters)" ])
       end
+
+      it "returns not found for a nonexistent address" do
+        patch "/addresses/00000000-0000-0000-0000-000000000000", params: valid_params
+
+        expect(response).to have_http_status(:not_found)
+      end
     end
 
     context "uniqueness constraints" do
@@ -58,6 +64,19 @@ RSpec.describe "Addresses", type: :request do
 
         expect(response).to have_http_status(:unprocessable_content)
         expect(response.parsed_body).to eq("code" => 1001, "message" => "Address already exists")
+      end
+    end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without addresses:manage" do
+        post "/addresses", params: valid_params
+        id = response.parsed_body["id"]
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        patch "/addresses/#{id}", params: { address: { name: "Avenida Second Street" } }
+
+        expect(response).to have_http_status(:forbidden)
+        expect(Address.find(id).name).to eq("Rua Main Street")
       end
     end
   end
