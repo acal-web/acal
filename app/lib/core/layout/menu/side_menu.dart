@@ -70,14 +70,6 @@ const _menuSections = [
       requiredRole: Permissions.canManageUsers
     ),
   ]),
-  _MenuSection(title: 'DESENVOLVIMENTO', items: [
-    (
-      icon: Icons.palette_outlined,
-      label: 'Design System',
-      route: '/design-system',
-      requiredRole: null
-    ),
-  ]),
 ];
 
 class SideMenu extends StatelessWidget {

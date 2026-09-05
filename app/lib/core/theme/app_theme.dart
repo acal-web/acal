@@ -17,8 +17,8 @@ const _squareRadius = FBorderRadius(
   pill: BorderRadius.zero,
 );
 
-/// Forui theme — the same `neutral` preset already validated on the
-/// [DesignSystemDemoPage] design_system feature, with square corners.
+/// Forui theme — the same `neutral` preset already validated during design,
+/// with square corners.
 final fThemeLight = _squared(FTheme.neutral.light.desktop, touch: false);
 final fThemeDark = _squared(FTheme.neutral.dark.desktop, touch: false);
 
