@@ -15,7 +15,7 @@
 
   "features": {
     "ghcr.io/devcontainers/features/github-cli:1.1.1": {},
-    "ghcr.io/devcontainers/features/java:1": { "version": "17" }
+    "ghcr.io/devcontainers/features/java:1": { "version": "17.0.20+1-ms" }
   },
 
   "remoteEnv": {
