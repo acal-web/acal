@@ -32,8 +32,20 @@ FThemeData _squared(FThemeData base, {required bool touch}) => FThemeData(
 /// which has no Forui equivalent) — mirrors Forui's `neutral` color values
 /// (`FColors.neutralLight`/`neutralDark`) so a Material table sitting next to
 /// migrated Forui widgets doesn't clash (Flutter's own M3 default is purple).
-final materialThemeLight = _materialTheme(
-  brightness: Brightness.light,
+/// The colors one Material theme is built from, kept together so the two
+/// palettes below read as a pair and [_materialTheme] stays a two-argument call.
+typedef _Palette = ({
+  Color background,
+  Color foreground,
+  Color primary,
+  Color onPrimary,
+  Color secondary,
+  Color destructive,
+  Color onDestructive,
+  Color border,
+});
+
+final materialThemeLight = _materialTheme(Brightness.light, (
   background: const Color(0xFFFFFFFF),
   foreground: const Color(0xFF0A0A0A),
   primary: const Color(0xFF171717),
@@ -42,10 +54,9 @@ final materialThemeLight = _materialTheme(
   destructive: const Color(0xFFE7000B),
   onDestructive: const Color(0xFFFAFAFA),
   border: const Color(0xFFE5E5E5),
-);
+));
 
-final materialThemeDark = _materialTheme(
-  brightness: Brightness.dark,
+final materialThemeDark = _materialTheme(Brightness.dark, (
   background: const Color(0xFF0A0A0A),
   foreground: const Color(0xFFFAFAFA),
   primary: const Color(0xFFE5E5E5),
@@ -54,35 +65,25 @@ final materialThemeDark = _materialTheme(
   destructive: const Color(0xFFFF6467),
   onDestructive: const Color(0xFFFAFAFA),
   border: const Color(0x1AFFFFFF),
-);
+));
 
-ThemeData _materialTheme({
-  required Brightness brightness,
-  required Color background,
-  required Color foreground,
-  required Color primary,
-  required Color onPrimary,
-  required Color secondary,
-  required Color destructive,
-  required Color onDestructive,
-  required Color border,
-}) {
-  final colorScheme = ColorScheme.fromSeed(seedColor: primary, brightness: brightness).copyWith(
-    primary: primary,
-    onPrimary: onPrimary,
-    secondary: secondary,
-    onSecondary: foreground,
-    error: destructive,
-    onError: onDestructive,
-    surface: background,
-    onSurface: foreground,
-    surfaceContainerHigh: secondary,
-    outlineVariant: border,
+ThemeData _materialTheme(Brightness brightness, _Palette palette) {
+  final colorScheme = ColorScheme.fromSeed(seedColor: palette.primary, brightness: brightness).copyWith(
+    primary: palette.primary,
+    onPrimary: palette.onPrimary,
+    secondary: palette.secondary,
+    onSecondary: palette.foreground,
+    error: palette.destructive,
+    onError: palette.onDestructive,
+    surface: palette.background,
+    onSurface: palette.foreground,
+    surfaceContainerHigh: palette.secondary,
+    outlineVariant: palette.border,
   );
 
   return ThemeData(
     colorScheme: colorScheme,
-    scaffoldBackgroundColor: background,
+    scaffoldBackgroundColor: palette.background,
     cardTheme: const CardThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
     dialogTheme: const DialogThemeData(shape: RoundedRectangleBorder(borderRadius: BorderRadius.zero)),
   );

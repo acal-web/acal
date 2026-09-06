@@ -11,6 +11,7 @@ import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
+import 'package:acalapp/features/invoices/domain/invoice_filter.dart';
 import 'package:acalapp/features/invoices/presentation/invoice_detail_page.dart';
 import 'package:acalapp/features/invoices/presentation/invoices_page.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
@@ -22,16 +23,16 @@ import 'package:go_router/go_router.dart'; // ignore: unused_import
 
 const _pagination = Pagination(number: 0, totalPages: 1, totalElements: 1, size: 10, first: true, last: true);
 
-final _connection = Connection(
+const _connection = Connection(
   id: 'conn-1',
   customerId: 'cust-1',
   addressId: 'addr-1',
   categoryId: 'cat-1',
   number: 12,
   letter: 'A',
-  customer: const Customer(id: 'cust-1', name: 'Fulano de Tal', document: '12345678900', voter: false),
-  address: const Address(id: 'addr-1', name: 'Avenida Fernando Daltro'),
-  category: const Category(
+  customer: Customer(id: 'cust-1', name: 'Fulano de Tal', document: '12345678900', voter: false),
+  address: Address(id: 'addr-1', name: 'Avenida Fernando Daltro'),
+  category: Category(
     id: 'cat-1',
     name: 'Residente',
     group: 'efetivo',
@@ -64,16 +65,12 @@ class _FakeInvoiceService extends InvoiceService {
   Future<PagedResult<Invoice>> findAll({
     int page = 0,
     int size = 10,
-    int? year,
-    int? month,
-    String? customerId,
-    String? addressId,
-    String? status,
+    InvoiceFilter filter = const InvoiceFilter(),
     String? sortBy,
     bool? sortAscending,
   }) async {
-    lastYear = year;
-    lastMonth = month;
+    lastYear = filter.year;
+    lastMonth = filter.month;
     return PagedResult(data: invoices, pagination: _pagination);
   }
 

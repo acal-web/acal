@@ -207,9 +207,9 @@ class _AddressesPageState extends State<AddressesPage> {
                 narrow ? const SizedBox(height: 8) : const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allAddresses.length) {
-                return Center(
+                return const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: CircularProgressIndicator(),
                   ),
                 );

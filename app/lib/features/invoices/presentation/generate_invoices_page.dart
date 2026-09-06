@@ -741,7 +741,7 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                                     ),
                                   ),
                                   hint: '0.0',
-                                  keyboardType: TextInputType.numberWithOptions(
+                                  keyboardType: const TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
                                   inputFormatters: [DecimalInputFormatter()],
@@ -756,7 +756,7 @@ class _CandidatesCardState extends State<_CandidatesCard> {
                                     ),
                                   ),
                                   hint: '0.0',
-                                  keyboardType: TextInputType.numberWithOptions(
+                                  keyboardType: const TextInputType.numberWithOptions(
                                     decimal: true,
                                   ),
                                   inputFormatters: [DecimalInputFormatter()],

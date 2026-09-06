@@ -319,7 +319,7 @@ class _DashboardPageState extends State<DashboardPage> {
             onTap: () => context.go('/invoices/generate'),
           ),
           const Divider(height: 1),
-          _QuickActionItem(
+          const _QuickActionItem(
             icon: Icons.download_outlined,
             label: 'Relatório Financeiro',
             enabled: false,

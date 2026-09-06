@@ -4,6 +4,7 @@ import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/features/invoices/domain/invoice_candidate.dart';
+import 'package:acalapp/features/invoices/domain/invoice_filter.dart';
 import 'package:acalapp/features/invoices/domain/overdue_connection.dart';
 
 class InvoiceService {
@@ -14,22 +15,14 @@ class InvoiceService {
   Future<PagedResult<Invoice>> findAll({
     int page = 0,
     int size = 10,
-    int? year,
-    int? month,
-    String? customerId,
-    String? addressId,
-    String? status,
+    InvoiceFilter filter = const InvoiceFilter(),
     String? sortBy,
     bool? sortAscending,
   }) async {
     final query = <String, String>{
       'page': '$page',
       'size': '$size',
-      if (year != null) 'year': '$year',
-      if (month != null) 'month': '$month',
-      'customer_id': ?customerId,
-      'address_id': ?addressId,
-      'status': ?status,
+      ...filter.toQuery(),
       'sort_by': ?sortBy,
       'sort_ascending': ?sortAscending?.toString(),
     };
@@ -113,23 +106,15 @@ class InvoiceService {
       );
 
   Future<Uint8List> printFiltered({
-    int? year,
-    int? month,
-    String? customerId,
-    String? addressId,
-    String? status,
+    InvoiceFilter filter = const InvoiceFilter(),
     String? sortBy,
     bool? sortAscending,
   }) => _http.getBytes(
         '/invoices/print_filtered',
         query: {
-          if (year != null) 'year': '$year',
-          if (month != null) 'month': '$month',
-          'customer_id': ?customerId,
-          'address_id': ?addressId,
-          'status': ?status,
+          ...filter.toQuery(),
           'sort_by': ?sortBy,
-          if (sortAscending != null) 'sort_ascending': '$sortAscending',
+          'sort_ascending': ?sortAscending?.toString(),
         },
       );
 

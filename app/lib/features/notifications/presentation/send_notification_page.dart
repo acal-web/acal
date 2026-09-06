@@ -6,6 +6,7 @@ import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/notifications/data/notification_service.dart';
 import 'package:acalapp/features/notifications/widget/modal/confirm_send_notification.dart';
 import 'package:acalapp/features/notifications/widget/notification_recipients_filter.dart';
+import 'package:acalapp/shared/validators/required_validator.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -139,7 +140,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
                           counterBuilder: _counter,
                           label: const Text('Título'),
                           hint: 'Ex.: Manutenção programada',
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+                          validator: validateRequired,
                         ),
                         const SizedBox(height: 16),
                         FTextFormField.multiline(
@@ -149,7 +150,7 @@ class _SendNotificationPageState extends State<SendNotificationPage> {
                           counterBuilder: _counter,
                           label: const Text('Mensagem'),
                           hint: 'Digite o texto da notificação...',
-                          validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+                          validator: validateRequired,
                         ),
                         const SizedBox(height: 24),
                         Text('Destinatários', style: Theme.of(context).textTheme.titleSmall),

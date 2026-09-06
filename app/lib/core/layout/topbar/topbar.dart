@@ -29,7 +29,7 @@ class TopBar extends StatelessWidget implements PreferredSizeWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 TopBarLogo(onMenuTap: onMenuTap),
-                Expanded(child: TopBarBody()),
+                const Expanded(child: TopBarBody()),
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   child: TopBarHelpers(),

@@ -1,3 +1,4 @@
+import 'package:acalapp/shared/formatters/digits.dart';
 import 'package:flutter/services.dart';
 
 enum DocumentKind {
@@ -70,7 +71,7 @@ class DocumentInputFormatter extends TextInputFormatter {
 
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final digits = onlyDigits(newValue.text);
     final capped = digits.length > kind.maxDigits ? digits.substring(0, kind.maxDigits) : digits;
     final formatted = maskDocument(capped, kind);
 

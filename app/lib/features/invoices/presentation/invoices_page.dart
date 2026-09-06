@@ -3,6 +3,7 @@ import 'package:acalapp/features/auth/domain/permissions.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
+import 'package:acalapp/features/invoices/domain/invoice_filter.dart';
 import 'package:acalapp/features/invoices/presentation/invoice_detail_page.dart';
 import 'package:acalapp/features/invoices/widget/invoice_filter_bar.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
@@ -107,6 +108,14 @@ class _InvoicesPageState extends State<InvoicesPage> {
     await _loadNextPage();
   }
 
+  InvoiceFilter get _filter => InvoiceFilter(
+        year: _period?.year,
+        month: _period?.month,
+        customerId: _customerId,
+        addressId: _addressId,
+        status: _status,
+      );
+
   Future<void> _loadNextPage() async {
     if (_isLoading || !_hasMorePages) return;
 
@@ -118,11 +127,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
       final result = await _service.findAll(
         page: _currentPage,
         size: _pageSize,
-        year: _period?.year,
-        month: _period?.month,
-        customerId: _customerId,
-        addressId: _addressId,
-        status: _status,
+        filter: _filter,
         sortBy: _sortBy,
         sortAscending: _sortAscending,
       );
@@ -195,11 +200,7 @@ class _InvoicesPageState extends State<InvoicesPage> {
     try {
       await Printing.layoutPdf(
         onLayout: (_) => _service.printFiltered(
-          year: _period?.year,
-          month: _period?.month,
-          customerId: _customerId,
-          addressId: _addressId,
-          status: _status,
+          filter: _filter,
           sortBy: _sortBy,
           sortAscending: _sortAscending,
         ),
@@ -339,9 +340,9 @@ class _InvoicesPageState extends State<InvoicesPage> {
             itemCount: _allInvoices.length + (_isLoading ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == _allInvoices.length) {
-                return Center(
+                return const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: CircularProgressIndicator(),
                   ),
                 );
@@ -472,9 +473,9 @@ class _TableHeader extends StatelessWidget {
                 if (value == 'print') onPrint?.call();
               },
               itemBuilder: (context) => [
-                PopupMenuItem<String>(
+                const PopupMenuItem<String>(
                   value: 'print',
-                  child: const Row(
+                  child: Row(
                     children: [
                       Icon(Icons.print_outlined, size: 18),
                       SizedBox(width: 12),
@@ -633,68 +634,11 @@ class _InvoiceRowState extends State<_InvoiceRow> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  PopupMenuButton<String>(
-                    onSelected: (value) {
-                      if (value == 'view' && invoice.id != null) {
-                        _viewDetails(invoice.id!);
-                      } else if (value == 'download') {
-                        _downloadPdf();
-                      } else if (value == 'mark_paid') {
-                        _markPaid();
-                      }
-                    },
-                    itemBuilder: (BuildContext context) => [
-                      PopupMenuItem<String>(
-                        value: 'view',
-                        child: const Row(
-                          children: [
-                            Icon(Icons.visibility_outlined, size: 18),
-                            SizedBox(width: 12),
-                            Text('Visualizar'),
-                          ],
-                        ),
-                      ),
-                      PopupMenuItem<String>(
-                        value: 'download',
-                        child: const Row(
-                          children: [
-                            Icon(Icons.picture_as_pdf_outlined, size: 18),
-                            SizedBox(width: 12),
-                            Text('Imprimir Boleto'),
-                          ],
-                        ),
-                      ),
-                      if (!invoice.isPaid &&
-                          Permissions.canPayInvoices(
-                              CurrentUserScope.of(context).user?.role))
-                        PopupMenuItem<String>(
-                          value: 'mark_paid',
-                          child: const Row(
-                            children: [
-                              Icon(Icons.attach_money, size: 18),
-                              SizedBox(width: 12),
-                              Text('Marcar como Paga'),
-                            ],
-                          ),
-                        ),
-                      if (invoice.isPaid)
-                        PopupMenuItem<String>(
-                          value: 'paid',
-                          enabled: false,
-                          child: const Row(
-                            children: [
-                              Icon(Icons.check_circle, color: Colors.green, size: 18),
-                              SizedBox(width: 12),
-                              Text('Paga'),
-                            ],
-                          ),
-                        ),
-                    ],
-                    child: Icon(
-                      Icons.more_vert,
-                      size: 20,
-                      color: Theme.of(context).colorScheme.primary,
-                    ),
+                  _InvoiceActionsMenu(
+                    invoice: invoice,
+                    onView: _viewDetails,
+                    onDownload: _downloadPdf,
+                    onMarkPaid: _markPaid,
                   ),
                   if (_marking)
                     const SizedBox(
@@ -710,6 +654,91 @@ class _InvoiceRowState extends State<_InvoiceRow> {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+/// The actions menu behind the "⋮" button, shared by the wide row and the
+/// narrow card so both offer exactly the same actions.
+class _InvoiceActionsMenu extends StatelessWidget {
+  const _InvoiceActionsMenu({
+    required this.invoice,
+    required this.onView,
+    required this.onDownload,
+    required this.onMarkPaid,
+  });
+
+  final Invoice invoice;
+  final void Function(String invoiceId) onView;
+  final VoidCallback onDownload;
+  final VoidCallback onMarkPaid;
+
+  void _onSelected(String action) {
+    switch (action) {
+      case 'view':
+        final id = invoice.id;
+        if (id != null) onView(id);
+      case 'download':
+        onDownload();
+      case 'mark_paid':
+        onMarkPaid();
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<String>(
+      onSelected: _onSelected,
+      itemBuilder: (context) => [
+        const PopupMenuItem<String>(
+          value: 'view',
+          child: Row(
+            children: [
+              Icon(Icons.visibility_outlined, size: 18),
+              SizedBox(width: 12),
+              Text('Visualizar'),
+            ],
+          ),
+        ),
+        const PopupMenuItem<String>(
+          value: 'download',
+          child: Row(
+            children: [
+              Icon(Icons.picture_as_pdf_outlined, size: 18),
+              SizedBox(width: 12),
+              Text('Imprimir Boleto'),
+            ],
+          ),
+        ),
+        if (!invoice.isPaid && Permissions.canPayInvoices(CurrentUserScope.of(context).user?.role))
+          const PopupMenuItem<String>(
+            value: 'mark_paid',
+            child: Row(
+              children: [
+                Icon(Icons.attach_money, size: 18),
+                SizedBox(width: 12),
+                Text('Marcar como Paga'),
+              ],
+            ),
+          ),
+        if (invoice.isPaid)
+          const PopupMenuItem<String>(
+            value: 'paid',
+            enabled: false,
+            child: Row(
+              children: [
+                Icon(Icons.check_circle, color: Colors.green, size: 18),
+                SizedBox(width: 12),
+                Text('Paga'),
+              ],
+            ),
+          ),
+      ],
+      child: Icon(
+        Icons.more_vert,
+        size: 20,
+        color: Theme.of(context).colorScheme.primary,
       ),
     );
   }
@@ -940,68 +969,11 @@ class _InvoiceCardState extends State<_InvoiceCard> {
                   mainAxisSize: MainAxisSize.min,
                   spacing: 8,
                   children: [
-                    PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == 'view' && invoice.id != null) {
-                          _viewDetails(invoice.id!);
-                        } else if (value == 'download') {
-                          _downloadPdf();
-                        } else if (value == 'mark_paid') {
-                          _markPaid();
-                        }
-                      },
-                      itemBuilder: (BuildContext context) => [
-                        PopupMenuItem<String>(
-                          value: 'view',
-                          child: const Row(
-                            children: [
-                              Icon(Icons.visibility_outlined, size: 18),
-                              SizedBox(width: 12),
-                              Text('Visualizar'),
-                            ],
-                          ),
-                        ),
-                        PopupMenuItem<String>(
-                          value: 'download',
-                          child: const Row(
-                            children: [
-                              Icon(Icons.picture_as_pdf_outlined, size: 18),
-                              SizedBox(width: 12),
-                              Text('Imprimir Boleto'),
-                            ],
-                          ),
-                        ),
-                        if (!invoice.isPaid &&
-                            Permissions.canPayInvoices(
-                                CurrentUserScope.of(context).user?.role))
-                          PopupMenuItem<String>(
-                            value: 'mark_paid',
-                            child: const Row(
-                              children: [
-                                Icon(Icons.attach_money, size: 18),
-                                SizedBox(width: 12),
-                                Text('Marcar como Paga'),
-                              ],
-                            ),
-                          ),
-                        if (invoice.isPaid)
-                          PopupMenuItem<String>(
-                            value: 'paid',
-                            enabled: false,
-                            child: const Row(
-                              children: [
-                                Icon(Icons.check_circle, color: Colors.green, size: 18),
-                                SizedBox(width: 12),
-                                Text('Paga'),
-                              ],
-                            ),
-                          ),
-                      ],
-                      child: Icon(
-                        Icons.more_vert,
-                        size: 20,
-                        color: Theme.of(context).colorScheme.primary,
-                      ),
+                    _InvoiceActionsMenu(
+                      invoice: invoice,
+                      onView: _viewDetails,
+                      onDownload: _downloadPdf,
+                      onMarkPaid: _markPaid,
                     ),
                     if (_marking)
                       const SizedBox(

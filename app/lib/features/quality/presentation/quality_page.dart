@@ -196,9 +196,9 @@ class _QualityPageState extends State<QualityPage> {
             itemCount: _allAnalyses.length + (_isLoading ? 1 : 0),
             itemBuilder: (context, index) {
               if (index == _allAnalyses.length) {
-                return Center(
+                return const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: CircularProgressIndicator(),
                   ),
                 );

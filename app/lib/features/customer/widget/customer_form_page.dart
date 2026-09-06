@@ -2,7 +2,9 @@ import 'package:acalapp/core/services/api_error_code.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
+import 'package:acalapp/shared/formatters/digits.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
+import 'package:acalapp/shared/validators/required_validator.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/document_form_field.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
@@ -37,14 +39,18 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
 
   bool get _isEditing => widget.customer != null;
   String get _toastMessage => _isEditing ? 'Sócio atualizado com sucesso.' : 'Sócio criado com sucesso.';
-  String get _title => widget.readOnly ? 'Visualizar Sócio' : (_isEditing ? 'Editar Sócio' : 'Novo Sócio');
+
+  String get _title {
+    if (widget.readOnly) return 'Visualizar Sócio';
+    return _isEditing ? 'Editar Sócio' : 'Novo Sócio';
+  }
 
   @override
   void initState() {
     super.initState();
 
     final customer = widget.customer;
-    final documentDigits = customer?.document.replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+    final documentDigits = customer == null ? '' : onlyDigits(customer.document);
     _documentKind = DocumentKind.fromDigits(documentDigits) ?? DocumentKind.cpf;
 
     _nameController = TextEditingController(text: customer?.name ?? '');
@@ -60,7 +66,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
     setState(() {
       _documentKind = _documentKind == DocumentKind.cpf ? DocumentKind.cnpj : DocumentKind.cpf;
 
-      final digits = _documentController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      final digits = onlyDigits(_documentController.text);
       final capped = digits.length > _documentKind.maxDigits ? digits.substring(0, _documentKind.maxDigits) : digits;
       final formatted = maskDocument(capped, _documentKind);
       _documentController.value = TextEditingValue(
@@ -97,7 +103,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
       final customer = Customer(
         id: widget.customer?.id,
         name: _nameController.text.trim(),
-        document: _documentController.text.replaceAll(RegExp(r'[^0-9]'), ''),
+        document: onlyDigits(_documentController.text),
         membershipNumber: _membershipNumberController.text.trim().isEmpty
             ? null
             : int.parse(_membershipNumberController.text.trim()),
@@ -148,7 +154,7 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
             label: const Text('Nome'),
             hint: 'Digite o nome do sócio',
             readOnly: widget.readOnly,
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+            validator: validateRequired,
           ),
 
           const SizedBox(height: 12),
@@ -184,51 +190,54 @@ class _CustomerFormPageState extends State<CustomerFormPage> {
           const SizedBox(height: 16),
           const Text('Tags', style: TextStyle(fontWeight: FontWeight.w600)),
           const SizedBox(height: 8),
-          if (!widget.readOnly)
-            Row(
-              spacing: 8,
-              children: [
-                Expanded(
-                  child: FTextFormField(
-                    control: FTextFieldControl.managed(controller: _newTagController),
-                    hint: 'Nova tag',
-                  ),
-                ),
-                FButton(
-                  onPress: () {
-                    final tag = _newTagController.text.trim();
-                    if (tag.isNotEmpty && !_tags.contains(tag)) {
-                      setState(() {
-                        _tags.add(tag);
-                        _newTagController.clear();
-                      });
-                    }
-                  },
-                  child: const Text('Adicionar'),
-                ),
-              ],
-            ),
+          if (!widget.readOnly) _buildTagInput(),
           const SizedBox(height: 12),
-          if (_tags.isEmpty)
-            const Text('Nenhuma tag', style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12))
-          else
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: _tags.map((tag) {
-                return Chip(
-                  label: Text(tag),
-                  onDeleted: widget.readOnly
-                      ? null
-                      : () {
-                          setState(() => _tags.remove(tag));
-                        },
-                );
-              }).toList(),
-            ),
+          _buildTagList(),
           const Divider(),
         ],
       ),
     );
   }
+
+  Widget _buildTagInput() => Row(
+        spacing: 8,
+        children: [
+          Expanded(
+            child: FTextFormField(
+              control: FTextFieldControl.managed(controller: _newTagController),
+              hint: 'Nova tag',
+            ),
+          ),
+          FButton(onPress: _addTag, child: const Text('Adicionar')),
+        ],
+      );
+
+  Widget _buildTagList() {
+    if (_tags.isEmpty) {
+      return const Text('Nenhuma tag', style: TextStyle(fontStyle: FontStyle.italic, fontSize: 12));
+    }
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      children: _tags.map(_buildTagChip).toList(),
+    );
+  }
+
+  Widget _buildTagChip(String tag) => Chip(
+        label: Text(tag),
+        onDeleted: widget.readOnly ? null : () => _removeTag(tag),
+      );
+
+  void _addTag() {
+    final tag = _newTagController.text.trim();
+    if (tag.isEmpty || _tags.contains(tag)) return;
+
+    setState(() {
+      _tags.add(tag);
+      _newTagController.clear();
+    });
+  }
+
+  void _removeTag(String tag) => setState(() => _tags.remove(tag));
 }

@@ -3,6 +3,7 @@ import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/theme/app_theme.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
+import 'package:acalapp/features/connections/domain/connection_filter.dart';
 import 'package:acalapp/features/connections/widget/connection_filter_bar.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
@@ -37,7 +38,7 @@ class _FakeCategoryService extends CategoryService {
   }
 }
 
-Future<void> _pump(WidgetTester tester, void Function(ConnectionFilters filters) onSearch) async {
+Future<void> _pump(WidgetTester tester, void Function(ConnectionFilter filter) onSearch) async {
   tester.view.physicalSize = const Size(1400, 900);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
@@ -75,7 +76,7 @@ void main() {
   });
 
   testWidgets('reports null filters after clearing', (tester) async {
-    ConnectionFilters? captured;
+    ConnectionFilter? captured;
     await _pump(tester, (filters) => captured = filters);
 
     await tester.tap(find.text('Limpar'));

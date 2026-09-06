@@ -128,7 +128,7 @@ class InvoiceSummarySection extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
+          const Text(
             'Valor total',
             style: TextStyle(
               fontSize: 16,
@@ -137,7 +137,7 @@ class InvoiceSummarySection extends StatelessWidget {
           ),
           Text(
             currencyFormat.format(value),
-            style: TextStyle(
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
             ),

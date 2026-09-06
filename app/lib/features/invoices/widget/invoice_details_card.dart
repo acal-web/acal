@@ -60,7 +60,7 @@ class InvoiceDetailsCard extends StatelessWidget {
 
                     CustomPaint(
                       painter: DashedLinePainter(color: cs.outlineVariant),
-                      size: Size(double.infinity, 1),
+                      size: const Size(double.infinity, 1),
                     ),
 
                     // Page 2 (Desktop only)

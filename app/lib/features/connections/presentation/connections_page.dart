@@ -1,6 +1,7 @@
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/features/connections/data/connection_service.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
+import 'package:acalapp/features/connections/domain/connection_filter.dart';
 import 'package:acalapp/features/connections/widget/connection_filter_bar.dart';
 import 'package:acalapp/features/connections/widget/modal/delete_connection.dart';
 import 'package:acalapp/features/connections/widget/modal/open_connection.dart';
@@ -29,10 +30,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   int _totalCount = 0;
   bool _isLoading = false;
   bool _hasMorePages = true;
-  String? _filterCustomerId;
-  String? _filterAddressName;
-  String? _filterCategoryId;
-  String _filterStatus = 'active';
+  ConnectionFilter _filter = const ConnectionFilter(status: ConnectionFilter.defaultStatus);
   String? _errorMessage;
   String _sortBy = 'customer_name';
   String _sortDirection = 'asc';
@@ -69,10 +67,7 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
       final result = await _service.findAll(
         page: _currentPage,
         size: _pageSize,
-        customerId: _filterCustomerId,
-        addressName: _filterAddressName,
-        categoryId: _filterCategoryId,
-        status: _filterStatus,
+        filter: _filter,
         sortBy: _sortBy,
         sortDirection: _sortDirection,
       );
@@ -104,11 +99,8 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
     }
   }
 
-  void _search(ConnectionFilters filters) async {
-    _filterCustomerId = filters.customerId;
-    _filterAddressName = filters.addressName;
-    _filterCategoryId = filters.categoryId;
-    _filterStatus = filters.status ?? 'active';
+  void _search(ConnectionFilter filter) async {
+    _filter = filter;
     await _loadFirstPage();
   }
 
@@ -211,9 +203,9 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
                 narrow ? const SizedBox(height: 8) : const Divider(height: 1),
             itemBuilder: (context, index) {
               if (index == _allConnections.length) {
-                return Center(
+                return const Center(
                   child: Padding(
-                    padding: const EdgeInsets.all(16),
+                    padding: EdgeInsets.all(16),
                     child: CircularProgressIndicator(),
                   ),
                 );

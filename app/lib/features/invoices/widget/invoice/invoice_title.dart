@@ -22,10 +22,10 @@ class InvoiceTitle extends StatelessWidget {
               flex: 20,
               child: Center(child: icon),
             ),
-            Expanded(
+            const Expanded(
               flex: 80,
               child: Padding(
-                padding: const EdgeInsets.only(left: 16),
+                padding: EdgeInsets.only(left: 16),
                 child: Text(
                   'CNPJ - 13.228.119/0001-68\n'
                   'Publicação do estatuto no Diário Oficial de 22-06-1983\n'
@@ -43,9 +43,9 @@ class InvoiceTitle extends StatelessWidget {
           ],
         ),
 
-        Divider (),
+        const Divider (),
 
-        Center(
+        const Center(
           child: Text(
             'ACAL - Associação Comunitária e Assistencial de Lages',
             style: TextStyle(
@@ -57,7 +57,7 @@ class InvoiceTitle extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 4),
-        Center(
+        const Center(
           child: Text(
             'ECONOMIZAR ÁGUA É UM DEVER DE TODO SER HUMANO.',
             style: TextStyle(
@@ -70,7 +70,7 @@ class InvoiceTitle extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 16),
-        Divider()
+        const Divider()
       ],
     );
   }

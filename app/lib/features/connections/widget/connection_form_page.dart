@@ -11,6 +11,7 @@ import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/customer/widget/customer_select_field.dart';
+import 'package:acalapp/shared/validators/required_validator.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -171,14 +172,14 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             customerService: _customerService,
             initialValue: _selectedCustomer,
             onSelected: (c) => setState(() => _selectedCustomer = c),
-            validator: (c) => c == null ? 'Obrigatório' : null,
+            validator: (c) => c == null ? requiredFieldMessage : null,
           ),
           const SizedBox(height: 12),
           AddressSelectField(
             addressService: _addressService,
             initialValue: _selectedAddress,
             onSelected: (a) => setState(() => _selectedAddress = a),
-            validator: (a) => a == null ? 'Obrigatório' : null,
+            validator: (a) => a == null ? requiredFieldMessage : null,
           ),
           const SizedBox(height: 12),
           Row(
@@ -191,7 +192,7 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
                   keyboardType: TextInputType.number,
                   inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                   label: const Text('Número'),
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+                  validator: validateRequired,
                 ),
               ),
               const SizedBox(width: 12),
@@ -210,7 +211,7 @@ class _ConnectionFormPageState extends State<ConnectionFormPage> {
             categoryService: _categoryService,
             initialValue: _selectedCategory,
             onSelected: (c) => setState(() => _selectedCategory = c),
-            validator: (c) => c == null ? 'Obrigatório' : null,
+            validator: (c) => c == null ? requiredFieldMessage : null,
           ),
           const SizedBox(height: 12),
           FTextFormField(

@@ -27,6 +27,11 @@ class ApiException implements Exception {
   String toString() => 'ApiException($statusCode): $body';
 }
 
+/// Blank filters are dropped from a query string — the API treats an absent
+/// filter and an empty one the same way. Pair it with a null-aware map entry
+/// (`'name': ?blankToNull(name)`) to leave the key out entirely.
+String? blankToNull(String? value) => (value == null || value.isEmpty) ? null : value;
+
 class HttpService {
   HttpService({http.Client? client}) : _client = client ?? http.Client();
 

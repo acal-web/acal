@@ -23,32 +23,38 @@ import 'package:go_router/go_router.dart';
 
 late GoRouter appRouter;
 
+const _splash = '/splash';
+const _login = '/login';
+const _dashboard = '/dashboard';
+const _portalPrefix = '/portal';
+const _portalInvoices = '$_portalPrefix/invoices';
+
 /// Call this from main.dart to initialize the router with CurrentUser — the
 /// single login covers both staff and sócio accounts; which area a session
 /// lands in (and stays confined to) is decided purely by its role below.
 void initializeRouter(Listenable currentUser) {
   appRouter = GoRouter(
-    initialLocation: '/splash',
+    initialLocation: _splash,
     refreshListenable: currentUser,
     redirect: _redirect,
     routes: [
     GoRoute(
-      path: '/splash',
+      path: _splash,
       pageBuilder: (context, state) => const NoTransitionPage(child: SplashPage()),
     ),
     GoRoute(
-      path: '/login',
+      path: _login,
       pageBuilder: (context, state) => const NoTransitionPage(child: LoginPage()),
     ),
     GoRoute(
-      path: '/portal/invoices',
+      path: _portalInvoices,
       pageBuilder: (context, state) => const NoTransitionPage(child: MyInvoicesPage()),
     ),
     ShellRoute(
       builder: (context, state, child) => AppShell(body: child),
       routes: [
         GoRoute(
-          path: '/dashboard',
+          path: _dashboard,
           pageBuilder: (context, state) => const NoTransitionPage(child: DashboardPage()),
         ),
         GoRoute(
@@ -129,16 +135,16 @@ String? _redirect(BuildContext context, GoRouterState state) {
   final location = state.matchedLocation;
 
   if (session.isChecking) {
-    return location == '/splash' ? null : '/splash';
+    return location == _splash ? null : _splash;
   }
   if (!session.isAuthenticated) {
-    return location == '/login' ? null : '/login';
+    return location == _login ? null : _login;
   }
 
   final isCustomer = session.user?.role == UserRole.customer;
-  final home = isCustomer ? '/portal/invoices' : '/dashboard';
-  final onOwnArea = isCustomer ? location.startsWith('/portal') : !location.startsWith('/portal');
-  final isEntryRoute = location == '/login' || location == '/splash';
+  final home = isCustomer ? _portalInvoices : _dashboard;
+  final onOwnArea = isCustomer ? location.startsWith(_portalPrefix) : !location.startsWith(_portalPrefix);
+  final isEntryRoute = location == _login || location == _splash;
 
   return (isEntryRoute || !onOwnArea) ? home : null;
 }

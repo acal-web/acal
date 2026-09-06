@@ -82,7 +82,7 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> _openSendPage() async {
     final sent = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => SendNotificationPage()),
+      MaterialPageRoute(builder: (_) => const SendNotificationPage()),
     );
     if (sent == true) await _loadFirstPage();
   }

@@ -3,6 +3,7 @@ import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
 import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
+import 'package:acalapp/shared/validators/required_validator.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -32,7 +33,11 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
 
   bool get _isEditing => widget.category != null;
   String get _toastMessage => _isEditing ? 'Categoria atualizada com sucesso.' : 'Categoria criada com sucesso.';
-  String get _title => widget.readOnly ? 'Visualizar Categoria' : (_isEditing ? 'Editar Categoria' : 'Nova Categoria');
+
+  String get _title {
+    if (widget.readOnly) return 'Visualizar Categoria';
+    return _isEditing ? 'Editar Categoria' : 'Nova Categoria';
+  }
 
   @override
   void initState() {
@@ -56,8 +61,6 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
     _membershipPriceController.dispose();
     super.dispose();
   }
-
-  String? _validatePrice(String? v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null;
 
   Future<void> _save() async {
     if (!_formKey.currentState!.validate()) return;
@@ -109,7 +112,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
             label: const Text('Nome'),
             hint: 'Digite o nome da categoria',
             readOnly: widget.readOnly,
-            validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+            validator: validateRequired,
           ),
           const SizedBox(height: 12),
           FTextFormField(
@@ -126,7 +129,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
             label: const Text('Grupo'),
             onSaved: (v) => _group = v!,
             enabled: !widget.readOnly,
-            validator: (v) => (v == null || v.isEmpty) ? 'Obrigatório' : null,
+            validator: validateRequired,
           ),
           const SizedBox(height: 12),
           Row(
@@ -140,7 +143,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                     inputFormatters: [CurrencyInputFormatter()],
                     label: const Text('Valor da Água'),
                     readOnly: widget.readOnly,
-                    validator: _validatePrice,
+                    validator: validateRequired,
                   ),
                 ),
               ),
@@ -154,7 +157,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                     inputFormatters: [CurrencyInputFormatter()],
                     label: const Text('Valor Societário'),
                     readOnly: widget.readOnly,
-                    validator: _validatePrice,
+                    validator: validateRequired,
                   ),
                 ),
               ),

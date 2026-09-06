@@ -1,6 +1,7 @@
 import 'package:acalapp/core/models/paged_result.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
+import 'package:acalapp/features/connections/domain/connection_filter.dart';
 
 class ConnectionService {
   ConnectionService({HttpService? http}) : _http = http ?? HttpService();
@@ -10,26 +11,16 @@ class ConnectionService {
   Future<PagedResult<Connection>> findAll({
     int page = 0,
     int size = 10,
-    String? customerId,
-    String? customerName,
-    String? customerDocument,
-    String? addressName,
-    String? categoryId,
-    String? status,
+    ConnectionFilter filter = const ConnectionFilter(),
     String? sortBy,
     String? sortDirection,
   }) async {
     final query = {
       'page': '$page',
       'size': '$size',
-      if (customerId != null && customerId.isNotEmpty) 'customer_id': customerId,
-      if (customerName != null && customerName.isNotEmpty) 'customer_name': customerName,
-      if (customerDocument != null && customerDocument.isNotEmpty) 'customer_document': customerDocument,
-      if (addressName != null && addressName.isNotEmpty) 'address_name': addressName,
-      if (categoryId != null && categoryId.isNotEmpty) 'category_id': categoryId,
-      if (status != null && status.isNotEmpty) 'status': status,
-      if (sortBy != null && sortBy.isNotEmpty) 'sort_by': sortBy,
-      if (sortDirection != null && sortDirection.isNotEmpty) 'sort_direction': sortDirection,
+      ...filter.toQuery(),
+      'sort_by': ?blankToNull(sortBy),
+      'sort_direction': ?blankToNull(sortDirection),
     };
     final data = await _http.get('/connections', query: query) as Map<String, dynamic>;
     return PagedResult.fromJson(data, Connection.fromJson);

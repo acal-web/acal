@@ -1,3 +1,4 @@
+import 'package:acalapp/shared/formatters/digits.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 
 /// Normalizes what the user typed into the single login field, which serves
@@ -7,6 +8,6 @@ import 'package:acalapp/shared/formatters/document_formatter.dart';
 /// untouched, so a staff username is never mangled.
 String normalizeLoginUsername(String raw) {
   final trimmed = raw.trim();
-  final digitsOnly = trimmed.replaceAll(RegExp(r'[^0-9]'), '');
+  final digitsOnly = onlyDigits(trimmed);
   return DocumentKind.fromDigits(digitsOnly) != null ? digitsOnly : trimmed;
 }

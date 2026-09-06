@@ -8,3 +8,13 @@ analyzer:
     - macos/**
     - linux/**
 include: package:flutter_lints/flutter.yaml
+
+linter:
+  rules:
+    # SonarCloud enforces these (dart:S7112, dart:S7123) and the Dart analyzer
+    # can both flag and auto-fix them — keep the check here so CI catches a
+    # missing `const` before the Sonar scan does.
+    - prefer_const_constructors
+    - prefer_const_constructors_in_immutables
+    - prefer_const_declarations
+    - prefer_const_literals_to_create_immutables

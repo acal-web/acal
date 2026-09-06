@@ -77,7 +77,7 @@ class InvoiceWaterQualitySection extends StatelessWidget {
     return Container(
       color: cs.surfaceContainerHighest.withValues(alpha: 0.5),
       padding: const EdgeInsets.all(12),
-      child: Center(
+      child: const Center(
         child: Text(
           'Decreto Federal nº 5.440/2005',
           style: TextStyle(
@@ -163,9 +163,9 @@ class InvoiceWaterQualitySection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
+        const Text(
           'Parâmetros de Qualidade da Água',
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.bold,
           ),

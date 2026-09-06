@@ -1,8 +1,9 @@
+import 'package:acalapp/shared/formatters/digits.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:flutter/material.dart';
 
 String formatDocument(String value) {
-  final digits = value.replaceAll(RegExp(r'[^0-9]'), '');
+  final digits = onlyDigits(value);
   final kind = DocumentKind.fromDigits(digits);
   return kind == null ? value : maskDocument(digits, kind);
 }

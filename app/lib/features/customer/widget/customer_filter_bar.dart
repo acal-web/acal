@@ -1,4 +1,5 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/shared/formatters/digits.dart';
 import 'package:acalapp/shared/formatters/document_formatter.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
@@ -46,7 +47,7 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
     setState(() {
       _documentKind = _documentKind == DocumentKind.cpf ? DocumentKind.cnpj : DocumentKind.cpf;
 
-      final digits = _documentController.text.replaceAll(RegExp(r'[^0-9]'), '');
+      final digits = onlyDigits(_documentController.text);
       final capped = digits.length > _documentKind.maxDigits ? digits.substring(0, _documentKind.maxDigits) : digits;
       final formatted = maskDocument(capped, _documentKind);
       _documentController.value = TextEditingValue(
@@ -58,9 +59,32 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
 
   void _search() => widget.onSearch(
         name: _nameController.text.trim(),
-        document: _documentController.text.replaceAll(RegExp(r'[^0-9]'), ''),
+        document: onlyDigits(_documentController.text),
         active: _active.value,
       );
+
+  Widget _buildDocumentField() {
+    final isCpf = _documentKind == DocumentKind.cpf;
+
+    return FTextField(
+      control: FTextFieldControl.managed(controller: _documentController),
+      label: Text(isCpf ? 'Documento (CPF):' : 'Documento (CNPJ):'),
+      hint: isCpf ? '000.000.000-00' : '00.000.000/0000-00',
+      keyboardType: TextInputType.number,
+      inputFormatters: [DocumentInputFormatter(_documentKind)],
+      prefixBuilder: (context, style, variants) => FButton(
+        variant: FButtonVariant.ghost,
+        size: FButtonSizeVariant.sm,
+        mainAxisSize: MainAxisSize.min,
+        semanticsTooltip: isCpf
+            ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
+            : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
+        onPress: _toggleDocumentKind,
+        child: Icon(isCpf ? Icons.person : Icons.business, size: 18),
+      ),
+      onSubmit: (_) => _search(),
+    );
+  }
 
   void _clear() {
     setState(() {
@@ -85,26 +109,7 @@ class _CustomerFilterBarState extends State<CustomerFilterBar> {
           onSubmit: (_) => _search(),
         );
 
-        final isCpf = _documentKind == DocumentKind.cpf;
-
-        final documentField = FTextField(
-          control: FTextFieldControl.managed(controller: _documentController),
-          label: Text(isCpf ? 'Documento (CPF):' : 'Documento (CNPJ):'),
-          hint: isCpf ? '000.000.000-00' : '00.000.000/0000-00',
-          keyboardType: TextInputType.number,
-          inputFormatters: [DocumentInputFormatter(_documentKind)],
-          prefixBuilder: (context, style, variants) => FButton(
-            variant: FButtonVariant.ghost,
-            size: FButtonSizeVariant.sm,
-            mainAxisSize: MainAxisSize.min,
-            semanticsTooltip: isCpf
-                ? 'Pessoa física (CPF) — toque para alternar para CNPJ'
-                : 'Pessoa jurídica (CNPJ) — toque para alternar para CPF',
-            onPress: _toggleDocumentKind,
-            child: Icon(isCpf ? Icons.person : Icons.business, size: 18),
-          ),
-          onSubmit: (_) => _search(),
-        );
+        final documentField = _buildDocumentField();
 
         final searchButtonNarrow = Expanded(
           child: FButton(

@@ -2,6 +2,7 @@ import 'package:acalapp/core/services/api_error_code.dart';
 import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/addresses/domain/address.dart';
 import 'package:acalapp/features/addresses/data/address_service.dart';
+import 'package:acalapp/shared/validators/required_validator.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
@@ -26,7 +27,10 @@ class _AddressFormPageState extends State<AddressFormPage> {
 
   bool get _isEditing => widget.address != null;
   String get _toastMessage => _isEditing ? 'Endereço atualizado com sucesso.' : 'Endereço criado com sucesso.';
-  String get _title => widget.readOnly ? 'Visualizar Endereço' : (_isEditing ? 'Editar Endereço' : 'Novo Endereço');
+  String get _title {
+    if (widget.readOnly) return 'Visualizar Endereço';
+    return _isEditing ? 'Editar Endereço' : 'Novo Endereço';
+  }
 
   @override
   void initState() {
@@ -88,7 +92,7 @@ class _AddressFormPageState extends State<AddressFormPage> {
         label: const Text('Endereço'),
         hint: 'Digite o logradouro com tipo (ex: Rua das Flores)',
         readOnly: widget.readOnly,
-        validator: (v) => (v == null || v.trim().isEmpty) ? 'Obrigatório' : null,
+        validator: validateRequired,
       ),
     );
   }

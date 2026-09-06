@@ -150,19 +150,19 @@ class _PortalTopBar extends StatelessWidget implements PreferredSizeWidget {
         decoration: BoxDecoration(
           border: Border(bottom: BorderSide(color: cs.outlineVariant)),
         ),
-        child: SafeArea(
+        child: const SafeArea(
           bottom: false,
           child: SizedBox(
             height: kToolbarHeight,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const Expanded(child: SizedBox()),
-                const Padding(
+                Expanded(child: SizedBox()),
+                Padding(
                   padding: EdgeInsets.symmetric(horizontal: 12),
                   child: TopBarHelpers(),
                 ),
-                const TopBarUserMenu(),
+                TopBarUserMenu(),
               ],
             ),
           ),

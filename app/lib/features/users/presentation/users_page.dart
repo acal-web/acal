@@ -105,7 +105,6 @@ class _UsersPageState extends State<UsersPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final cs = theme.colorScheme;
 
     return Scaffold(
       appBar: AppBar(
@@ -123,117 +122,116 @@ class _UsersPageState extends State<UsersPage> {
         ],
       ),
       body: Column(
-        children: [
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _users.isEmpty
-                    ? Center(
-                        child: Text(
-                          'Nenhum usuário encontrado',
-                          style: theme.textTheme.bodyMedium?.copyWith(color: cs.outline),
-                        ),
-                      )
-                    : ListView.builder(
-                        padding: const EdgeInsets.all(16),
-                        itemCount: _users.length,
-                        itemBuilder: (context, index) {
-                          final user = _users[index];
-                          return Card(
-                            margin: const EdgeInsets.only(bottom: 12),
-                            child: ListTile(
-                              leading: CircleAvatar(
-                                backgroundColor:
-                                    user.isActive ? cs.primary : cs.outline.withValues(alpha: 0.5),
-                                child: Text(
-                                  user.username[0].toUpperCase(),
-                                  style: TextStyle(
-                                    color: user.isActive ? cs.onPrimary : cs.outline,
-                                  ),
-                                ),
-                              ),
-                              title: Text(user.name),
-                              subtitle: Row(
-                                children: [
-                                  Text(user.username),
-                                  const SizedBox(width: 12),
-                                  Chip(
-                                    label: Text(_roleLabel(user.role.value)),
-                                    labelStyle: theme.textTheme.labelSmall,
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  if (!user.isActive) ...[
-                                    const SizedBox(width: 8),
-                                    Chip(
-                                      label: const Text('Inativo'),
-                                      labelStyle: theme.textTheme.labelSmall?.copyWith(
-                                        color: cs.error,
-                                      ),
-                                      backgroundColor: cs.error.withValues(alpha: 0.1),
-                                      padding: EdgeInsets.zero,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                              trailing: PopupMenuButton<String>(
-                                onSelected: (value) {
-                                  if (value == 'edit') {
-                                    _openUserForm(user: user);
-                                  } else if (value == 'delete') {
-                                    _deleteUser(user);
-                                  } else if (value == 'restore') {
-                                    _restoreUser(user);
-                                  }
-                                },
-                                itemBuilder: (context) => [
-                                  const PopupMenuItem(
-                                    value: 'edit',
-                                    child: Row(
-                                      children: [
-                                        Icon(Icons.edit, size: 18),
-                                        SizedBox(width: 12),
-                                        Text('Editar'),
-                                      ],
-                                    ),
-                                  ),
-                                  if (user.isActive)
-                                    PopupMenuItem(
-                                      value: 'delete',
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.delete, size: 18, color: cs.error),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Excluir',
-                                            style: TextStyle(color: cs.error),
-                                          ),
-                                        ],
-                                      ),
-                                    )
-                                  else
-                                    PopupMenuItem(
-                                      value: 'restore',
-                                      child: Row(
-                                        children: [
-                                          Icon(Icons.restore, size: 18, color: cs.primary),
-                                          const SizedBox(width: 12),
-                                          Text(
-                                            'Restaurar',
-                                            style: TextStyle(color: cs.primary),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
-          ),
-        ],
+        children: [Expanded(child: _buildBody(theme))],
       ),
     );
+  }
+
+  Widget _buildBody(ThemeData theme) {
+    if (_isLoading) return const Center(child: CircularProgressIndicator());
+
+    if (_users.isEmpty) {
+      return Center(
+        child: Text(
+          'Nenhum usuário encontrado',
+          style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.outline),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: _users.length,
+      itemBuilder: (context, index) => _buildUserCard(_users[index], theme),
+    );
+  }
+
+  Widget _buildUserCard(UserModel user, ThemeData theme) {
+    final cs = theme.colorScheme;
+
+    return Card(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: ListTile(
+        leading: CircleAvatar(
+          backgroundColor: user.isActive ? cs.primary : cs.outline.withValues(alpha: 0.5),
+          child: Text(
+            user.username[0].toUpperCase(),
+            style: TextStyle(color: user.isActive ? cs.onPrimary : cs.outline),
+          ),
+        ),
+        title: Text(user.name),
+        subtitle: Row(
+          children: [
+            Text(user.username),
+            const SizedBox(width: 12),
+            Chip(
+              label: Text(_roleLabel(user.role.value)),
+              labelStyle: theme.textTheme.labelSmall,
+              padding: EdgeInsets.zero,
+            ),
+            if (!user.isActive) ...[
+              const SizedBox(width: 8),
+              Chip(
+                label: const Text('Inativo'),
+                labelStyle: theme.textTheme.labelSmall?.copyWith(color: cs.error),
+                backgroundColor: cs.error.withValues(alpha: 0.1),
+                padding: EdgeInsets.zero,
+              ),
+            ],
+          ],
+        ),
+        trailing: PopupMenuButton<String>(
+          onSelected: (value) => _onMenuAction(value, user),
+          itemBuilder: (context) => _buildMenuItems(user, cs),
+        ),
+      ),
+    );
+  }
+
+  List<PopupMenuEntry<String>> _buildMenuItems(UserModel user, ColorScheme cs) => [
+        const PopupMenuItem(
+          value: 'edit',
+          child: Row(
+            children: [
+              Icon(Icons.edit, size: 18),
+              SizedBox(width: 12),
+              Text('Editar'),
+            ],
+          ),
+        ),
+        if (user.isActive)
+          PopupMenuItem(
+            value: 'delete',
+            child: Row(
+              children: [
+                Icon(Icons.delete, size: 18, color: cs.error),
+                const SizedBox(width: 12),
+                Text('Excluir', style: TextStyle(color: cs.error)),
+              ],
+            ),
+          )
+        else
+          PopupMenuItem(
+            value: 'restore',
+            child: Row(
+              children: [
+                Icon(Icons.restore, size: 18, color: cs.primary),
+                const SizedBox(width: 12),
+                Text('Restaurar', style: TextStyle(color: cs.primary)),
+              ],
+            ),
+          ),
+      ];
+
+  void _onMenuAction(String action, UserModel user) {
+    switch (action) {
+      case 'edit':
+        _openUserForm(user: user);
+      case 'delete':
+        _deleteUser(user);
+      case 'restore':
+        _restoreUser(user);
+    }
   }
 
   String _roleLabel(String role) {

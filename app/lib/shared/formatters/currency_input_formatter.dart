@@ -1,3 +1,4 @@
+import 'package:acalapp/shared/formatters/digits.dart';
 import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
@@ -9,7 +10,7 @@ String formatBRL(double value) => _brl.format(value);
 /// Parses text produced by [CurrencyInputFormatter] (or [formatBRL]) back
 /// into its numeric reais amount.
 double parseBRL(String text) {
-  final digits = text.replaceAll(RegExp(r'[^0-9]'), '');
+  final digits = onlyDigits(text);
   return digits.isEmpty ? 0 : int.parse(digits) / 100;
 }
 
@@ -18,7 +19,7 @@ double parseBRL(String text) {
 class CurrencyInputFormatter extends TextInputFormatter {
   @override
   TextEditingValue formatEditUpdate(TextEditingValue oldValue, TextEditingValue newValue) {
-    final digits = newValue.text.replaceAll(RegExp(r'[^0-9]'), '');
+    final digits = onlyDigits(newValue.text);
     if (digits.isEmpty) return const TextEditingValue(text: '');
 
     final formatted = _brl.format(int.parse(digits) / 100);

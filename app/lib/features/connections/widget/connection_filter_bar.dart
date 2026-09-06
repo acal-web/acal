@@ -5,6 +5,7 @@ import 'package:acalapp/features/addresses/widget/address_select_field.dart';
 import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/categories/domain/category.dart';
 import 'package:acalapp/features/categories/widget/category_select_field.dart';
+import 'package:acalapp/features/connections/domain/connection_filter.dart';
 import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/features/customer/domain/customer.dart';
 import 'package:acalapp/features/customer/widget/customer_select_field.dart';
@@ -12,7 +13,7 @@ import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
 
 enum _ConnectionStatus {
-  active('Ativos', 'active'),
+  active('Ativos', ConnectionFilter.defaultStatus),
   inactive('Inativos', 'inactive'),
   deleted('Excluídos', 'deleted'),
   all('Todos', 'all');
@@ -22,13 +23,6 @@ enum _ConnectionStatus {
   final String value;
 }
 
-typedef ConnectionFilters = ({
-  String? customerId,
-  String? addressName,
-  String? categoryId,
-  String? status,
-});
-
 class ConnectionFilterBar extends StatefulWidget {
   const ConnectionFilterBar({
     super.key,
@@ -37,7 +31,7 @@ class ConnectionFilterBar extends StatefulWidget {
     this.customerService,
   });
 
-  final void Function(ConnectionFilters filters) onSearch;
+  final void Function(ConnectionFilter filter) onSearch;
   final CategoryService? categoryService;
   final CustomerService? customerService;
 
@@ -64,7 +58,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
     _customerService = widget.customerService ?? CustomerService();
   }
 
-  void _search() => widget.onSearch((
+  void _search() => widget.onSearch(ConnectionFilter(
         customerId: _customer?.id,
         addressName: _address?.name,
         categoryId: _category?.id,
@@ -79,7 +73,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
       _status = _ConnectionStatus.active;
       _filterKey++;
     });
-    widget.onSearch((customerId: null, addressName: null, categoryId: null, status: 'active'));
+    widget.onSearch(const ConnectionFilter(status: ConnectionFilter.defaultStatus));
   }
 
   @override

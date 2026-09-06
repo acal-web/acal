@@ -3,6 +3,7 @@ import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/quality/data/quality_analysis_service.dart';
 import 'package:acalapp/features/quality/domain/quality_analysis.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
+import 'package:acalapp/shared/validators/required_validator.dart';
 import 'package:acalapp/shared/widgets/app_form_dialog.dart';
 import 'package:acalapp/shared/widgets/period_filter_button.dart';
 import 'package:acalapp/shared/widgets/toast/app_toast.dart';
@@ -97,7 +98,7 @@ class _QualityAnalysisFormPageState extends State<QualityAnalysisFormPage> {
   }
 
   String? _validateCount(String? v) {
-    if (v == null || v.trim().isEmpty) return 'Obrigatório';
+    if (v == null || v.trim().isEmpty) return requiredFieldMessage;
     return null;
   }
 

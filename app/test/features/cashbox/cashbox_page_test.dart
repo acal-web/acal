@@ -15,16 +15,16 @@ import 'package:forui/forui.dart';
 
 const _pagination = Pagination(number: 0, totalPages: 1, totalElements: 1, size: 10, first: true, last: true);
 
-final _connection = Connection(
+const _connection = Connection(
   id: 'conn-1',
   customerId: 'cust-1',
   addressId: 'addr-1',
   categoryId: 'cat-1',
   number: 12,
   letter: 'A',
-  customer: const Customer(id: 'cust-1', name: 'Fulano de Tal', document: '12345678900', voter: false),
-  address: const Address(id: 'addr-1', name: 'Avenida Fernando Daltro'),
-  category: const Category(
+  customer: Customer(id: 'cust-1', name: 'Fulano de Tal', document: '12345678900', voter: false),
+  address: Address(id: 'addr-1', name: 'Avenida Fernando Daltro'),
+  category: Category(
     id: 'cat-1',
     name: 'Residente',
     group: 'efetivo',
