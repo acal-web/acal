@@ -50,13 +50,12 @@ jobs:
       - name: Run tests
         run: flutter test --coverage
 
-      - name: SonarCloud Scan
-        if: ${{ success() }}
-        uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
+      - name: Upload unit test coverage
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          projectBaseDir: app
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          name: unit-lcov
+          path: app/coverage/lcov.info
+          retention-days: 1
 
   e2e:
     runs-on: ubuntu-latest
@@ -83,6 +82,7 @@ jobs:
       API_BASE_URL: http://localhost:3000
       E2E_ADMIN_USERNAME: e2e_admin
       E2E_ADMIN_PASSWORD: e2e_password123
+      E2E_COVERAGE: "true"
     steps:
       - name: Checkout code
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -126,7 +126,7 @@ jobs:
           sudo apt-get update -qq
           sudo apt-get install --no-install-recommends -y \
             clang cmake git ninja-build pkg-config \
-            libgtk-3-dev liblzma-dev libssl-dev libsecret-1-dev xvfb
+            libgtk-3-dev liblzma-dev libssl-dev libsecret-1-dev xvfb lcov
 
       - name: Set up Flutter
         uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
@@ -148,9 +148,49 @@ jobs:
         working-directory: app
         run: xvfb-run -a ./scripts/run_e2e.sh
 
+      - name: Upload E2E coverage
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: e2e-lcov
+          path: app/coverage/e2e_lcov.info
+          retention-days: 1
+          if-no-files-found: warn
+
       - name: Dump API log on failure
         if: failure()
         run: cat "$RUNNER_TEMP/rails.log" || true
+
+  sonar:
+    needs: [test, e2e]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: app
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: Download unit test coverage
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: unit-lcov
+          path: app/coverage
+
+      - name: Download E2E coverage
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: e2e-lcov
+          path: app/coverage
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@c7ee0f9df90b7aa20e8dcf9695dcfe2e7da5b4f2 # v7
+        with:
+          projectBaseDir: app
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   # build-linux:
   #   needs: test

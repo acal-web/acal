@@ -9,7 +9,8 @@
 #
 # Usage: app/scripts/run_e2e.sh [extra flutter test args...]
 # Env:   E2E_DEVICE (default linux), API_BASE_URL, E2E_ADMIN_USERNAME,
-#        E2E_ADMIN_PASSWORD
+#        E2E_ADMIN_PASSWORD, E2E_COVERAGE (set to collect coverage; requires
+#        the `lcov` CLI to merge the per-file reports into coverage/e2e_lcov.info)
 set -uo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -19,12 +20,19 @@ DEVICE="${E2E_DEVICE:-linux}"
 API_BASE_URL="${API_BASE_URL:-http://localhost:3000}"
 E2E_ADMIN_USERNAME="${E2E_ADMIN_USERNAME:-e2e_admin}"
 E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-e2e_password123}"
+E2E_COVERAGE="${E2E_COVERAGE:-}"
+COVERAGE_DIR="coverage/e2e"
 
 mapfile -t FILES < <(find integration_test -name '*_test.dart' | sort)
 
 if [ ${#FILES[@]} -eq 0 ]; then
   echo "No *_test.dart files under integration_test/" >&2
   exit 1
+fi
+
+if [ -n "$E2E_COVERAGE" ]; then
+  rm -rf "$COVERAGE_DIR"
+  mkdir -p "$COVERAGE_DIR"
 fi
 
 # Preflight. Without it a missing admin or a dead server shows up as every
@@ -53,14 +61,38 @@ FAILED=()
 for file in "${FILES[@]}"; do
   echo
   echo "== $file =="
+
+  COVERAGE_ARGS=()
+  if [ -n "$E2E_COVERAGE" ]; then
+    COVERAGE_ARGS=(--coverage --coverage-path "$COVERAGE_DIR/$(basename "$file" .dart).info")
+  fi
+
   if ! flutter test "$file" -d "$DEVICE" \
     --dart-define=API_BASE_URL="$API_BASE_URL" \
     --dart-define=E2E_ADMIN_USERNAME="$E2E_ADMIN_USERNAME" \
     --dart-define=E2E_ADMIN_PASSWORD="$E2E_ADMIN_PASSWORD" \
+    "${COVERAGE_ARGS[@]}" \
     "$@"; then
     FAILED+=("$file")
   fi
 done
+
+# Merged before the failure check below so a partial run still uploads
+# whatever coverage it collected.
+if [ -n "$E2E_COVERAGE" ]; then
+  echo
+  echo "== Merging E2E coverage =="
+  mapfile -t COVERAGE_FILES < <(find "$COVERAGE_DIR" -name '*.info' | sort)
+  if [ ${#COVERAGE_FILES[@]} -eq 0 ]; then
+    echo "No coverage data collected under $COVERAGE_DIR/" >&2
+  else
+    LCOV_ARGS=()
+    for f in "${COVERAGE_FILES[@]}"; do
+      LCOV_ARGS+=(-a "$f")
+    done
+    lcov "${LCOV_ARGS[@]}" -o coverage/e2e_lcov.info
+  fi
+fi
 
 echo
 if [ ${#FAILED[@]} -gt 0 ]; then

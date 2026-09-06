@@ -16,6 +16,16 @@ import 'e2e_config.dart';
 /// would decide which of two layouts the suite is testing.
 const _wideSurface = Size(1400, 1000);
 
+/// Optional pause after each UI action, so a run can be followed by eye.
+/// Off by default; turn it on with `--dart-define=E2E_SLOWMO_MS=800`.
+const _slowMoMs = int.fromEnvironment('E2E_SLOWMO_MS');
+
+/// Holds the frame for [_slowMoMs] before the next action. Call it at the end
+/// of anything that changes what is on screen.
+Future<void> slowMo(PatrolTester $) async {
+  if (_slowMoMs > 0) await $.pump(Duration(milliseconds: _slowMoMs));
+}
+
 /// Boots the real app from `main()` on a clean session.
 ///
 /// Clearing [TokenStorage] first matters: a previous scenario in the same run
@@ -47,12 +57,14 @@ Future<void> loginAsAdmin(PatrolTester $) async {
   await $(const Key('login_submit_button')).tap();
 
   await $.waitUntilVisible(find.text('Dashboard'));
+  await slowMo($);
 }
 
 /// Navigates through the side menu, e.g. `openMenu($, 'Categorias')`.
 Future<void> openMenu(PatrolTester $, String label) async {
   await $(label).tap();
   await $.pumpAndSettle();
+  await slowMo($);
 }
 
 /// Picks [optionLabel] in the forui `FSelect` carrying [key].
@@ -63,8 +75,10 @@ Future<void> openMenu(PatrolTester $, String label) async {
 Future<void> selectOption(PatrolTester $, Key key, String optionLabel) async {
   await $.tester.tapAt($.tester.getCenter(find.byKey(key)));
   await $.pumpAndSettle();
+  await slowMo($);
   await $(optionLabel).tap();
   await $.pumpAndSettle();
+  await slowMo($);
 }
 
 /// Waits out the 500 ms debounce a filter bar puts in front of every search.
@@ -74,12 +88,14 @@ Future<void> selectOption(PatrolTester $, Key key, String optionLabel) async {
 Future<void> settleSearchDebounce(PatrolTester $) async {
   await $.pump(const Duration(milliseconds: 600));
   await $.pumpAndSettle();
+  await slowMo($);
 }
 
 /// Opens the "Filtros" panel, which every "Cadastros" page renders collapsed.
 Future<void> openFilters(PatrolTester $, Key toggleKey) async {
   await $(toggleKey).tap();
   await $.pumpAndSettle();
+  await slowMo($);
 }
 
 /// `AppToast` renders a floating SnackBar that lingers for 4 seconds. Asserting
@@ -87,6 +103,7 @@ Future<void> openFilters(PatrolTester $, Key toggleKey) async {
 /// step's expectations.
 Future<void> expectToast(PatrolTester $, String message) async {
   expect($(message), findsOneWidget);
+  await slowMo($);
   await dismissToast($);
 }
 

@@ -40,7 +40,6 @@ Roda o app de verdade (`main()`) contra uma API Rails de verdade, em
 ```bash
 # terminal 1 — API de teste
 cd api
-docker compose up -d db                      # se o Postgres ainda não estiver de pé
 RAILS_ENV=test bin/rails db:prepare
 RAILS_ENV=test bin/rails users:create_e2e_admin
 RAILS_ENV=test PORT=3000 bin/rails server
