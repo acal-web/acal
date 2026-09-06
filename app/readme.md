@@ -5,6 +5,7 @@ flutter pub get
 flutter build appbundle --release
 flutter build apk --release
 flutter build linux --release
+./scripts/build_linux_appimage.sh
 
 ## Testes E2E (integration_test + Patrol)
 

@@ -112,7 +112,8 @@ void main() {
     await tester.tap(find.text('Essa semana'));
     await tester.pumpAndSettle();
 
-    final today = DateTime.now();
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
     final start = service.lastStartDate!;
     final end = service.lastEndDate!;
     expect(end.difference(start).inDays, 6);
