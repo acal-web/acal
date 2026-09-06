@@ -23,7 +23,7 @@ const _slowMoMs = int.fromEnvironment('E2E_SLOWMO_MS');
 /// Holds the frame for [_slowMoMs] before the next action. Call it at the end
 /// of anything that changes what is on screen.
 Future<void> slowMo(PatrolTester $) async {
-  if (_slowMoMs > 0) await $.pump(Duration(milliseconds: _slowMoMs));
+  if (_slowMoMs > 0) await $.pump(const Duration(milliseconds: _slowMoMs));
 }
 
 /// Boots the real app from `main()` on a clean session.
