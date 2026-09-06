@@ -9,6 +9,10 @@ on:
   pull_request:
     paths:
       - "app/**"
+      # A suíte E2E fala com a API de verdade, então uma quebra de contrato
+      # vinda do Rails tem que reprovar o PR. Só em pull_request: num push
+      # de api/** isto dispararia o deploy do app sem motivo.
+      - "api/**"
       - ".github/workflows/flutter-ci.yml"
   workflow_dispatch:
     inputs:
@@ -53,6 +57,98 @@ jobs:
           projectBaseDir: app
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  e2e:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: api_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+    env:
+      RAILS_ENV: test
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USERNAME: postgres
+      DB_PASSWORD: postgres
+      API_BASE_URL: http://localhost:3000
+      E2E_ADMIN_USERNAME: e2e_admin
+      E2E_ADMIN_PASSWORD: e2e_password123
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1
+        with:
+          working-directory: api
+          bundler-cache: true
+
+      # `POST /test/reset` (the endpoint the suite resets state with) only
+      # exists under RAILS_ENV=test, and it wipes the admin too — so the suite
+      # needs an admin to exist once, up front, to get its first token.
+      - name: Prepare test database
+        working-directory: api
+        run: |
+          bin/rails db:prepare
+          ACAL_ADMIN_USERNAME="$E2E_ADMIN_USERNAME" \
+          ACAL_ADMIN_PASSWORD="$E2E_ADMIN_PASSWORD" \
+          bin/rails users:create_admin
+
+      - name: Start API
+        working-directory: api
+        run: |
+          PORT=3000 bin/rails server -b 0.0.0.0 > "$RUNNER_TEMP/rails.log" 2>&1 &
+          for _ in $(seq 1 60); do
+            if [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:3000/up)" = "200" ]; then
+              echo "API is up"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "API failed to start within 60s"
+          cat "$RUNNER_TEMP/rails.log"
+          exit 1
+
+      - name: Install Linux desktop dependencies
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install --no-install-recommends -y \
+            clang cmake git ninja-build pkg-config \
+            libgtk-3-dev liblzma-dev libssl-dev libsecret-1-dev xvfb
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@1a449444c387b1966244ae4d4f8c696479add0b2 # v2
+        with:
+          flutter-version: 3.44.4
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        working-directory: app
+        run: |
+          flutter config --enable-linux-desktop
+          flutter pub get --enforce-lockfile
+
+      # Linux desktop, not an Android emulator: no native notification-permission
+      # dialog to dismiss (push registration early-returns off Android) and no
+      # emulator boot to wait on.
+      - name: Run E2E suite
+        working-directory: app
+        run: xvfb-run -a ./scripts/run_e2e.sh
+
+      - name: Dump API log on failure
+        if: failure()
+        run: cat "$RUNNER_TEMP/rails.log" || true
 
   # build-linux:
   #   needs: test
@@ -125,7 +221,7 @@ jobs:
   #         path: app/build/windows/x64/runner/Release/
 
   bump-version:
-    needs: test
+    needs: [test, e2e]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:

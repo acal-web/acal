@@ -62,6 +62,7 @@ Widget _buildDeleteContent(BuildContext context, String title, String message) {
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FButton(
+            key: const Key('delete_cancel_button'),
             variant: FButtonVariant.ghost,
             onPress: () => Navigator.of(context).pop(false),
             child: const Text('Cancelar'),
@@ -70,6 +71,7 @@ Widget _buildDeleteContent(BuildContext context, String title, String message) {
           Semantics(
             identifier: 'confirm-delete-button',
             child: FButton(
+              key: const Key('delete_confirm_button'),
               variant: FButtonVariant.destructive,
               onPress: () => Navigator.of(context).pop(true),
               child: const Text('Excluir'),

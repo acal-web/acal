@@ -25,6 +25,7 @@ class RowActions extends StatelessWidget {
       children: [
         if (active)
           IconButton(
+            key: const Key('row_action_edit'),
             icon: const Icon(Icons.edit_outlined, size: 18),
             tooltip: 'Editar',
             visualDensity: VisualDensity.compact,
@@ -32,6 +33,7 @@ class RowActions extends StatelessWidget {
           )
         else if (onView != null)
           IconButton(
+            key: const Key('row_action_view'),
             icon: const Icon(Icons.visibility_outlined, size: 18),
             tooltip: 'Visualizar',
             visualDensity: VisualDensity.compact,
@@ -39,6 +41,7 @@ class RowActions extends StatelessWidget {
           ),
         if (!active && onReactivate != null)
           IconButton(
+            key: const Key('row_action_reactivate'),
             icon: const Icon(Icons.restore_outlined, size: 18),
             tooltip: 'Reativar',
             visualDensity: VisualDensity.compact,
@@ -46,6 +49,7 @@ class RowActions extends StatelessWidget {
           ),
         if (active)
           IconButton(
+            key: const Key('row_action_delete'),
             icon: const Icon(Icons.delete_outline, size: 18),
             tooltip: 'Excluir',
             visualDensity: VisualDensity.compact,

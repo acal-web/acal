@@ -32,6 +32,9 @@ dev_dependencies:
   integration_test:
     sdk: flutter
   patrol: ^4.9.0
+  # Already pulled in by patrol; declared directly because the E2E helpers
+  # name PatrolTester, which package:patrol hides from its re-export.
+  patrol_finders: ^3.6.0
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.3
 

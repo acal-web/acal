@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# Runs the integration_test (Patrol) suite against a live Rails test server.
+#
+# Each test file gets its own `flutter test` invocation on purpose: passing the
+# whole directory at once builds fine but fails to launch the app for the
+# second and later files ("The log reader stopped unexpectedly, or never
+# started"), because a desktop device only gets torn down between separate
+# runs.
+#
+# Usage: app/scripts/run_e2e.sh [extra flutter test args...]
+# Env:   E2E_DEVICE (default linux), API_BASE_URL, E2E_ADMIN_USERNAME,
+#        E2E_ADMIN_PASSWORD
+set -uo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "$REPO_ROOT"
+
+DEVICE="${E2E_DEVICE:-linux}"
+API_BASE_URL="${API_BASE_URL:-http://localhost:3000}"
+E2E_ADMIN_USERNAME="${E2E_ADMIN_USERNAME:-e2e_admin}"
+E2E_ADMIN_PASSWORD="${E2E_ADMIN_PASSWORD:-e2e_password123}"
+
+mapfile -t FILES < <(find integration_test -name '*_test.dart' | sort)
+
+if [ ${#FILES[@]} -eq 0 ]; then
+  echo "No *_test.dart files under integration_test/" >&2
+  exit 1
+fi
+
+echo "== E2E: ${#FILES[@]} file(s) on '$DEVICE' against $API_BASE_URL =="
+
+FAILED=()
+for file in "${FILES[@]}"; do
+  echo
+  echo "== $file =="
+  if ! flutter test "$file" -d "$DEVICE" \
+    --dart-define=API_BASE_URL="$API_BASE_URL" \
+    --dart-define=E2E_ADMIN_USERNAME="$E2E_ADMIN_USERNAME" \
+    --dart-define=E2E_ADMIN_PASSWORD="$E2E_ADMIN_PASSWORD" \
+    "$@"; then
+    FAILED+=("$file")
+  fi
+done
+
+echo
+if [ ${#FAILED[@]} -gt 0 ]; then
+  echo "== E2E failed in ${#FAILED[@]} of ${#FILES[@]} file(s) =="
+  printf '  %s\n' "${FAILED[@]}"
+  exit 1
+fi
+
+echo "== E2E passed (${#FILES[@]} file(s)) =="

@@ -54,6 +54,7 @@ class _CategoryFilterBarState extends State<CategoryFilterBar> {
         final narrow = constraints.maxWidth < LayoutConfig.narrowBreakpoint;
 
         final nameField = FTextField(
+          key: const Key('category_filter_name_field'),
           control: FTextFieldControl.managed(controller: _nameController),
           label: const Text('Categoria:'),
           hint: 'Buscar por nome:',
@@ -61,6 +62,7 @@ class _CategoryFilterBarState extends State<CategoryFilterBar> {
         );
 
         final activeField = FSelect<_ActiveFilter>(
+          key: const Key('category_filter_active_select'),
           items: const {
             'Ativas': _ActiveFilter.active,
             'Inativas': _ActiveFilter.inactive,
@@ -75,6 +77,7 @@ class _CategoryFilterBarState extends State<CategoryFilterBar> {
 
         final searchButtonNarrow = Expanded(
           child: FButton(
+            key: const Key('category_filter_search_button'),
             onPress: _search,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -86,6 +89,7 @@ class _CategoryFilterBarState extends State<CategoryFilterBar> {
 
         final clearButtonNarrow = Expanded(
           child: FButton(
+            key: const Key('category_filter_clear_button'),
             variant: FButtonVariant.outline,
             onPress: _clear,
             child: const Row(
@@ -98,6 +102,7 @@ class _CategoryFilterBarState extends State<CategoryFilterBar> {
 
         final searchButtonWide = SizedBox(
           child: FButton(
+            key: const Key('category_filter_search_button'),
             onPress: _search,
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -109,6 +114,7 @@ class _CategoryFilterBarState extends State<CategoryFilterBar> {
 
         final clearButtonWide = SizedBox(
           child: FButton(
+            key: const Key('category_filter_clear_button'),
             variant: FButtonVariant.outline,
             onPress: _clear,
             child: const Row(
@@ -168,6 +174,7 @@ class _CategoryFilterBarState extends State<CategoryFilterBar> {
             ColoredBox(
               color: cs.surfaceContainerHigh,
               child: InkWell(
+                key: const Key('category_filter_toggle'),
                 onTap: () => setState(() => _expanded = !_expanded),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),

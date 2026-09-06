@@ -108,6 +108,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           FTextFormField(
+            key: const Key('category_form_name_field'),
             control: FTextFieldControl.managed(controller: _nameController),
             label: const Text('Nome'),
             hint: 'Digite o nome da categoria',
@@ -116,6 +117,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
           ),
           const SizedBox(height: 12),
           FTextFormField(
+            key: const Key('category_form_description_field'),
             control: FTextFieldControl.managed(controller: _descriptionController),
             maxLines: 2,
             label: const Text('Descrição'),
@@ -124,6 +126,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
           ),
           const SizedBox(height: 12),
           FSelect<String>(
+            key: const Key('category_form_group_select'),
             items: {for (final g in groups) groupLabel(g): g},
             control: FSelectControl.managed(initial: _group, onChange: (v) {}),
             label: const Text('Grupo'),
@@ -138,6 +141,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                 child: Semantics(
                   identifier: 'water-price-field',
                   child: FTextFormField(
+                    key: const Key('category_form_water_price_field'),
                     control: FTextFieldControl.managed(controller: _waterPriceController),
                     keyboardType: TextInputType.number,
                     inputFormatters: [CurrencyInputFormatter()],
@@ -152,6 +156,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
                 child: Semantics(
                   identifier: 'membership-price-field',
                   child: FTextFormField(
+                    key: const Key('category_form_membership_price_field'),
                     control: FTextFieldControl.managed(controller: _membershipPriceController),
                     keyboardType: TextInputType.number,
                     inputFormatters: [CurrencyInputFormatter()],
@@ -165,6 +170,7 @@ class _CategoryFormPageState extends State<CategoryFormPage> {
           ),
           const SizedBox(height: 12),
           FCheckbox(
+            key: const Key('category_form_water_meter_checkbox'),
             value: _hasWaterMeter,
             onChange: widget.readOnly ? null : (v) => setState(() => _hasWaterMeter = v),
             label: const Text('Possui hidrômetro'),

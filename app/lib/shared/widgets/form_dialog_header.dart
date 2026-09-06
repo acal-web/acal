@@ -18,6 +18,7 @@ class FormDialogHeader extends StatelessWidget {
           child: Text(title, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
         ),
         FButton(
+          key: const Key('form_close_button'),
           variant: FButtonVariant.ghost,
           size: FButtonSizeVariant.sm,
           mainAxisSize: MainAxisSize.min,

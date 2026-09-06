@@ -1,4 +1,6 @@
 class CategoriesController < ApplicationController
+  SORTABLE_COLUMNS = %w[ name group ].freeze
+
   requires_permission "categories:read", only: %i[ index show ]
   requires_permission "categories:manage", only: %i[ create update destroy restore ]
 
@@ -8,7 +10,7 @@ class CategoriesController < ApplicationController
   # GET /categories
   def index
     categories = active_scope.filter_by_name(params[:name])
-    render json: paginate(categories)
+    render json: paginate(sort(categories))
   end
 
   # GET /categories/1
@@ -47,6 +49,14 @@ class CategoriesController < ApplicationController
       when "all" then Category.unscoped
       else Category
       end
+    end
+
+    # Without an explicit ORDER BY, Postgres is free to return rows in any
+    # order — in practice heap order, which shifts whenever a row is updated.
+    # Name ascending is the default so the listing stays stable.
+    def sort(collection)
+      column = SORTABLE_COLUMNS.include?(params[:sort]) ? params[:sort] : "name"
+      collection.order(column => params[:direction] == "desc" ? :desc : :asc)
     end
 
     def set_category

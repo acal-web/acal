@@ -14,6 +14,12 @@ import 'package:flutter/material.dart';
 
 const columnSpacing = 12.0;
 
+/// Stable per-row identity for E2E tests. Keyed by group+name because that is
+/// exactly what the database's unique index covers, so it is both unique and
+/// predictable from the seed data — unlike the server-generated UUID.
+ValueKey<String> categoryRowKey(String group, String name) =>
+    ValueKey('category_row_${group}_$name');
+
 class CategoriesPage extends StatefulWidget {
   const CategoriesPage({super.key});
 
@@ -71,7 +77,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
         size: _pageSize,
         name: _filterName,
         active: _filterActive,
-        sort: 'group,name',
+        sort: 'name',
         sortAscending: true,
       );
 
@@ -221,6 +227,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
               return narrow
                   ? _CategoryCard(
+                      key: categoryRowKey(category.group, category.name),
                       category: category,
                       onEdit: () => _openForm(category: category),
                       onDelete: () => _delete(category),
@@ -228,6 +235,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
                       onReactivate: () => _reactivate(category),
                     )
                   : _CategoryRow(
+                      key: categoryRowKey(category.group, category.name),
                       category: category,
                       onEdit: () => _openForm(category: category),
                       onDelete: () => _delete(category),
@@ -245,6 +253,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
 
 class _CategoryRow extends StatelessWidget {
   const _CategoryRow({
+    super.key,
     required this.category,
     required this.onEdit,
     required this.onDelete,
@@ -335,6 +344,7 @@ class _CategoryRow extends StatelessWidget {
 
 class _CategoryCard extends StatelessWidget {
   const _CategoryCard({
+    super.key,
     required this.category,
     required this.onEdit,
     required this.onDelete,

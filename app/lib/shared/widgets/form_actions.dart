@@ -27,10 +27,16 @@ class FormActions extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        FButton(variant: FButtonVariant.ghost, onPress: onCancel, child: const Text('Cancelar')),
+        FButton(
+          key: const Key('form_cancel_button'),
+          variant: FButtonVariant.ghost,
+          onPress: onCancel,
+          child: const Text('Cancelar'),
+        ),
         if (!readOnly) ...[
           const SizedBox(width: 8),
           FButton(
+            key: const Key('form_save_button'),
             onPress: saving ? null : onSave,
             child: Row(
               mainAxisSize: MainAxisSize.min,

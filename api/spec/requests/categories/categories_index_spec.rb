@@ -91,5 +91,52 @@ RSpec.describe "Categories", type: :request do
         expect(response.parsed_body["content"].map { |c| c["id"] }).to contain_exactly(active.id, deleted.id)
       end
     end
+
+    context "sorting" do
+      it "sorts by name ascending by default" do
+        create(:category, name: "Categoria C")
+        create(:category, name: "Categoria A")
+        create(:category, name: "Categoria B")
+
+        get "/categories"
+
+        expect(response.parsed_body["content"].map { |c| c["name"] })
+          .to eq([ "Categoria A", "Categoria B", "Categoria C" ])
+      end
+
+      it "sorts by name descending when direction=desc" do
+        create(:category, name: "Categoria C")
+        create(:category, name: "Categoria A")
+        create(:category, name: "Categoria B")
+
+        get "/categories", params: { sort: "name", direction: "desc" }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] })
+          .to eq([ "Categoria C", "Categoria B", "Categoria A" ])
+      end
+
+      # "group" is a reserved SQL word — the hash form of `order` is what gets
+      # it quoted, so this would blow up if the column were interpolated raw.
+      it "sorts by group" do
+        create(:category, name: "Categoria A", group: "temporario")
+        create(:category, name: "Categoria B", group: "efetivo")
+        create(:category, name: "Categoria C", group: "fundador")
+
+        get "/categories", params: { sort: "group" }
+
+        expect(response.parsed_body["content"].map { |c| c["group"] })
+          .to eq([ "efetivo", "fundador", "temporario" ])
+      end
+
+      it "ignores a sort column outside the allow-list" do
+        create(:category, name: "Categoria C")
+        create(:category, name: "Categoria A")
+
+        get "/categories", params: { sort: "created_at" }
+
+        expect(response.parsed_body["content"].map { |c| c["name"] })
+          .to eq([ "Categoria A", "Categoria C" ])
+      end
+    end
   end
 end
