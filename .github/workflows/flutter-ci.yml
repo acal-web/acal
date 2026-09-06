@@ -96,13 +96,15 @@ jobs:
       # `POST /test/reset` (the endpoint the suite resets state with) only
       # exists under RAILS_ENV=test, and it wipes the admin too — so the suite
       # needs an admin to exist once, up front, to get its first token.
+      #
+      # It has to be users:create_e2e_admin, not users:create_admin: db:prepare
+      # seeds a user into a fresh database, and create_admin skips whenever the
+      # table is non-empty.
       - name: Prepare test database
         working-directory: api
         run: |
           bin/rails db:prepare
-          ACAL_ADMIN_USERNAME="$E2E_ADMIN_USERNAME" \
-          ACAL_ADMIN_PASSWORD="$E2E_ADMIN_PASSWORD" \
-          bin/rails users:create_admin
+          bin/rails users:create_e2e_admin
 
       - name: Start API
         working-directory: api
