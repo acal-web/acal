@@ -3,6 +3,7 @@ import 'package:acalapp/features/addresses/presentation/addresses_page.dart';
 import 'package:acalapp/features/auth/domain/user_role.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/auth/presentation/login_page.dart';
+import 'package:acalapp/features/auth/presentation/splash_page.dart';
 import 'package:acalapp/features/customer_portal/presentation/my_invoices_page.dart';
 import 'package:acalapp/features/users/presentation/users_page.dart';
 import 'package:acalapp/features/cashbox/presentation/cashbox_page.dart';
@@ -27,10 +28,18 @@ late GoRouter appRouter;
 /// lands in (and stays confined to) is decided purely by its role below.
 void initializeRouter(Listenable currentUser) {
   appRouter = GoRouter(
-    initialLocation: '/dashboard',
+    initialLocation: '/splash',
     refreshListenable: currentUser,
     redirect: (context, state) {
       final session = CurrentUserScope.of(context);
+      final goingToSplash = state.matchedLocation == '/splash';
+
+      // A stored session is still being validated — hold on the splash
+      // screen instead of bouncing through /login while that resolves.
+      if (session.isChecking) {
+        return goingToSplash ? null : '/splash';
+      }
+
       final isAuthenticated = session.isAuthenticated;
       final isCustomer = session.user?.role == UserRole.customer;
       final goingToLogin = state.matchedLocation == '/login';
@@ -40,7 +49,7 @@ void initializeRouter(Listenable currentUser) {
         return goingToLogin ? null : '/login';
       }
 
-      if (goingToLogin) {
+      if (goingToLogin || goingToSplash) {
         return isCustomer ? '/portal/invoices' : '/dashboard';
       }
 
@@ -51,6 +60,10 @@ void initializeRouter(Listenable currentUser) {
       return null;
     },
     routes: [
+    GoRoute(
+      path: '/splash',
+      pageBuilder: (context, state) => const NoTransitionPage(child: SplashPage()),
+    ),
     GoRoute(
       path: '/login',
       pageBuilder: (context, state) => const NoTransitionPage(child: LoginPage()),
