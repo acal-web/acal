@@ -30,35 +30,7 @@ void initializeRouter(Listenable currentUser) {
   appRouter = GoRouter(
     initialLocation: '/splash',
     refreshListenable: currentUser,
-    redirect: (context, state) {
-      final session = CurrentUserScope.of(context);
-      final goingToSplash = state.matchedLocation == '/splash';
-
-      // A stored session is still being validated — hold on the splash
-      // screen instead of bouncing through /login while that resolves.
-      if (session.isChecking) {
-        return goingToSplash ? null : '/splash';
-      }
-
-      final isAuthenticated = session.isAuthenticated;
-      final isCustomer = session.user?.role == UserRole.customer;
-      final goingToLogin = state.matchedLocation == '/login';
-      final isPortalRoute = state.matchedLocation.startsWith('/portal');
-
-      if (!isAuthenticated) {
-        return goingToLogin ? null : '/login';
-      }
-
-      if (goingToLogin || goingToSplash) {
-        return isCustomer ? '/portal/invoices' : '/dashboard';
-      }
-
-      // Sócios stay confined to the portal; staff never lands there.
-      if (isCustomer && !isPortalRoute) return '/portal/invoices';
-      if (!isCustomer && isPortalRoute) return '/dashboard';
-
-      return null;
-    },
+    redirect: _redirect,
     routes: [
     GoRoute(
       path: '/splash',
@@ -146,4 +118,27 @@ void initializeRouter(Listenable currentUser) {
     ),
   ],
   );
+}
+
+/// A session still being validated is neither logged in nor out — hold on
+/// the splash screen instead of bouncing through /login while that resolves.
+/// Once resolved, keeps the user confined to their area (portal for sócios,
+/// everything else for staff) and out of /login and /splash.
+String? _redirect(BuildContext context, GoRouterState state) {
+  final session = CurrentUserScope.of(context);
+  final location = state.matchedLocation;
+
+  if (session.isChecking) {
+    return location == '/splash' ? null : '/splash';
+  }
+  if (!session.isAuthenticated) {
+    return location == '/login' ? null : '/login';
+  }
+
+  final isCustomer = session.user?.role == UserRole.customer;
+  final home = isCustomer ? '/portal/invoices' : '/dashboard';
+  final onOwnArea = isCustomer ? location.startsWith('/portal') : !location.startsWith('/portal');
+  final isEntryRoute = location == '/login' || location == '/splash';
+
+  return (isEntryRoute || !onOwnArea) ? home : null;
 }
