@@ -14,14 +14,16 @@ import 'package:flutter/material.dart';
 const columnSpacing = 12.0;
 
 class AddressesPage extends StatefulWidget {
-  const AddressesPage({super.key});
+  const AddressesPage({super.key, this.addressService});
+
+  final AddressService? addressService;
 
   @override
   State<AddressesPage> createState() => _AddressesPageState();
 }
 
 class _AddressesPageState extends State<AddressesPage> {
-  final _service = AddressService();
+  late final _service = widget.addressService ?? AddressService();
   final _scrollController = ScrollController();
   final List<Address> _allAddresses = [];
 
@@ -113,7 +115,7 @@ class _AddressesPageState extends State<AddressesPage> {
   }
 
   Future<void> _openForm({Address? address, bool readOnly = false}) async {
-    if (await openAddress(context, address: address, readOnly: readOnly)) {
+    if (await openAddress(context, address: address, readOnly: readOnly, addressService: widget.addressService)) {
       await _loadFirstPage();
     }
   }

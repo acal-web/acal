@@ -16,8 +16,9 @@ import 'package:forui/forui.dart';
 class CustomerFormPage extends StatefulWidget {
   final Customer? customer;
   final bool readOnly;
+  final CustomerService? customerService;
 
-  const CustomerFormPage({super.key, this.customer, this.readOnly = false});
+  const CustomerFormPage({super.key, this.customer, this.readOnly = false, this.customerService});
 
   @override
   State<CustomerFormPage> createState() => _CustomerFormPageState();
@@ -25,7 +26,7 @@ class CustomerFormPage extends StatefulWidget {
 
 class _CustomerFormPageState extends State<CustomerFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _service = CustomerService();
+  late final _service = widget.customerService ?? CustomerService();
 
   late final TextEditingController _nameController;
   late final TextEditingController _documentController;

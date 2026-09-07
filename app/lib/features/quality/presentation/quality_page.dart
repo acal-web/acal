@@ -14,14 +14,16 @@ import 'package:flutter/material.dart';
 const columnSpacing = 12.0;
 
 class QualityPage extends StatefulWidget {
-  const QualityPage({super.key});
+  const QualityPage({super.key, this.qualityAnalysisService});
+
+  final QualityAnalysisService? qualityAnalysisService;
 
   @override
   State<QualityPage> createState() => _QualityPageState();
 }
 
 class _QualityPageState extends State<QualityPage> {
-  final _service = QualityAnalysisService();
+  late final _service = widget.qualityAnalysisService ?? QualityAnalysisService();
   final _scrollController = ScrollController();
   final List<QualityAnalysis> _allAnalyses = [];
 
@@ -104,7 +106,7 @@ class _QualityPageState extends State<QualityPage> {
   }
 
   Future<void> _openForm({QualityAnalysis? analysis}) async {
-    if (await openQualityAnalysis(context, analysis: analysis)) {
+    if (await openQualityAnalysis(context, analysis: analysis, analysisService: widget.qualityAnalysisService)) {
       await _loadFirstPage();
     }
   }

@@ -21,14 +21,16 @@ ValueKey<String> categoryRowKey(String group, String name) =>
     ValueKey('category_row_${group}_$name');
 
 class CategoriesPage extends StatefulWidget {
-  const CategoriesPage({super.key});
+  const CategoriesPage({super.key, this.categoryService});
+
+  final CategoryService? categoryService;
 
   @override
   State<CategoriesPage> createState() => _CategoriesPageState();
 }
 
 class _CategoriesPageState extends State<CategoriesPage> {
-  final _service = CategoryService();
+  late final _service = widget.categoryService ?? CategoryService();
   final _scrollController = ScrollController();
   final List<Category> _allCategories = [];
 
@@ -120,7 +122,7 @@ class _CategoriesPageState extends State<CategoriesPage> {
   }
 
   Future<void> _openForm({Category? category, bool readOnly = false}) async {
-    if (await openCategory(context, category: category, readOnly: readOnly)) {
+    if (await openCategory(context, category: category, readOnly: readOnly, categoryService: widget.categoryService)) {
       await _loadFirstPage();
     }
   }

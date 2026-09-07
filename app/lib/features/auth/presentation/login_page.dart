@@ -5,7 +5,9 @@ import 'package:acalapp/features/auth/domain/login_username.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  const LoginPage({super.key, this.authService});
+
+  final AuthService? authService;
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -17,12 +19,12 @@ class _LoginPageState extends State<LoginPage> {
   bool _isLoading = false;
   bool _obscurePassword = true;
   String? _errorMessage;
-  late AuthService _authService;
+  late final AuthService _authService;
 
   @override
   void initState() {
     super.initState();
-    _authService = AuthService();
+    _authService = widget.authService ?? AuthService();
   }
 
   @override

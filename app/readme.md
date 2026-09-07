@@ -31,6 +31,27 @@ flutter test
 flutter analyze
 ```
 
+Fontes de teste ficam configuradas em `test/flutter_test_config.dart`: sem
+isso, `flutter_test` substitui qualquer fonte não carregada por uma fonte
+sintética bem mais larga que a real, e widgets dimensionados para o texto de
+verdade (como o `AddButton` de 88px no cabeçalho das tabelas) estouram o
+layout só no ambiente de teste — não é um bug do app.
+
+## 2.1. Testes de integração (multi-widget, ainda sem backend)
+
+Ficam em `test/integration/`, junto com o resto da suíte — rodam com o mesmo
+`flutter test` acima, sem device e sem infraestrutura extra. A diferença para
+um teste de widget comum é o escopo: aqui várias peças são exercitadas juntas
+(lista + filtro + modal de criação/edição + service fake, ou navegação real
+via `go_router` entre duas páginas dentro do `AppShell`), montando um fluxo
+completo — "criar, ver na lista, editar, excluir" — em vez de um componente
+isolado.
+
+Não usam `package:integration_test`: esse pacote só roda com um device de
+verdade (`flutter test -d linux` exige build nativo com CMake, por exemplo) —
+não existe um jeito headless de usá-lo, então ele não serve para esta camada.
+Quem precisa de app real + backend real é a suíte de E2E abaixo.
+
 ## 3. E2E (integration_test + Patrol)
 
 Roda o app de verdade (`main()`) contra uma API Rails de verdade, em

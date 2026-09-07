@@ -17,14 +17,16 @@ import 'package:flutter/material.dart';
 const columnSpacing = 12.0;
 
 class CustomersPage extends StatefulWidget {
-  const CustomersPage({super.key});
+  const CustomersPage({super.key, this.customerService});
+
+  final CustomerService? customerService;
 
   @override
   State<CustomersPage> createState() => _CustomersPageState();
 }
 
 class _CustomersPageState extends State<CustomersPage> {
-  final _service = CustomerService();
+  late final _service = widget.customerService ?? CustomerService();
   final _scrollController = ScrollController();
   final List<Customer> _allCustomers = [];
 
@@ -119,7 +121,7 @@ class _CustomersPageState extends State<CustomersPage> {
   }
 
   Future<void> _openForm({Customer? customer, bool readOnly = false}) async {
-    if (await openCustomer(context, customer: customer, readOnly: readOnly)) {
+    if (await openCustomer(context, customer: customer, readOnly: readOnly, customerService: widget.customerService)) {
       await _loadFirstPage();
     }
   }

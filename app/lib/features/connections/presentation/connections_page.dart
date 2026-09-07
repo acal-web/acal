@@ -1,10 +1,13 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/features/addresses/data/address_service.dart';
+import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/connections/data/connection_service.dart';
 import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/connections/domain/connection_filter.dart';
 import 'package:acalapp/features/connections/widget/connection_filter_bar.dart';
 import 'package:acalapp/features/connections/widget/modal/delete_connection.dart';
 import 'package:acalapp/features/connections/widget/modal/open_connection.dart';
+import 'package:acalapp/features/customer/data/customer_service.dart';
 import 'package:acalapp/shared/widgets/document_text.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/add_button.dart';
@@ -14,14 +17,25 @@ import 'package:flutter/material.dart';
 const columnSpacing = 12.0;
 
 class ConnectionsPage extends StatefulWidget {
-  const ConnectionsPage({super.key});
+  const ConnectionsPage({
+    super.key,
+    this.connectionService,
+    this.customerService,
+    this.addressService,
+    this.categoryService,
+  });
+
+  final ConnectionService? connectionService;
+  final CustomerService? customerService;
+  final AddressService? addressService;
+  final CategoryService? categoryService;
 
   @override
   State<ConnectionsPage> createState() => _ConnectionsPageState();
 }
 
 class _ConnectionsPageState extends State<ConnectionsPage> {
-  final _service = ConnectionService();
+  late final _service = widget.connectionService ?? ConnectionService();
   final _scrollController = ScrollController();
   final List<Connection> _allConnections = [];
 
@@ -115,7 +129,14 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
   }
 
   Future<void> _openForm({Connection? connection}) async {
-    if (await openConnection(context, connection: connection)) {
+    if (await openConnection(
+      context,
+      connection: connection,
+      connectionService: widget.connectionService,
+      customerService: widget.customerService,
+      addressService: widget.addressService,
+      categoryService: widget.categoryService,
+    )) {
       await _loadFirstPage();
     }
   }
@@ -142,7 +163,12 @@ class _ConnectionsPageState extends State<ConnectionsPage> {
               action: narrow ? AddButton(onPress: () => _openForm()) : null,
             ),
             const Divider(),
-            ConnectionFilterBar(onSearch: _search),
+            ConnectionFilterBar(
+              onSearch: _search,
+              customerService: widget.customerService,
+              addressService: widget.addressService,
+              categoryService: widget.categoryService,
+            ),
             const SizedBox(height: 8),
             Expanded(
               child: _errorMessage != null

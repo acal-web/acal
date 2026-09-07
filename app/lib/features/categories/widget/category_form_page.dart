@@ -12,8 +12,9 @@ import 'package:forui/forui.dart';
 class CategoryFormPage extends StatefulWidget {
   final Category? category;
   final bool readOnly;
+  final CategoryService? categoryService;
 
-  const CategoryFormPage({super.key, this.category, this.readOnly = false});
+  const CategoryFormPage({super.key, this.category, this.readOnly = false, this.categoryService});
 
   @override
   State<CategoryFormPage> createState() => _CategoryFormPageState();
@@ -21,7 +22,7 @@ class CategoryFormPage extends StatefulWidget {
 
 class _CategoryFormPageState extends State<CategoryFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _service = CategoryService();
+  late final _service = widget.categoryService ?? CategoryService();
 
   late final TextEditingController _nameController;
   late final TextEditingController _descriptionController;

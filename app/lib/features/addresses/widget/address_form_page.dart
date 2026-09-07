@@ -11,8 +11,9 @@ import 'package:forui/forui.dart';
 class AddressFormPage extends StatefulWidget {
   final Address? address;
   final bool readOnly;
+  final AddressService? addressService;
 
-  const AddressFormPage({super.key, this.address, this.readOnly = false});
+  const AddressFormPage({super.key, this.address, this.readOnly = false, this.addressService});
 
   @override
   State<AddressFormPage> createState() => _AddressFormPageState();
@@ -20,7 +21,7 @@ class AddressFormPage extends StatefulWidget {
 
 class _AddressFormPageState extends State<AddressFormPage> {
   final _formKey = GlobalKey<FormState>();
-  final _service = AddressService();
+  late final _service = widget.addressService ?? AddressService();
 
   late final TextEditingController _nameController;
   bool _saving = false;

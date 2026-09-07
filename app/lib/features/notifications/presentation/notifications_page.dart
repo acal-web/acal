@@ -1,4 +1,6 @@
 import 'package:acalapp/core/config/layout_config.dart';
+import 'package:acalapp/features/addresses/data/address_service.dart';
+import 'package:acalapp/features/categories/data/category_service.dart';
 import 'package:acalapp/features/notifications/data/notification_service.dart';
 import 'package:acalapp/features/notifications/domain/app_notification.dart';
 import 'package:acalapp/features/notifications/presentation/send_notification_page.dart';
@@ -8,9 +10,11 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
 class NotificationsPage extends StatefulWidget {
-  const NotificationsPage({super.key, this.notificationService});
+  const NotificationsPage({super.key, this.notificationService, this.addressService, this.categoryService});
 
   final NotificationService? notificationService;
+  final AddressService? addressService;
+  final CategoryService? categoryService;
 
   @override
   State<NotificationsPage> createState() => _NotificationsPageState();
@@ -82,7 +86,13 @@ class _NotificationsPageState extends State<NotificationsPage> {
 
   Future<void> _openSendPage() async {
     final sent = await Navigator.of(context).push<bool>(
-      MaterialPageRoute(builder: (_) => const SendNotificationPage()),
+      MaterialPageRoute(
+        builder: (_) => SendNotificationPage(
+          notificationService: widget.notificationService,
+          addressService: widget.addressService,
+          categoryService: widget.categoryService,
+        ),
+      ),
     );
     if (sent == true) await _loadFirstPage();
   }

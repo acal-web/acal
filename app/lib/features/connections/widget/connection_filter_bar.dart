@@ -29,11 +29,13 @@ class ConnectionFilterBar extends StatefulWidget {
     required this.onSearch,
     this.categoryService,
     this.customerService,
+    this.addressService,
   });
 
   final void Function(ConnectionFilter filter) onSearch;
   final CategoryService? categoryService;
   final CustomerService? customerService;
+  final AddressService? addressService;
 
   @override
   State<ConnectionFilterBar> createState() => _ConnectionFilterBarState();
@@ -53,7 +55,7 @@ class _ConnectionFilterBarState extends State<ConnectionFilterBar> {
   @override
   void initState() {
     super.initState();
-    _addressService = AddressService();
+    _addressService = widget.addressService ?? AddressService();
     _categoryService = widget.categoryService ?? CategoryService();
     _customerService = widget.customerService ?? CustomerService();
   }
