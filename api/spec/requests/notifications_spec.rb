@@ -55,6 +55,14 @@ RSpec.describe "Notifications", type: :request do
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["count"]).to eq(1)
     end
+
+    it "returns forbidden for a user without notifications:records:read" do
+      sign_in_as(create(:user, :tesoureiro))
+
+      get "/notifications/recipients_count", params: { address_id: address.id }
+
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "GET /notifications" do
@@ -66,6 +74,14 @@ RSpec.describe "Notifications", type: :request do
 
       expect(response).to have_http_status(:ok)
       expect(response.parsed_body["content"].map { |n| n["title"] }).to contain_exactly("Antiga")
+    end
+
+    it "returns forbidden for a user without notifications:records:read" do
+      sign_in_as(create(:user, :tesoureiro))
+
+      get "/notifications"
+
+      expect(response).to have_http_status(:forbidden)
     end
 
     it "includes the address, category and sender names when the notification targets them" do

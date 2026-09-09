@@ -1,6 +1,8 @@
 class QualityAnalysesController < ApplicationController
-  requires_permission "quality_analyses:read", only: %i[ index show ]
-  requires_permission "quality_analyses:manage", only: %i[ create update destroy ]
+  requires_permission "quality_analyses:records:read", only: %i[ index show ]
+  requires_permission "quality_analyses:records:create", only: :create
+  requires_permission "quality_analyses:records:update", only: :update
+  requires_permission "quality_analyses:records:delete", only: :destroy
 
   before_action :set_quality_analysis, only: %i[ show update destroy ]
 

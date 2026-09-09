@@ -1,6 +1,8 @@
 class ConnectionsController < ApplicationController
-  requires_permission "connections:read", only: %i[ index show ]
-  requires_permission "connections:manage", only: %i[ create update destroy ]
+  requires_permission "connections:records:read", only: %i[ index show ]
+  requires_permission "connections:records:create", only: :create
+  requires_permission "connections:records:update", only: :update
+  requires_permission "connections:records:delete", only: :destroy
 
   before_action :set_connection, only: %i[ show update destroy ]
 

@@ -1,6 +1,6 @@
 module Test
   class ResetsController < ApplicationController
-    requires_permission "test:reset", only: :create
+    requires_permission "test:data:reset", only: :create
 
     def create
       raise "test-only endpoint" unless Rails.env.test?

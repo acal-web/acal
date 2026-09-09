@@ -134,6 +134,7 @@ Future<void> _pump(WidgetTester tester, InvoiceService invoiceService) async {
       username: 'testuser',
       name: 'Test User',
       role: UserRole.administrador,
+      permissions: const {'invoices:payment:execute'},
     ),
     'test-token',
   );

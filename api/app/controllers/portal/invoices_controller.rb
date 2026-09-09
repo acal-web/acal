@@ -1,5 +1,5 @@
 class Portal::InvoicesController < Portal::ApplicationController
-  requires_permission "portal_invoices:read", only: %i[ index show pdf ]
+  requires_permission "portal:invoices:read", only: %i[ index show pdf ]
 
   INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] }, water_meter: {}, quality_analyses: {} }
 

@@ -265,5 +265,17 @@ RSpec.describe "Connections", type: :request do
         expect(response).to have_http_status(:created)
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without connections:records:create" do
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        expect {
+          post "/connections", params: valid_params
+        }.not_to change(Connection, :count)
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 end

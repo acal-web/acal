@@ -1,6 +1,11 @@
 class CustomersController < ApplicationController
-  requires_permission "customers:read", only: %i[ index show ]
-  requires_permission "customers:manage", only: %i[ create update destroy restore ]
+  include SoftDeleteFilterable
+
+  requires_permission "customers:records:read", only: %i[ index show ]
+  requires_permission "customers:records:create", only: :create
+  requires_permission "customers:records:update", only: :update
+  requires_permission "customers:records:delete", only: :destroy
+  requires_permission "customers:records:restore", only: :restore
 
   before_action :set_customer, only: %i[ show update destroy ]
   before_action :set_deleted_customer, only: %i[ restore ]
@@ -9,7 +14,7 @@ class CustomersController < ApplicationController
 
   # GET /customers
   def index
-    customers = active_scope.filter_by_name(params[:name]).filter_by_document(params[:document])
+    customers = active_scope(Customer).filter_by_name(params[:name]).filter_by_document(params[:document])
     render json: paginate(sort(customers))
   end
 
@@ -42,15 +47,6 @@ class CustomersController < ApplicationController
   end
 
   private
-    # "true" (default) → active only, "false" → soft deleted only, "all" → both.
-    def active_scope
-      case params[:active]
-      when "false" then Customer.deleted
-      when "all" then Customer.unscoped
-      else Customer
-      end
-    end
-
     def sort(collection)
       return collection unless SORTABLE_COLUMNS.include?(params[:sort])
 
@@ -62,7 +58,7 @@ class CustomersController < ApplicationController
     end
 
     def set_deleted_customer
-      @customer = Customer.deleted.find(params.expect(:id))
+      @customer = find_deleted!(Customer)
     end
 
     def form

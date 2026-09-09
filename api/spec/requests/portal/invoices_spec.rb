@@ -88,5 +88,14 @@ RSpec.describe "Portal::Invoices", type: :request do
 
       expect(response).to have_http_status(:unauthorized)
     end
+
+    it "returns 403 for a staff token (not the customer group)" do
+      user = create(:user)
+      token = JwtToken.encode(user.id, group: user.role)
+
+      get "/portal/invoices", headers: { "Authorization" => "Bearer #{token}" }
+
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 end

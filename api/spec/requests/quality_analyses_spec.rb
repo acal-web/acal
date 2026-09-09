@@ -57,6 +57,16 @@ RSpec.describe "QualityAnalyses", type: :request do
         expect(response.parsed_body["content"].map { |a| a["reference_date"] }).to eq([ "2026-08-01" ])
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without quality_analyses:records:read" do
+        sign_in_as_customer(create(:customer))
+
+        get "/quality_analyses"
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe "GET /quality_analyses/:id" do
@@ -140,6 +150,18 @@ RSpec.describe "QualityAnalyses", type: :request do
         expect(response.parsed_body).to eq("code" => 1001, "message" => "QualityAnalysis already exists")
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without quality_analyses:records:create" do
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        expect {
+          post "/quality_analyses", params: valid_params
+        }.not_to change(QualityAnalysis, :count)
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 
   describe "PATCH /quality_analyses/:id" do
@@ -181,6 +203,21 @@ RSpec.describe "QualityAnalyses", type: :request do
         expect(response.parsed_body).to eq("code" => 1001, "message" => "QualityAnalysis already exists")
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without quality_analyses:records:update" do
+        post "/quality_analyses", params: valid_params
+        id = response.parsed_body["id"]
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        patch "/quality_analyses/#{id}", params: {
+          quality_analysis: { reference_date: "2026-09-01", param_name: "Turbidez", required: 2, analyzed: 2, compliant: 1 }
+        }
+
+        expect(response).to have_http_status(:forbidden)
+        expect(QualityAnalysis.find(id).param_name).to eq("Cloro Residual")
+      end
+    end
   end
 
   describe "DELETE /quality_analyses/:id" do
@@ -204,6 +241,19 @@ RSpec.describe "QualityAnalyses", type: :request do
         delete "/quality_analyses/#{analysis.id}"
 
         expect(QualityAnalysis.exists?(analysis.id)).to be(false)
+      end
+    end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without quality_analyses:records:delete" do
+        post "/quality_analyses", params: valid_params
+        analysis = QualityAnalysis.last
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        delete "/quality_analyses/#{analysis.id}"
+
+        expect(response).to have_http_status(:forbidden)
+        expect(analysis.reload.deleted_at).to be_nil
       end
     end
   end

@@ -98,5 +98,19 @@ RSpec.describe "Connections", type: :request do
         expect(response.parsed_body).to eq("customer_id" => [ "already has an active connection as efetivo" ])
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without connections:records:update" do
+        post "/connections", params: valid_params
+        id = response.parsed_body["id"]
+        new_category = create(:category, name: "Especial")
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        patch "/connections/#{id}", params: { connection: valid_params[:connection].merge(category_id: new_category.id) }
+
+        expect(response).to have_http_status(:forbidden)
+        expect(Connection.find(id).category_id).to eq(category.id)
+      end
+    end
   end
 end

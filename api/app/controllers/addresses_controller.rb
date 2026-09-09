@@ -1,15 +1,20 @@
 class AddressesController < ApplicationController
-  requires_permission "addresses:read", only: %i[ index show ]
-  requires_permission "addresses:manage", only: %i[ create update destroy restore ]
+  include SoftDeleteFilterable
+
+  requires_permission "addresses:records:read", only: %i[ index show ]
+  requires_permission "addresses:records:create", only: :create
+  requires_permission "addresses:records:update", only: :update
+  requires_permission "addresses:records:delete", only: :destroy
+  requires_permission "addresses:records:restore", only: :restore
 
   before_action :set_address, only: %i[ show update destroy ]
-  before_action :set_address_unscoped, only: %i[ restore ]
+  before_action :set_deleted_address, only: %i[ restore ]
 
   SORTABLE_COLUMNS = %w[ name ].freeze
 
   # GET /addresses
   def index
-    addresses = active_scope.filter_by_name(params[:name])
+    addresses = active_scope(Address).filter_by_name(params[:name])
     render json: paginate(sort(addresses))
   end
 
@@ -42,15 +47,6 @@ class AddressesController < ApplicationController
   end
 
   private
-    # "true" (default) → active only, "false" → soft deleted only, "all" → both.
-    def active_scope
-      case params[:active]
-      when "false" then Address.deleted
-      when "all" then Address.unscoped
-      else Address
-      end
-    end
-
     def sort(collection)
       column = SORTABLE_COLUMNS.include?(params[:sort]) ? params[:sort] : "name"
       collection.order(column => params[:direction] == "desc" ? :desc : :asc)
@@ -60,8 +56,8 @@ class AddressesController < ApplicationController
       @address = Address.find(params.expect(:id))
     end
 
-    def set_address_unscoped
-      @address = Address.unscoped.find(params.expect(:id))
+    def set_deleted_address
+      @address = find_deleted!(Address)
     end
 
     def form

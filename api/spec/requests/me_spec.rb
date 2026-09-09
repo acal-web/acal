@@ -15,7 +15,8 @@ RSpec.describe "Me", type: :request do
         "name" => user.name,
         "role" => user.role,
         "created_at" => user.created_at.as_json,
-        "updated_at" => user.updated_at.as_json
+        "updated_at" => user.updated_at.as_json,
+        "permissions" => Rbac.permissions_for(user.role)
       )
     end
 

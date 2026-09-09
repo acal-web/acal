@@ -4,6 +4,7 @@ import 'package:acalapp/core/services/http_service.dart';
 import 'package:acalapp/features/auth/data/auth_service.dart';
 import 'package:acalapp/features/auth/data/token_storage.dart';
 import 'package:acalapp/features/auth/domain/auth_user.dart';
+import 'package:acalapp/features/auth/domain/permission_code.dart';
 import 'package:acalapp/features/auth/domain/user_role.dart';
 
 /// Whether a stored session has been validated yet. The router treats
@@ -22,6 +23,8 @@ class CurrentUser extends ChangeNotifier {
   AuthStatus get status => _status;
   bool get isChecking => _status == AuthStatus.checking;
   bool get isAuthenticated => _status == AuthStatus.authenticated;
+
+  bool can(PermissionCode permission) => _user?.can(permission) ?? false;
 
   final AuthService _authService;
 

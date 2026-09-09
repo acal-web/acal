@@ -31,5 +31,18 @@ RSpec.describe "Connections", type: :request do
         expect(Connection.exists?(connection.id)).to be(false)
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without connections:records:delete" do
+        post "/connections", params: valid_params
+        connection = Connection.last
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        delete "/connections/#{connection.id}"
+
+        expect(response).to have_http_status(:forbidden)
+        expect(connection.reload.deleted_at).to be_nil
+      end
+    end
   end
 end

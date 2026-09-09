@@ -1,5 +1,5 @@
 import 'package:acalapp/core/config/layout_config.dart';
-import 'package:acalapp/features/auth/domain/permissions.dart';
+import 'package:acalapp/features/auth/domain/permission_code.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:acalapp/features/invoices/data/invoice_service.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
@@ -711,7 +711,8 @@ class _InvoiceActionsMenu extends StatelessWidget {
             ],
           ),
         ),
-        if (!invoice.isPaid && Permissions.canPayInvoices(CurrentUserScope.of(context).user?.role))
+        if (!invoice.isPaid &&
+            CurrentUserScope.of(context).can(const PermissionCode('invoices', 'payment', 'execute')))
           const PopupMenuItem<String>(
             value: 'mark_paid',
             child: Row(

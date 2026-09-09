@@ -160,7 +160,7 @@ RSpec.describe "Categories", type: :request do
     end
 
     context "when unauthorized" do
-      it "returns forbidden for a user without categories:manage" do
+      it "returns forbidden for a user without categories:records:create" do
         sign_in_as(create(:user, role: "tesoureiro"))
 
         expect {

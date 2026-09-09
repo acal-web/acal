@@ -36,6 +36,7 @@ Rails.application.routes.draw do
       get :cobranca_pdf, to: "invoices#cobranca_pdf"
       get :print_filtered, to: "invoices#print_filtered"
       get :cashbox, to: "invoices#cashbox"
+      get :cashbox_pdf, to: "invoices#cashbox_pdf"
     end
 
     member do

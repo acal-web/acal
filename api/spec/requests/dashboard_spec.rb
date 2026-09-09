@@ -2,7 +2,7 @@ require "rails_helper"
 
 RSpec.describe "Dashboard", type: :request do
   describe "GET /dashboard/summary" do
-    it "returns 403 for a role without dashboard:read" do
+    it "returns 403 for a role without dashboard:overview:read" do
       sign_in_as_customer(create(:customer))
 
       get "/dashboard/summary"

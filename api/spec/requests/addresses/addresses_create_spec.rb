@@ -92,7 +92,7 @@ RSpec.describe "Addresses", type: :request do
     end
 
     context "when unauthorized" do
-      it "returns forbidden for a user without addresses:manage" do
+      it "returns forbidden for a user without addresses:records:create" do
         sign_in_as(create(:user, role: "tesoureiro"))
 
         expect {

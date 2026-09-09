@@ -32,7 +32,7 @@ RSpec.describe "Addresses", type: :request do
     end
 
     context "when unauthorized" do
-      it "returns forbidden for a user without addresses:manage" do
+      it "returns forbidden for a user without addresses:records:delete" do
         post "/addresses", params: valid_params
         address = Address.last
         sign_in_as(create(:user, role: "tesoureiro"))

@@ -48,5 +48,18 @@ RSpec.describe "Customers", type: :request do
         expect(response).to have_http_status(:unauthorized)
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without customers:records:delete" do
+        post "/customers", params: valid_params
+        customer = Customer.last
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        delete "/customers/#{customer.id}"
+
+        expect(response).to have_http_status(:forbidden)
+        expect(customer.reload.deleted_at).to be_nil
+      end
+    end
   end
 end

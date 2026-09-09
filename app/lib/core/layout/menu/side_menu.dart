@@ -1,7 +1,7 @@
 import 'package:acalapp/core/config/layout_config.dart';
 import 'package:acalapp/core/services/version_service.dart';
-import 'package:acalapp/features/auth/domain/permissions.dart';
-import 'package:acalapp/features/auth/domain/user_role.dart';
+import 'package:acalapp/features/auth/domain/permission_code.dart';
+import 'package:acalapp/features/auth/presentation/current_user.dart';
 import 'package:acalapp/features/auth/presentation/current_user_scope.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +11,7 @@ typedef _MenuItemData = ({
   IconData icon,
   String label,
   String route,
-  bool Function(UserRole?)? requiredRole
+  PermissionCode? requiredPermission
 });
 
 class _MenuSection {
@@ -23,31 +23,31 @@ class _MenuSection {
 
 const _menuSections = [
   _MenuSection(items: [
-    (icon: Icons.home, label: 'Home', route: '/dashboard', requiredRole: null),
+    (icon: Icons.home, label: 'Home', route: '/dashboard', requiredPermission: null),
   ]),
   _MenuSection(title: 'CADASTROS', items: [
-    (icon: Icons.people, label: 'Sócios', route: '/customers', requiredRole: null),
-    (icon: Icons.location_on, label: 'Logradouros', route: '/addresses', requiredRole: null),
-    (icon: Icons.category, label: 'Categorias', route: '/categories', requiredRole: null),
+    (icon: Icons.people, label: 'Sócios', route: '/customers', requiredPermission: null),
+    (icon: Icons.location_on, label: 'Logradouros', route: '/addresses', requiredPermission: null),
+    (icon: Icons.category, label: 'Categorias', route: '/categories', requiredPermission: null),
   ]),
   _MenuSection(title: 'ÁGUA', items: [
-    (icon: Icons.water_drop, label: 'Ligações', route: '/connections', requiredRole: null),
-    (icon: Icons.straighten, label: 'Qualidade', route: '/quality', requiredRole: null),
+    (icon: Icons.water_drop, label: 'Ligações', route: '/connections', requiredPermission: null),
+    (icon: Icons.straighten, label: 'Qualidade', route: '/quality', requiredPermission: null),
   ]),
   _MenuSection(title: 'FINANCEIRO', items: [
     (
       icon: Icons.note_add,
       label: 'Gerar Faturas',
       route: '/invoices/generate',
-      requiredRole: Permissions.canGenerateInvoices
+      requiredPermission: PermissionCode('invoices', 'generation', 'execute')
     ),
-    (icon: Icons.receipt_long, label: 'Faturas', route: '/invoices', requiredRole: null),
-    (icon: Icons.point_of_sale, label: 'Caixa', route: '/cashbox', requiredRole: null),
+    (icon: Icons.receipt_long, label: 'Faturas', route: '/invoices', requiredPermission: null),
+    (icon: Icons.point_of_sale, label: 'Caixa', route: '/cashbox', requiredPermission: null),
     (
       icon: Icons.campaign_outlined,
       label: 'Notificações',
       route: '/notifications',
-      requiredRole: Permissions.canSendNotifications
+      requiredPermission: PermissionCode('notifications', 'sending', 'execute')
     ),
   ]),
   _MenuSection(title: 'ADMINISTRAÇÃO', items: [
@@ -55,19 +55,19 @@ const _menuSections = [
       icon: Icons.people_alt,
       label: 'Usuários',
       route: '/users',
-      requiredRole: Permissions.canManageUsers
+      requiredPermission: PermissionCode('users', 'records', 'read')
     ),
     (
       icon: Icons.how_to_vote,
       label: 'Eleição',
       route: '/elections',
-      requiredRole: Permissions.canManageUsers
+      requiredPermission: PermissionCode('elections', 'records', 'read')
     ),
     (
       icon: Icons.article,
       label: 'Documentação',
       route: '/documentation',
-      requiredRole: Permissions.canManageUsers
+      requiredPermission: PermissionCode('documentation', 'records', 'read')
     ),
   ]),
 ];
@@ -85,7 +85,6 @@ class SideMenu extends StatelessWidget {
     final cs = theme.colorScheme;
     final location = GoRouterState.of(context).uri.path;
     final currentUser = CurrentUserScope.of(context);
-    final userRole = currentUser.user?.role;
 
     return Container(
       width: LayoutConfig.sideMenuWidth,
@@ -102,7 +101,7 @@ class SideMenu extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  for (final section in _menuSections) ..._buildSection(context, section, userRole, location),
+                  for (final section in _menuSections) ..._buildSection(context, section, currentUser, location),
                 ],
               ),
             ),
@@ -116,11 +115,11 @@ class SideMenu extends StatelessWidget {
   List<Widget> _buildSection(
     BuildContext context,
     _MenuSection section,
-    UserRole? userRole,
+    CurrentUser currentUser,
     String location,
   ) {
     final visibleItems = section.items
-        .where((item) => item.requiredRole == null || item.requiredRole!(userRole))
+        .where((item) => item.requiredPermission == null || currentUser.can(item.requiredPermission!))
         .toList();
 
     if (visibleItems.isEmpty) return [];

@@ -8,6 +8,13 @@ class OverdueConnection {
   final List<OverdueInvoice> invoices;
   final double totalAmount;
 
+  /// Days the connection's *oldest* open invoice is overdue by.
+  final int daysOverdue;
+
+  /// Set by the API when [daysOverdue] passed the cutoff threshold — the
+  /// service can be shut off, and the letter says so.
+  final bool subjectToCutoff;
+
   const OverdueConnection({
     required this.connectionId,
     required this.connectionNumber,
@@ -15,6 +22,8 @@ class OverdueConnection {
     required this.addressName,
     required this.invoices,
     required this.totalAmount,
+    this.daysOverdue = 0,
+    this.subjectToCutoff = false,
   });
 
   factory OverdueConnection.fromJson(Map<String, dynamic> json) => OverdueConnection(
@@ -26,6 +35,8 @@ class OverdueConnection {
             .map((e) => OverdueInvoice.fromJson(e as Map<String, dynamic>))
             .toList(),
         totalAmount: double.parse(json['total_amount'].toString()),
+        daysOverdue: int.tryParse(json['days_overdue'].toString()) ?? 0,
+        subjectToCutoff: json['subject_to_cutoff'] == true,
       );
 }
 

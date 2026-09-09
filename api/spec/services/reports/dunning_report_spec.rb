@@ -36,4 +36,22 @@ RSpec.describe Reports::DunningReport do
   it "formats the total amount" do
     expect(report.total_label).to eq(Reports::PdfFactory.currency(40))
   end
+
+  describe "the cutoff warning" do
+    it "is off when the group is not flagged" do
+      expect(described_class.new(group.merge(subject_to_cutoff: false)).subject_to_cutoff?).to be(false)
+    end
+
+    it "is off when the group carries no flag at all" do
+      expect(report.subject_to_cutoff?).to be(false)
+    end
+
+    it "is on when the group is flagged" do
+      expect(described_class.new(group.merge(subject_to_cutoff: true)).subject_to_cutoff?).to be(true)
+    end
+
+    it "exposes how many days the oldest invoice is overdue" do
+      expect(described_class.new(group.merge(days_overdue: 90)).days_overdue).to eq(90)
+    end
+  end
 end

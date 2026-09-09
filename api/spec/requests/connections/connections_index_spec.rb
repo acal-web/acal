@@ -319,5 +319,15 @@ RSpec.describe "Connections", type: :request do
         end
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without connections:records:read" do
+        sign_in_as_customer(create(:customer))
+
+        get "/connections"
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 end

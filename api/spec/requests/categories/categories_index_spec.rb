@@ -138,5 +138,15 @@ RSpec.describe "Categories", type: :request do
           .to eq([ "Categoria A", "Categoria C" ])
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without categories:records:read" do
+        sign_in_as_customer(create(:customer))
+
+        get "/categories"
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 end

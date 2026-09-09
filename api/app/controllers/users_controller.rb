@@ -1,6 +1,9 @@
 class UsersController < ApplicationController
-  requires_permission "users:read", only: %i[ index show ]
-  requires_permission "users:manage", only: %i[ create update destroy restore ]
+  requires_permission "users:records:read", only: %i[ index show ]
+  requires_permission "users:records:create", only: :create
+  requires_permission "users:records:update", only: :update
+  requires_permission "users:records:delete", only: :destroy
+  requires_permission "users:records:restore", only: :restore
 
   before_action :set_user, only: %i[ show update destroy ]
   before_action :set_deleted_user, only: %i[ restore ]

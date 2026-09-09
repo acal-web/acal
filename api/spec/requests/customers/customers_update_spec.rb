@@ -52,5 +52,18 @@ RSpec.describe "Customers", type: :request do
         expect(response.parsed_body).to eq("name" => [ "can't be blank", "is too short (minimum is 3 characters)" ])
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without customers:records:update" do
+        post "/customers", params: valid_params
+        id = response.parsed_body["id"]
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        patch "/customers/#{id}", params: { customer: { name: "Ciclano", document: valid_document, membership_number: 7, voter: false } }
+
+        expect(response).to have_http_status(:forbidden)
+        expect(Customer.find(id).name).to eq("Fulano de Tal")
+      end
+    end
   end
 end

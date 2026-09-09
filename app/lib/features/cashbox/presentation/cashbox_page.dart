@@ -5,8 +5,10 @@ import 'package:acalapp/shared/formatters/currency_input_formatter.dart';
 import 'package:acalapp/shared/formatters/month_reference_formatter.dart';
 import 'package:acalapp/shared/widgets/page_header.dart';
 import 'package:acalapp/shared/widgets/table/collapsible_filter_panel.dart';
+import 'package:acalapp/shared/widgets/toast/app_toast.dart';
 import 'package:flutter/material.dart';
 import 'package:forui/forui.dart';
+import 'package:printing/printing.dart';
 
 const columnSpacing = 12.0;
 
@@ -33,6 +35,7 @@ class _CashboxPageState extends State<CashboxPage> {
   int _totalCount = 0;
   double _totalAmount = 0;
   bool _isLoading = false;
+  bool _printingPdf = false;
   bool _hasMorePages = true;
   DateTimeRange? _range;
   String? _errorMessage;
@@ -160,6 +163,19 @@ class _CashboxPageState extends State<CashboxPage> {
     _loadFirstPage();
   }
 
+  Future<void> _printPdf() async {
+    setState(() => _printingPdf = true);
+    try {
+      await Printing.layoutPdf(
+        onLayout: (_) => _service.cashboxPdf(startDate: _range?.start, endDate: _range?.end),
+      );
+    } catch (_) {
+      if (mounted) AppToast.error(context, 'Erro ao gerar o relatório.');
+    } finally {
+      if (mounted) setState(() => _printingPdf = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final narrow = MediaQuery.sizeOf(context).width < LayoutConfig.narrowBreakpoint;
@@ -213,6 +229,20 @@ class _CashboxPageState extends State<CashboxPage> {
                     mainAxisSize: MainAxisSize.min,
                     onPress: () => _setRange(_thisWeek()),
                     child: const Text('Essa semana'),
+                  ),
+                  FButton(
+                    variant: FButtonVariant.outline,
+                    size: FButtonSizeVariant.sm,
+                    mainAxisSize: MainAxisSize.min,
+                    onPress: _allInvoices.isEmpty || _printingPdf ? null : _printPdf,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.picture_as_pdf_outlined, size: 16),
+                        const SizedBox(width: 6),
+                        Text(_printingPdf ? 'Gerando...' : 'Relatório PDF'),
+                      ],
+                    ),
                   ),
                 ],
               ),

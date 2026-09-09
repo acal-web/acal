@@ -9,9 +9,6 @@ on:
   pull_request:
     paths:
       - "app/**"
-      # A suíte E2E fala com a API de verdade, então uma quebra de contrato
-      # vinda do Rails tem que reprovar o PR. Só em pull_request: num push
-      # de api/** isto dispararia o deploy do app sem motivo.
       - "api/**"
       - ".github/workflows/flutter-ci.yml"
   workflow_dispatch:

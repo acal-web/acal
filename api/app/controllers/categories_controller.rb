@@ -1,15 +1,20 @@
 class CategoriesController < ApplicationController
+  include SoftDeleteFilterable
+
   SORTABLE_COLUMNS = %w[ name group ].freeze
 
-  requires_permission "categories:read", only: %i[ index show ]
-  requires_permission "categories:manage", only: %i[ create update destroy restore ]
+  requires_permission "categories:records:read", only: %i[ index show ]
+  requires_permission "categories:records:create", only: :create
+  requires_permission "categories:records:update", only: :update
+  requires_permission "categories:records:delete", only: :destroy
+  requires_permission "categories:records:restore", only: :restore
 
   before_action :set_category, only: %i[ show update destroy ]
-  before_action :set_category_unscoped, only: %i[ restore ]
+  before_action :set_deleted_category, only: %i[ restore ]
 
   # GET /categories
   def index
-    categories = active_scope.filter_by_name(params[:name])
+    categories = active_scope(Category).filter_by_name(params[:name])
     render json: paginate(sort(categories))
   end
 
@@ -42,15 +47,6 @@ class CategoriesController < ApplicationController
   end
 
   private
-    # "true" (default) → active only, "false" → soft deleted only, "all" → both.
-    def active_scope
-      case params[:active]
-      when "false" then Category.deleted
-      when "all" then Category.unscoped
-      else Category
-      end
-    end
-
     # Without an explicit ORDER BY, Postgres is free to return rows in any
     # order — in practice heap order, which shifts whenever a row is updated.
     # Name ascending is the default so the listing stays stable.
@@ -63,8 +59,8 @@ class CategoriesController < ApplicationController
       @category = Category.find(params.expect(:id))
     end
 
-    def set_category_unscoped
-      @category = Category.unscoped.find(params.expect(:id))
+    def set_deleted_category
+      @category = find_deleted!(Category)
     end
 
     def form

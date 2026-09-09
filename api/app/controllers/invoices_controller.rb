@@ -1,7 +1,7 @@
 class InvoicesController < ApplicationController
-  requires_permission "invoices:read", only: %i[ index show eligible overdue cobranca_pdf print_filtered pdf cashbox ]
-  requires_permission "invoices:generate", only: :generate
-  requires_permission "invoices:pay", only: :pay
+  requires_permission "invoices:records:read", only: %i[ index show eligible overdue cobranca_pdf print_filtered pdf cashbox cashbox_pdf ]
+  requires_permission "invoices:generation:execute", only: :generate
+  requires_permission "invoices:payment:execute", only: :pay
 
   INVOICE_INCLUDES = { connection: { include: %i[ customer address category ] }, water_meter: {}, quality_analyses: {} }
 
@@ -78,14 +78,35 @@ class InvoicesController < ApplicationController
     render json: paginate(invoices).merge(totalAmount: total_amount), include: INVOICE_INCLUDES
   end
 
+  # GET /invoices/cashbox_pdf
+  def cashbox_pdf
+    invoices = Invoice
+      .filter_by_status("paid")
+      .filter_by_paid_between(params[:start_date], params[:end_date])
+      .includes(connection: %i[customer address category], water_meter: {})
+      .order(paid_at: :asc)
+      .to_a
+
+    return head :no_content if invoices.empty?
+
+    send_data Reports::CashboxReportBuilder.call(invoices, start_date: params[:start_date], end_date: params[:end_date]),
+      type: PDF_CONTENT_TYPE, disposition: "inline", filename: "relatorio-caixa.pdf"
+  end
+
   # GET /invoices/overdue
   def overdue
-    render json: Invoices::OverdueConnectionsService.call(days: overdue_days)
+    connections = Invoices::OverdueConnectionsService.connections_scope(days: overdue_days, address_id: params[:address_id])
+    result = paginate(connections)
+
+    groups = Invoices::OverdueConnectionsService.call(days: overdue_days, address_id: params[:address_id], connections: result[:content])
+    total_amount = Invoices::OverdueConnectionsService.total_amount(days: overdue_days, address_id: params[:address_id])
+
+    render json: result.merge(content: groups, totalAmount: total_amount)
   end
 
   # GET /invoices/cobranca_pdf
   def cobranca_pdf
-    groups = Invoices::OverdueConnectionsService.call(days: overdue_days)
+    groups = Invoices::OverdueConnectionsService.call(days: overdue_days, address_id: params[:address_id])
     groups = groups.select { |group| group[:connection_id] == params[:connection_id] } if params[:connection_id].present?
 
     return head :no_content if groups.empty?

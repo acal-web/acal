@@ -36,7 +36,7 @@ RSpec.describe "Categories", type: :request do
     end
 
     context "when unauthorized" do
-      it "returns forbidden for a user without categories:manage" do
+      it "returns forbidden for a user without categories:records:restore" do
         category = create(:category, **valid_params[:category].merge(deleted_at: Time.current))
         sign_in_as(create(:user, role: "tesoureiro"))
 

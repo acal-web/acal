@@ -15,17 +15,7 @@ class SessionsController < ApplicationController
     if user.authenticate(password)
       user.reset_login_attempts!
       token = JwtToken.encode(user.id, group: user.role)
-      render json: {
-        token: token,
-        user: {
-          id: user.id,
-          username: user.username,
-          name: user.name,
-          role: user.role,
-          created_at: user.created_at,
-          updated_at: user.updated_at
-        }
-      }, status: :created
+      render json: { token: token, user: UserPayload.build(user) }, status: :created
     else
       user.register_failed_login!
       raise InvalidCredentialsError

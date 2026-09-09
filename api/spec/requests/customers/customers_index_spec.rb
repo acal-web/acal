@@ -141,5 +141,15 @@ RSpec.describe "Customers", type: :request do
         expect(response.parsed_body["content"].map { |c| c["name"] }).to contain_exactly("Fulano de Tal", "Ciclano da Silva")
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without customers:records:read" do
+        sign_in_as_customer(create(:customer))
+
+        get "/customers"
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 end

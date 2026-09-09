@@ -91,17 +91,39 @@ class InvoiceService {
     );
   }
 
-  Future<List<OverdueConnection>> overdue({int? days}) async {
-    final query = {if (days != null) 'days': '$days'};
-    final data = await _http.get('/invoices/overdue', query: query) as List;
-    return data.map((e) => OverdueConnection.fromJson(e as Map<String, dynamic>)).toList();
+  Future<Uint8List> cashboxPdf({DateTime? startDate, DateTime? endDate}) => _http.getBytes(
+        '/invoices/cashbox_pdf',
+        query: {
+          if (startDate != null) 'start_date': _formatDate(startDate),
+          if (endDate != null) 'end_date': _formatDate(endDate),
+        },
+      );
+
+  Future<({PagedResult<OverdueConnection> page, double totalAmount})> overdue({
+    int page = 0,
+    int size = 25,
+    int? days,
+    String? addressId,
+  }) async {
+    final query = <String, String>{
+      'page': '$page',
+      'size': '$size',
+      if (days != null) 'days': '$days',
+      'address_id': ?addressId,
+    };
+    final data = await _http.get('/invoices/overdue', query: query) as Map<String, dynamic>;
+    return (
+      page: PagedResult.fromJson(data, OverdueConnection.fromJson),
+      totalAmount: double.parse(data['totalAmount'].toString()),
+    );
   }
 
-  Future<Uint8List> cobrancaPdf({String? connectionId, int? days}) => _http.getBytes(
+  Future<Uint8List> cobrancaPdf({String? connectionId, int? days, String? addressId}) => _http.getBytes(
         '/invoices/cobranca_pdf',
         query: {
           'connection_id': ?connectionId,
           if (days != null) 'days': '$days',
+          'address_id': ?addressId,
         },
       );
 

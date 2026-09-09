@@ -29,6 +29,16 @@ module Reports
       PdfFactory.currency(group[:total_amount])
     end
 
+    # True when the connection's oldest open invoice passed the cutoff
+    # threshold — the letter then has to warn the member about it.
+    def subject_to_cutoff?
+      group[:subject_to_cutoff] == true
+    end
+
+    def days_overdue
+      group[:days_overdue]
+    end
+
     private
 
     attr_reader :group

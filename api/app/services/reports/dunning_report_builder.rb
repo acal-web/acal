@@ -42,6 +42,14 @@ module Reports
         pdf.text "Valor Total em Aberto: #{report.total_label}"
       end
 
+      if report.subject_to_cutoff?
+        pdf.move_down 12
+        pdf.font(PdfFactory::FONT_NAME, style: :bold) do
+          pdf.text "ATENÇÃO: por haver débitos vencidos há mais de " \
+                   "#{Invoices::OverdueConnectionsService::CUTOFF_DAYS} dias, o serviço está passível de corte."
+        end
+      end
+
       pdf.move_down 24
       pdf.text "Pedimos a gentileza de regularizar o pagamento o quanto antes."
     end

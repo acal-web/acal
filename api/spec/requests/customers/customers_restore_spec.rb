@@ -26,5 +26,19 @@ RSpec.describe "Customers", type: :request do
       post "/session", params: { session: { username: document, password: customer_code } }
       expect(response).to have_http_status(:created)
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without customers:records:restore" do
+        post "/customers", params: valid_params
+        customer = Customer.last
+        delete "/customers/#{customer.id}"
+        sign_in_as(create(:user, role: "tesoureiro"))
+
+        patch "/customers/#{customer.id}/restore"
+
+        expect(response).to have_http_status(:forbidden)
+        expect(customer.reload.deleted_at).not_to be_nil
+      end
+    end
   end
 end

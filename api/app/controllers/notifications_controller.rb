@@ -1,6 +1,6 @@
 class NotificationsController < ApplicationController
-  requires_permission "notifications:read", only: %i[ index recipients_count ]
-  requires_permission "notifications:send", only: :create
+  requires_permission "notifications:records:read", only: %i[ index recipients_count ]
+  requires_permission "notifications:sending:execute", only: :create
 
   # GET /notifications
   def index

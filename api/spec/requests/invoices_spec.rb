@@ -54,6 +54,14 @@ RSpec.describe "Invoices", type: :request do
       ids = response.parsed_body["content"].map { |i| i["id"] }
       expect(ids).to eq([ matching.id ])
     end
+
+    it "returns forbidden for a user without invoices:records:read" do
+      sign_in_as_customer(create(:customer))
+
+      get "/invoices"
+
+      expect(response).to have_http_status(:forbidden)
+    end
   end
 
   describe "GET /invoices/:id" do
@@ -199,8 +207,9 @@ RSpec.describe "Invoices", type: :request do
       get "/invoices/overdue"
 
       expect(response).to have_http_status(:ok)
-      ids = response.parsed_body.map { |group| group["connection_id"] }
+      ids = response.parsed_body["content"].map { |group| group["connection_id"] }
       expect(ids).to contain_exactly(connection.id)
+      expect(response.parsed_body["totalElements"]).to eq(1)
     end
 
     it "excludes connections without overdue invoices" do
@@ -208,7 +217,49 @@ RSpec.describe "Invoices", type: :request do
 
       get "/invoices/overdue"
 
-      expect(response.parsed_body).to eq([])
+      expect(response.parsed_body["content"]).to eq([])
+      expect(response.parsed_body["totalElements"]).to eq(0)
+    end
+
+    it "paginates the connections" do
+      other_connection = create(:connection, customer: create(:customer), address: create(:address), category: category)
+      create(:invoice, connection: connection, due_date: Date.current - 45.days)
+      create(:invoice, connection: other_connection, due_date: Date.current - 45.days)
+
+      get "/invoices/overdue", params: { page: 0, size: 1 }
+
+      expect(response.parsed_body["content"].length).to eq(1)
+      expect(response.parsed_body["totalElements"]).to eq(2)
+      expect(response.parsed_body["last"]).to be(false)
+    end
+
+    it "totals every overdue invoice, not just the current page" do
+      create(:invoice, connection: connection, due_date: Date.current - 45.days, membership_value: 15.0, water_value: 5.0)
+
+      get "/invoices/overdue"
+
+      expect(response.parsed_body["totalAmount"].to_f).to eq(20.0)
+    end
+
+    it "filters by address_id" do
+      other_connection = create(:connection, customer: create(:customer), address: create(:address), category: category)
+      create(:invoice, connection: connection, due_date: Date.current - 45.days)
+      create(:invoice, connection: other_connection, due_date: Date.current - 45.days)
+
+      get "/invoices/overdue", params: { address_id: connection.address_id }
+
+      ids = response.parsed_body["content"].map { |group| group["connection_id"] }
+      expect(ids).to contain_exactly(connection.id)
+    end
+
+    it "flags connections whose oldest invoice is past the cutoff threshold" do
+      create(:invoice, connection: connection, due_date: Date.current - 90.days)
+
+      get "/invoices/overdue"
+
+      group = response.parsed_body["content"].first
+      expect(group["days_overdue"]).to eq(90)
+      expect(group["subject_to_cutoff"]).to be(true)
     end
   end
 
@@ -245,6 +296,41 @@ RSpec.describe "Invoices", type: :request do
     end
   end
 
+  describe "GET /invoices/cashbox_pdf" do
+    it "returns a PDF document listing the paid invoices in the period" do
+      create(:invoice, connection: connection, reference_date: "2026-08-01", paid_at: Time.zone.parse("2026-08-15 10:00"))
+
+      get "/invoices/cashbox_pdf", params: { start_date: "2026-08-01", end_date: "2026-08-31" }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.content_type).to eq("application/pdf")
+      expect(response.body).to start_with("%PDF")
+    end
+
+    it "excludes unpaid invoices and invoices paid outside the range" do
+      create(:invoice, connection: connection, reference_date: "2026-08-01")
+      create(:invoice, :paid, connection: connection, reference_date: "2026-07-01", paid_at: Time.zone.parse("2026-07-15 10:00"))
+
+      get "/invoices/cashbox_pdf", params: { start_date: "2026-08-01", end_date: "2026-08-31" }
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns no content when there is nothing paid" do
+      get "/invoices/cashbox_pdf"
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "returns forbidden for a user without invoices:records:read" do
+      sign_in_as_customer(create(:customer))
+
+      get "/invoices/cashbox_pdf"
+
+      expect(response).to have_http_status(:forbidden)
+    end
+  end
+
   describe "GET /invoices/cobranca_pdf" do
     it "returns a PDF letter when there are overdue connections" do
       create(:invoice, connection: connection, due_date: Date.current - 45.days)
@@ -267,6 +353,23 @@ RSpec.describe "Invoices", type: :request do
       create(:invoice, connection: connection, due_date: Date.current - 45.days)
 
       get "/invoices/cobranca_pdf", params: { connection_id: other_connection.id }
+
+      expect(response).to have_http_status(:no_content)
+    end
+
+    it "filters by address_id" do
+      create(:invoice, connection: connection, due_date: Date.current - 45.days)
+
+      get "/invoices/cobranca_pdf", params: { address_id: connection.address_id }
+
+      expect(response).to have_http_status(:ok)
+      expect(response.body).to start_with("%PDF")
+    end
+
+    it "returns no content when the given address has nothing overdue" do
+      create(:invoice, connection: connection, due_date: Date.current - 45.days)
+
+      get "/invoices/cobranca_pdf", params: { address_id: create(:address).id }
 
       expect(response).to have_http_status(:no_content)
     end

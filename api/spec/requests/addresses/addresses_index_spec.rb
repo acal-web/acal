@@ -121,5 +121,15 @@ RSpec.describe "Addresses", type: :request do
         expect(response.parsed_body["content"].map { |a| a["name"] }).to eq([ "Rua A", "Rua C" ])
       end
     end
+
+    context "when unauthorized" do
+      it "returns forbidden for a user without addresses:records:read" do
+        sign_in_as_customer(create(:customer))
+
+        get "/addresses"
+
+        expect(response).to have_http_status(:forbidden)
+      end
+    end
   end
 end
