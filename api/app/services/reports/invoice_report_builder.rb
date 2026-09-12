@@ -119,7 +119,7 @@ module Reports
       pdf.move_down COLUMN_HEIGHT
     end
 
-    def draw_box(pdf, width, height, label, value, value_size: 14)
+    def draw_box(pdf, width, height, label, value, value_size: 14, fit: false)
       y = pdf.cursor
 
       pdf.stroke_color BORDER_COLOR
@@ -133,18 +133,26 @@ module Reports
       pdf.move_down top_pad
       pdf.text label, size: 9, style: :bold, color: "666666", align: :center
       pdf.move_down 3
-      pdf.font(PdfFactory::FONT_NAME, style: :bold) { pdf.text value, size: value_size, align: :center }
+      pdf.font(PdfFactory::FONT_NAME, style: :bold) do
+        if fit
+          pdf.text_box value, at: [ 4, pdf.cursor ], width: width - 8, height: value_size + 2,
+                              size: value_size, align: :center, overflow: :shrink_to_fit, single_line: true
+          pdf.move_down pdf.font.height_at(value_size)
+        else
+          pdf.text value, size: value_size, align: :center
+        end
+      end
 
       pdf.move_down(height - top_pad - content_height)
     end
 
     def draw_identity_column(pdf, width)
-      draw_box(pdf, width, BOX_HEIGHT, "Nº de Associado", report.associate_number, value_size: 14)
+      draw_box(pdf, width, BOX_HEIGHT, "Endereço", report.address, value_size: 14, fit: true)
       pdf.move_down GAP
 
       draw_rows(pdf, [
-        [ "Sócio", report.customer_name ],
-        [ "Endereço", report.address ],
+        [ "Sócio", report.customer_with_associate_number ],
+        [ "Código", report.customer_code ],
         [ "Categoria", report.category_name ]
       ], width)
 
@@ -213,30 +221,10 @@ module Reports
         [ "Água excedente", report.excess_water_value_label ]
       ], width, value_align: :right)
 
-      pdf.move_down 8
-      draw_total_box(pdf, width, 32, "Valor total", report.total_value_label)
-    end
-
-    def draw_total_box(pdf, width, height, label, value)
-      y = pdf.cursor
-
-      pdf.stroke_color BORDER_COLOR
-      pdf.rounded_rectangle([ 0, y ], width, height, 6)
-      pdf.stroke
-      pdf.stroke_color "000000"
-
-      content_height = 14
-      top_pad = [ (height - content_height) / 2.0, 4 ].max
-
-      pdf.bounding_box([ 0, y ], width: width, height: height) do
-        pdf.move_down top_pad
-        pdf.table([ [ label, value ] ], column_widths: [ width * 0.5, width * 0.5 ],
-                  cell_style: { borders: [], padding: [ 0, 4, 0, 4 ], size: 12, font_style: :bold }) do
-          column(1).align = :right
-        end
-      end
-
-      pdf.move_down height
+      # Anchored to the bottom of the column so the total lines up with the
+      # meter/payment boxes, which stretch to fill the column.
+      pdf.move_down [ pdf.cursor - BOX_HEIGHT, 8 ].max
+      draw_box(pdf, width, BOX_HEIGHT, "VALOR TOTAL", report.total_value_label, value_size: 24, fit: true)
     end
 
     # Label/value rows — label left, value either immediately after (identity

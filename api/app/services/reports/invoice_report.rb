@@ -25,6 +25,17 @@ module Reports
       connection.customer.name
     end
 
+    def customer_code
+      connection.customer.customer_code
+    end
+
+    def customer_with_associate_number
+      number = connection.legacy_id
+      return customer_name if number.blank?
+
+      "#{customer_name}, #{number}"
+    end
+
     def address
       connection.full_location
     end

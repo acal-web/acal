@@ -22,6 +22,23 @@ RSpec.describe Reports::InvoiceReport do
     expect(report.category_name).to eq("Efetivo")
   end
 
+  it "exposes the customer code" do
+    expect(report.customer_code).to eq(customer.customer_code)
+    expect(report.customer_code).to be_present
+  end
+
+  it "appends the associate number to the customer name" do
+    connection.update!(legacy_id: 1041)
+
+    expect(report.customer_with_associate_number).to eq("Fulano de Tal, 1041")
+  end
+
+  it "keeps the customer name alone when the connection has no associate number" do
+    connection.update!(legacy_id: nil)
+
+    expect(report.customer_with_associate_number).to eq("Fulano de Tal")
+  end
+
   it "formats dates and money for display" do
     expect(report.reference_label).to eq("agosto, 2026")
     expect(report.issued_at_label).to eq("01 ago. 2026")

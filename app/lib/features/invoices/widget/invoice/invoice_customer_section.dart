@@ -1,3 +1,4 @@
+import 'package:acalapp/features/connections/domain/connection.dart';
 import 'package:acalapp/features/invoices/domain/invoice.dart';
 import 'package:acalapp/features/invoices/domain/water_meter.dart';
 import 'package:flutter/material.dart';
@@ -21,10 +22,10 @@ class InvoiceCustomerSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const SizedBox(height: 12),
-        _buildAssociatedNumberBox(connection?.legacyId?.toString() ?? '—', cs),
+        _buildAddressBox(connection?.fullLocation ?? '—', cs),
         const SizedBox(height: 16),
-        _buildInfoRow('Sócio', connection?.customer?.name ?? '—'),
-        _buildInfoRow('Endereço', connection?.fullLocation ?? '—'),
+        _buildInfoRow('Sócio', _customerLabel(connection)),
+        _buildInfoRow('Código', connection?.customer?.customerCode ?? '—'),
         _buildInfoRow('Categoria', connection?.category?.name ?? '—'),
         const SizedBox(height: 16),
         Expanded(
@@ -34,7 +35,15 @@ class InvoiceCustomerSection extends StatelessWidget {
     );
   }
 
-  Widget _buildAssociatedNumberBox(String value, ColorScheme cs) {
+  String _customerLabel(Connection? connection) {
+    final name = connection?.customer?.name;
+    if (name == null || name.isEmpty) return '—';
+
+    final number = connection?.legacyId;
+    return number == null ? name : '$name, $number';
+  }
+
+  Widget _buildAddressBox(String value, ColorScheme cs) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       constraints: const BoxConstraints(minHeight: 80),
@@ -47,7 +56,7 @@ class InvoiceCustomerSection extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Text(
-            'Nº de Associado',
+            'Endereço',
             style: TextStyle(
               fontSize: 12,
               fontWeight: FontWeight.w500,
@@ -57,8 +66,11 @@ class InvoiceCustomerSection extends StatelessWidget {
           const SizedBox(height: 8),
           Text(
             value,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-              fontSize: 24,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
